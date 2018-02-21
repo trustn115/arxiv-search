@@ -1,0 +1,408 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.agent.consumer &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for search.agent.consumer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Provides a record processor for MetadataIsAvailable notifications.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">search</span> <span class="k">import</span> <span class="n">logging</span>
+<span class="kn">from</span> <span class="nn">search.services</span> <span class="k">import</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">index</span>
+<span class="kn">from</span> <span class="nn">search.process</span> <span class="k">import</span> <span class="n">transform</span>
+<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">DocMeta</span><span class="p">,</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">BaseRecordProcessor</span><span class="p">,</span> <span class="n">ProcessRecordsInput</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DocumentFailed"><a class="viewcode-back" href="../../../api/search.agent.html#search.agent.consumer.DocumentFailed">[docs]</a><span class="k">class</span> <span class="nc">DocumentFailed</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span></div>
+    <span class="sd">&quot;&quot;&quot;Raised when an arXiv paper could not be added to the search index.&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="IndexingFailed"><a class="viewcode-back" href="../../../api/search.agent.html#search.agent.consumer.IndexingFailed">[docs]</a><span class="k">class</span> <span class="nc">IndexingFailed</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span></div>
+    <span class="sd">&quot;&quot;&quot;Raised when indexing failed such that future success is unlikely.&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="MetadataRecordProcessor"><a class="viewcode-back" href="../../../api/search.agent.html#search.agent.consumer.MetadataRecordProcessor">[docs]</a><span class="k">class</span> <span class="nc">MetadataRecordProcessor</span><span class="p">(</span><span class="n">BaseRecordProcessor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Consumes ``MetadataIsAvailable`` notifications, updates the index.&quot;&quot;&quot;</span>
+
+    <span class="n">MAX_ERRORS</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="sd">&quot;&quot;&quot;Max number of individual document failures before aborting entirely.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Initialize exception counter.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MetadataRecordProcessor</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_error_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="MetadataRecordProcessor.init_cache"><a class="viewcode-back" href="../../../api/search.agent.html#search.agent.consumer.MetadataRecordProcessor.init_cache">[docs]</a>    <span class="k">def</span> <span class="nf">init_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Configure the processor to use a local cache for docmeta.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;cache_dir does not exist: </span><span class="si">{cache_dir}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="n">cache_dir</span>
+
+    <span class="k">def</span> <span class="nf">_from_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arxiv_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DocMeta</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the docmeta document from a local cache, if available.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        arxiv_id : str</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`.DocMeta`</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            Raised when the cache is not available, or the document could not</span>
+<span class="sd">            be found in the cache.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Cache not set&#39;</span><span class="p">)</span>
+
+        <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.json&#39;</span> <span class="o">%</span> <span class="n">arxiv_id</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+        <span class="n">cache_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cache_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;No cached document&#39;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">DocMeta</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_to_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arxiv_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">docmeta</span><span class="p">:</span> <span class="n">DocMeta</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a document to the local cache, if available.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        arxiv_id : str</span>
+<span class="sd">        docmeta : :class:`.DocMeta`</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            Raised when the cache is not available, or the document could not</span>
+<span class="sd">            be added to the cache.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Cache not set&#39;</span><span class="p">)</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.json&#39;</span> <span class="o">%</span> <span class="n">arxiv_id</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+        <span class="n">cache_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">docmeta</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span> <span class="n">f</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">e</span>
+
+    <span class="c1"># TODO: bring McCabe index down.</span>
+    <span class="k">def</span> <span class="nf">_get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arxiv_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DocMeta</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieve metadata from the :mod:`.metadata` service.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        arxiv_id : str</span>
+<span class="sd">            Am arXiv identifier, with or without a version affix.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`.DocMeta`</span>
+<span class="sd">            Metadata for the arXiv paper.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        DocumentFailed</span>
+<span class="sd">            Indexing of the document failed. This may have no bearing on the</span>
+<span class="sd">            success of subsequent papers.</span>
+<span class="sd">        IndexingFailed</span>
+<span class="sd">            Indexing of the document failed in a way that indicates recovery</span>
+<span class="sd">            is unlikely for subsequent papers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{arxiv_id}</span><span class="s1">: get metadata&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_from_cache</span><span class="p">(</span><span class="n">arxiv_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># Low tolerance for failure,</span>
+            <span class="n">rsn</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{arxiv_id}</span><span class="s1">: could not retrieve from cache: </span><span class="si">{rsn}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{arxiv_id}</span><span class="s1">: requesting metadata&#39;</span><span class="p">)</span>
+            <span class="n">docmeta</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span><span class="n">arxiv_id</span><span class="p">)</span>
+
+        <span class="c1"># TODO: use a context manager for retry?</span>
+        <span class="k">except</span> <span class="n">metadata</span><span class="o">.</span><span class="n">ConnectionFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># The metadata service will retry bad responses, but not connection</span>
+            <span class="c1"># errors. Sometimes it just takes another try, so why not.</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{arxiv_id}</span><span class="s1">: first attempt failed, retrying&#39;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">docmeta</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span><span class="n">arxiv_id</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">metadata</span><span class="o">.</span><span class="n">ConnectionFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># Things really are looking bad. There is no need to keep</span>
+                <span class="c1"># trying with subsequent records, so let&#39;s abort entirely.</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{arxiv_id}</span><span class="s1">: second attempt failed, giving up&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">IndexingFailed</span><span class="p">(</span>
+                    <span class="s1">&#39;Indexing failed; metadata endpoint could not be reached.&#39;</span>
+                <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+        <span class="k">except</span> <span class="n">metadata</span><span class="o">.</span><span class="n">RequestFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{arxiv_id}</span><span class="s1">: request failed&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">DocumentFailed</span><span class="p">(</span><span class="s1">&#39;Request to metadata service failed&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+        <span class="k">except</span> <span class="n">metadata</span><span class="o">.</span><span class="n">BadResponse</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{arxiv_id}</span><span class="s1">: bad response from metadata service&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">DocumentFailed</span><span class="p">(</span><span class="s1">&#39;Bad response from metadata service&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{arxiv_id}</span><span class="s1">: unhandled error from metadata service&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">IndexingFailed</span><span class="p">(</span><span class="s1">&#39;Unhandled exception&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_to_cache</span><span class="p">(</span><span class="n">arxiv_id</span><span class="p">,</span> <span class="n">docmeta</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">rsn</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{arxiv_id}</span><span class="s1">: could not add to cache: </span><span class="si">{rsn}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">docmeta</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_transform_to_document</span><span class="p">(</span><span class="n">docmeta</span><span class="p">:</span> <span class="n">DocMeta</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transform paper :class:`.DocMeta` to a search :class:`.Document`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        docmeta : :class:`DocMeta`</span>
+<span class="sd">            Metadata for an arXiv paper.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`.Document`</span>
+<span class="sd">            A search document ready for indexing.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        DocumentFailed</span>
+<span class="sd">            Indexing of the document failed. This may have no bearing on the</span>
+<span class="sd">            success of subsequent papers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">document</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">docmeta</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># At the moment we don&#39;t have any special exceptions.</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;unhandled exception during transform: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">DocumentFailed</span><span class="p">(</span><span class="s1">&#39;Could not transform document&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+
+        <span class="k">return</span> <span class="n">document</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_add_to_index</span><span class="p">(</span><span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a :class:`.Document` to the search index.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        document : :class:`.Document`</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        DocumentFailed</span>
+<span class="sd">            Indexing of the document failed. This may have no bearing on the</span>
+<span class="sd">            success of subsequent papers.</span>
+<span class="sd">        IndexingFailed</span>
+<span class="sd">            Indexing of the document failed in a way that indicates recovery</span>
+<span class="sd">            is unlikely for subsequent papers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">index</span><span class="o">.</span><span class="n">add_document</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">index</span><span class="o">.</span><span class="n">IndexConnectionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Let&#39;s try once more before giving up entirely.</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">index</span><span class="o">.</span><span class="n">add_document</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">index</span><span class="o">.</span><span class="n">IndexConnectionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>   <span class="c1"># Nope, not happening.</span>
+                <span class="k">raise</span> <span class="n">IndexingFailed</span><span class="p">(</span><span class="s1">&#39;Could not index document&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;unhandled exception from index service&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">IndexingFailed</span><span class="p">(</span><span class="s1">&#39;Unhandled exception&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+
+    <span class="c1"># TODO: update this based on the final verdict on submission/announcement</span>
+    <span class="c1">#  dates.</span>
+<div class="viewcode-block" id="MetadataRecordProcessor.index_paper"><a class="viewcode-back" href="../../../api/search.agent.html#search.agent.consumer.MetadataRecordProcessor.index_paper">[docs]</a>    <span class="k">def</span> <span class="nf">index_paper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arxiv_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Index a paper, including its previous versions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        arxiv_id : str</span>
+<span class="sd">            A **versionless** arXiv e-print identifier.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        DocumentFailed</span>
+<span class="sd">            Indexing of the document failed. This may have no bearing on the</span>
+<span class="sd">            success of subsequent papers.</span>
+<span class="sd">        IndexingFailed</span>
+<span class="sd">            Indexing of the document failed in a way that indicates recovery</span>
+<span class="sd">            is unlikely for subsequent papers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">docmeta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_metadata</span><span class="p">(</span><span class="n">arxiv_id</span><span class="p">)</span>
+            <span class="n">document</span> <span class="o">=</span> <span class="n">MetadataRecordProcessor</span><span class="o">.</span><span class="n">_transform_to_document</span><span class="p">(</span><span class="n">docmeta</span><span class="p">)</span>
+
+            <span class="n">current_version</span> <span class="o">=</span> <span class="n">docmeta</span><span class="o">.</span><span class="n">version</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;current version is </span><span class="si">{current_version}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">current_version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">current_version</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">version</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">current_version</span><span class="p">):</span>
+                    <span class="n">ver_docmeta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_metadata</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{arxiv_id}</span><span class="s1">v</span><span class="si">{version}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="n">ver_document</span> <span class="o">=</span>\
+                        <span class="n">MetadataRecordProcessor</span><span class="o">.</span><span class="n">_transform_to_document</span><span class="p">(</span>
+                            <span class="n">ver_docmeta</span><span class="p">)</span>
+
+                    <span class="c1"># The earlier versions are here primarily to respond to</span>
+                    <span class="c1"># queries that explicitly specify the version number.</span>
+                    <span class="n">ver_document</span><span class="o">.</span><span class="n">is_current</span> <span class="o">=</span> <span class="kc">False</span>
+
+                    <span class="c1"># Add a reference to the most recent version.</span>
+                    <span class="n">ver_document</span><span class="o">.</span><span class="n">latest</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{arxiv_id}</span><span class="s1">v</span><span class="si">{current_version}</span><span class="s1">&#39;</span>
+                    <span class="c1"># Set the primary document ID to the version-specied</span>
+                    <span class="c1"># arXiv identifier, to avoid clobbering the latest version.</span>
+                    <span class="n">ver_document</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{arxiv_id}</span><span class="s1">v</span><span class="si">{version}</span><span class="s1">&#39;</span>
+                    <span class="n">MetadataRecordProcessor</span><span class="o">.</span><span class="n">_add_to_index</span><span class="p">(</span><span class="n">ver_document</span><span class="p">)</span>
+
+            <span class="c1"># Finally, index the most recent version.</span>
+            <span class="n">document</span><span class="o">.</span><span class="n">is_current</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">MetadataRecordProcessor</span><span class="o">.</span><span class="n">_add_to_index</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">DocumentFailed</span><span class="p">,</span> <span class="n">IndexingFailed</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># We just pass these along so that process_record() can keep track.</span>
+            <span class="c1"># TODO: Ensure this is the correct behavior.</span>
+            <span class="k">raise</span> <span class="n">e</span>
+</div>
+        <span class="k">return</span> <span class="n">document</span>
+
+    <span class="c1"># TODO: verify notification payload on MetadataIsAvailable stream.</span>
+<div class="viewcode-block" id="MetadataRecordProcessor.process_record"><a class="viewcode-back" href="../../../api/search.agent.html#search.agent.consumer.MetadataRecordProcessor.process_record">[docs]</a>    <span class="k">def</span> <span class="nf">process_record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">partition_key</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+                       <span class="n">sequence_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">sub_sequence_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Called for each record that is passed to process_records.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : bytes</span>
+<span class="sd">        partition_key : bytes</span>
+<span class="sd">        sequence_number : int</span>
+<span class="sd">        sub_sequence_number : int</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        IndexingFailed</span>
+<span class="sd">            Indexing of the document failed in a way that indicates recovery</span>
+<span class="sd">            is unlikely for subsequent papers, or too many individual</span>
+<span class="sd">            documents failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_error_count</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">MAX_ERRORS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">IndexingFailed</span><span class="p">(</span><span class="s1">&#39;Too many errors&#39;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">deserialized</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error while deserializing data: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Data payload: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">return</span>   <span class="c1"># Don&#39;t bring down the whole batch.</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">arxiv_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">deserialized</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;document_id&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">index_paper</span><span class="p">(</span><span class="n">arxiv_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">DocumentFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{arxiv_id}</span><span class="s1">: failed to index document&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">except</span> <span class="n">IndexingFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span></div></div>
+            <span class="k">raise</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">arXiv Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">search</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

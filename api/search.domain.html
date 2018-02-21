@@ -1,0 +1,378 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.domain package &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="search.process package" href="search.process.html" />
+    <link rel="prev" title="search.controllers.simple package" href="search.controllers.simple.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-search.domain">
+<span id="search-domain-package"></span><h1>search.domain package<a class="headerlink" href="#module-search.domain" title="Permalink to this headline">¶</a></h1>
+<p>Domain for search application.</p>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-search.domain.advanced">
+<span id="search-domain-advanced-module"></span><h2>search.domain.advanced module<a class="headerlink" href="#module-search.domain.advanced" title="Permalink to this headline">¶</a></h2>
+<p>Represents fielded search terms, with multiple operators.</p>
+<dl class="class">
+<dt id="search.domain.advanced.AdvancedQuery">
+<em class="property">class </em><code class="descclassname">search.domain.advanced.</code><code class="descname">AdvancedQuery</code><span class="sig-paren">(</span><em>from_iter=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/advanced.html#AdvancedQuery"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.advanced.AdvancedQuery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.base.Query</span></code></a></p>
+<p>Represents an advanced query.</p>
+<p>An advanced query contains fielded search terms and boolean operators.</p>
+<dl class="attribute">
+<dt id="search.domain.advanced.AdvancedQuery.date_range">
+<code class="descname">date_range</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.advanced.AdvancedQuery.date_range" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.advanced.AdvancedQuery.primary_classification">
+<code class="descname">primary_classification</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.advanced.AdvancedQuery.primary_classification" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.advanced.AdvancedQuery.terms">
+<code class="descname">terms</code><em class="property"> = []</em><a class="headerlink" href="#search.domain.advanced.AdvancedQuery.terms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.domain.advanced.FieldedSearchList">
+<em class="property">class </em><code class="descclassname">search.domain.advanced.</code><code class="descname">FieldedSearchList</code><a class="reference internal" href="../_modules/search/domain/advanced.html#FieldedSearchList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.advanced.FieldedSearchList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></p>
+<p>Represents a list of fielded search terms.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="search.domain.advanced.FieldedSearchTerm">
+<em class="property">class </em><code class="descclassname">search.domain.advanced.</code><code class="descname">FieldedSearchTerm</code><a class="reference internal" href="../_modules/search/domain/advanced.html#FieldedSearchTerm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.advanced.FieldedSearchTerm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+<p>Represents a fielded search term.</p>
+<dl class="attribute">
+<dt id="search.domain.advanced.FieldedSearchTerm.field">
+<code class="descname">field</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.advanced.FieldedSearchTerm.field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.advanced.FieldedSearchTerm.operator">
+<code class="descname">operator</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.advanced.FieldedSearchTerm.operator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.advanced.FieldedSearchTerm.term">
+<code class="descname">term</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.advanced.FieldedSearchTerm.term" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-search.domain.author">
+<span id="search-domain-author-module"></span><h2>search.domain.author module<a class="headerlink" href="#module-search.domain.author" title="Permalink to this headline">¶</a></h2>
+<p>Representations of authors, author lists, and author queries.</p>
+<dl class="class">
+<dt id="search.domain.author.Author">
+<em class="property">class </em><code class="descclassname">search.domain.author.</code><code class="descname">Author</code><span class="sig-paren">(</span><em>from_iter=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/author.html#Author"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.author.Author" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#search.domain.base.Base" title="search.domain.base.Base"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.base.Base</span></code></a></p>
+<p>Represents an author.</p>
+<dl class="attribute">
+<dt id="search.domain.author.Author.forename">
+<code class="descname">forename</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.author.Author.forename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.author.Author.surname">
+<code class="descname">surname</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.author.Author.surname" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.domain.author.AuthorList">
+<em class="property">class </em><code class="descclassname">search.domain.author.</code><code class="descname">AuthorList</code><a class="reference internal" href="../_modules/search/domain/author.html#AuthorList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.author.AuthorList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></p>
+<p>Represents a list of authors.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="search.domain.author.AuthorQuery">
+<em class="property">class </em><code class="descclassname">search.domain.author.</code><code class="descname">AuthorQuery</code><span class="sig-paren">(</span><em>from_iter=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/author.html#AuthorQuery"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.author.AuthorQuery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.base.Query</span></code></a></p>
+<p>Represents an author query.</p>
+<dl class="attribute">
+<dt id="search.domain.author.AuthorQuery.authors">
+<code class="descname">authors</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.author.AuthorQuery.authors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-search.domain.base">
+<span id="search-domain-base-module"></span><h2>search.domain.base module<a class="headerlink" href="#module-search.domain.base" title="Permalink to this headline">¶</a></h2>
+<p>Core data structures internal to the search service.</p>
+<dl class="class">
+<dt id="search.domain.base.Base">
+<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">Base</code><span class="sig-paren">(</span><em>from_iter=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#Base"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.Base" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+<p>Represents a basic search.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="search.domain.base.Classification">
+<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">Classification</code><span class="sig-paren">(</span><em>from_iter=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#Classification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.Classification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#search.domain.base.Base" title="search.domain.base.Base"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.base.Base</span></code></a></p>
+<p>Represents an arxiv classification.</p>
+<dl class="attribute">
+<dt id="search.domain.base.Classification.archive">
+<code class="descname">archive</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.base.Classification.archive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.base.Classification.category">
+<code class="descname">category</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.base.Classification.category" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.base.Classification.group">
+<code class="descname">group</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.base.Classification.group" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.domain.base.ClassificationList">
+<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">ClassificationList</code><a class="reference internal" href="../_modules/search/domain/base.html#ClassificationList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.ClassificationList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></p>
+<p>Represents a list of arxiv classifications.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="search.domain.base.DateRange">
+<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">DateRange</code><span class="sig-paren">(</span><em>from_iter=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#DateRange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.DateRange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#search.domain.base.Base" title="search.domain.base.Base"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.base.Base</span></code></a></p>
+<p>Represents an open or closed date range.</p>
+<dl class="attribute">
+<dt id="search.domain.base.DateRange.end_date">
+<code class="descname">end_date</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.base.DateRange.end_date" title="Permalink to this definition">¶</a></dt>
+<dd><p>The day/time at (just before) which the range ends.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.base.DateRange.start_date">
+<code class="descname">start_date</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.base.DateRange.start_date" title="Permalink to this definition">¶</a></dt>
+<dd><p>The day/time on which the range begins.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.domain.base.DocMeta">
+<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">DocMeta</code><span class="sig-paren">(</span><em>from_iter=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#DocMeta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.DocMeta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#search.domain.base.SchemaBase" title="search.domain.base.SchemaBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.base.SchemaBase</span></code></a></p>
+<p>Metadata for an arXiv paper, retrieved from the core repository.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="search.domain.base.Document">
+<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">Document</code><span class="sig-paren">(</span><em>from_iter=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#Document"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.Document" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#search.domain.base.SchemaBase" title="search.domain.base.SchemaBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.base.SchemaBase</span></code></a></p>
+<p>A single search document, representing an arXiv paper.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="search.domain.base.DocumentSet">
+<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">DocumentSet</code><span class="sig-paren">(</span><em>from_iter=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#DocumentSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.DocumentSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#search.domain.base.SchemaBase" title="search.domain.base.SchemaBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.base.SchemaBase</span></code></a></p>
+<p>A set of search results retrieved from the search index.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="search.domain.base.Fulltext">
+<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">Fulltext</code><span class="sig-paren">(</span><em>from_iter=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#Fulltext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.Fulltext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#search.domain.base.SchemaBase" title="search.domain.base.SchemaBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.base.SchemaBase</span></code></a></p>
+<p>Fulltext content for an arXiv paper, including extraction metadata.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="search.domain.base.Property">
+<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">Property</code><span class="sig-paren">(</span><em>name</em>, <em>klass=None</em>, <em>default=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#Property"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.Property" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Describes a named, typed property on a data structure.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="search.domain.base.Query">
+<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">Query</code><span class="sig-paren">(</span><em>from_iter=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#Query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.Query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#search.domain.base.SchemaBase" title="search.domain.base.SchemaBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.base.SchemaBase</span></code></a></p>
+<p>Represents a search query originating from the UI or API.</p>
+<dl class="attribute">
+<dt id="search.domain.base.Query.order">
+<code class="descname">order</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.base.Query.order" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.base.Query.page">
+<code class="descname">page</code><a class="headerlink" href="#search.domain.base.Query.page" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the approximate page number.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.base.Query.page_end">
+<code class="descname">page_end</code><a class="headerlink" href="#search.domain.base.Query.page_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the index/offset of the end of the page.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.base.Query.page_size">
+<code class="descname">page_size</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.base.Query.page_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.base.Query.page_start">
+<code class="descname">page_start</code><em class="property"> = 0</em><a class="headerlink" href="#search.domain.base.Query.page_start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.base.Query.raw_query">
+<code class="descname">raw_query</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.base.Query.raw_query" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.domain.base.SchemaBase">
+<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">SchemaBase</code><span class="sig-paren">(</span><em>from_iter=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#SchemaBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.SchemaBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#search.domain.base.Base" title="search.domain.base.Base"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.base.Base</span></code></a></p>
+<p>Base for domain classes with schema validation.</p>
+<dl class="method">
+<dt id="search.domain.base.SchemaBase.json">
+<code class="descname">json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#SchemaBase.json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.SchemaBase.json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the string representation of the instance in JSON.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.base.SchemaBase.valid">
+<code class="descname">valid</code><a class="headerlink" href="#search.domain.base.SchemaBase.valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicate whether the domain object is valid, per its __schema__.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.domain.base.SimpleQuery">
+<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">SimpleQuery</code><span class="sig-paren">(</span><em>from_iter=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#SimpleQuery"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.SimpleQuery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.base.Query</span></code></a></p>
+<p>A query on a single field with a single value.</p>
+<dl class="attribute">
+<dt id="search.domain.base.SimpleQuery.field">
+<code class="descname">field</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.base.SimpleQuery.field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.base.SimpleQuery.value">
+<code class="descname">value</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.base.SimpleQuery.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">arXiv Search</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">search</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="search.html">search package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">search</a><ul>
+  <li><a href="search.html">search package</a><ul>
+      <li>Previous: <a href="search.controllers.simple.html" title="previous chapter">search.controllers.simple package</a></li>
+      <li>Next: <a href="search.process.html" title="next chapter">search.process package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/api/search.domain.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
