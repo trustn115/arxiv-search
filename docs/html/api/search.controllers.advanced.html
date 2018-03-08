@@ -1,0 +1,318 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.controllers.advanced package &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="search.controllers.authors package" href="search.controllers.authors.html" />
+    <link rel="prev" title="search.controllers package" href="search.controllers.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-search.controllers.advanced">
+<span id="search-controllers-advanced-package"></span><h1>search.controllers.advanced package<a class="headerlink" href="#module-search.controllers.advanced" title="Permalink to this headline">¶</a></h1>
+<p>Handle requests to support the advanced search feature.</p>
+<p>The primary entrypoint to this module is <a class="reference internal" href="#search.controllers.advanced.search" title="search.controllers.advanced.search"><code class="xref py py-func docutils literal notranslate"><span class="pre">search()</span></code></a>, which handles
+GET requests to the author search endpoint. It uses
+<a class="reference internal" href="#search.controllers.advanced.forms.AdvancedSearchForm" title="search.controllers.advanced.forms.AdvancedSearchForm"><code class="xref py py-class docutils literal notranslate"><span class="pre">AdvancedSearchForm</span></code></a> to generate form HTML, validate request
+parameters, and produce informative error messages for the user.</p>
+<dl class="function">
+<dt id="search.controllers.advanced.search">
+<code class="descclassname">search.controllers.advanced.</code><code class="descname">search</code><span class="sig-paren">(</span><em>request_params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced.html#search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a search from the advanced search interface.</p>
+<p>This is intended to support ONLY form-based search, to replace the classic
+advanced search view.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>request_params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><em>dict</em> – Response content.</li>
+<li><em>int</em> – HTTP status code.</li>
+<li><em>dict</em> – Extra headers to add to the response.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InternalServerError</span></code> – Raised when there is an unrecoverable error while interacting with the
+search index.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-search.controllers.advanced.forms">
+<span id="search-controllers-advanced-forms-module"></span><h2>search.controllers.advanced.forms module<a class="headerlink" href="#module-search.controllers.advanced.forms" title="Permalink to this headline">¶</a></h2>
+<p>Provides form rendering and validation for the advanced search feature.</p>
+<dl class="class">
+<dt id="search.controllers.advanced.forms.AdvancedSearchForm">
+<em class="property">class </em><code class="descclassname">search.controllers.advanced.forms.</code><code class="descname">AdvancedSearchForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/forms.html#AdvancedSearchForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.forms.AdvancedSearchForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">wtforms.form.Form</span></code></p>
+<p>Replacement for the ‘classic’ advanced search interface.</p>
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.AdvancedSearchForm.advanced">
+<code class="descname">advanced</code><em class="property"> = &lt;UnboundField(HiddenField, ('Advanced',), {'default': 1})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.AdvancedSearchForm.advanced" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to indicate whether the form should be shown.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.AdvancedSearchForm.classification">
+<code class="descname">classification</code><em class="property"> = &lt;UnboundField(FormField, (&lt;class 'search.controllers.advanced.forms.ClassificationForm'&gt;,), {})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.AdvancedSearchForm.classification" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.AdvancedSearchForm.date">
+<code class="descname">date</code><em class="property"> = &lt;UnboundField(FormField, (&lt;class 'search.controllers.advanced.forms.DateForm'&gt;,), {})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.AdvancedSearchForm.date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.AdvancedSearchForm.order">
+<code class="descname">order</code><em class="property"> = &lt;UnboundField(SelectField, ('Sort results by',), {'choices': [('', 'Relevance'), ('submitted_date', 'Submission date (ascending)'), ('-submitted_date', 'Submission date (descending)')], 'validators': [&lt;wtforms.validators.Optional object&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.AdvancedSearchForm.order" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.AdvancedSearchForm.size">
+<code class="descname">size</code><em class="property"> = &lt;UnboundField(SelectField, ('results per page',), {'default': 25, 'choices': [('25', '25'), ('50', '50'), ('100', '100')]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.AdvancedSearchForm.size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.AdvancedSearchForm.terms">
+<code class="descname">terms</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(FormField, (&lt;class 'search.controllers.advanced.forms.FieldForm'&gt;,), {})&gt;,), {'min_entries': 1})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.AdvancedSearchForm.terms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.controllers.advanced.forms.ClassificationForm">
+<em class="property">class </em><code class="descclassname">search.controllers.advanced.forms.</code><code class="descname">ClassificationForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/forms.html#ClassificationForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.forms.ClassificationForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">wtforms.form.Form</span></code></p>
+<p>Subform for selecting a classification to (disjunctively) filter by.</p>
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.ClassificationForm.computer_science">
+<code class="descname">computer_science</code><em class="property"> = &lt;UnboundField(BooleanField, ('Computer science (cs)',), {})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.ClassificationForm.computer_science" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.ClassificationForm.economics">
+<code class="descname">economics</code><em class="property"> = &lt;UnboundField(BooleanField, ('Economics (econ)',), {})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.ClassificationForm.economics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.ClassificationForm.eess">
+<code class="descname">eess</code><em class="property"> = &lt;UnboundField(BooleanField, ('Electrical Engineering and Systems Science (eess)',), {})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.ClassificationForm.eess" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.ClassificationForm.mathematics">
+<code class="descname">mathematics</code><em class="property"> = &lt;UnboundField(BooleanField, ('Mathematics (math)',), {})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.ClassificationForm.mathematics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.ClassificationForm.physics">
+<code class="descname">physics</code><em class="property"> = &lt;UnboundField(BooleanField, ('Physics',), {})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.ClassificationForm.physics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.ClassificationForm.physics_archives">
+<code class="descname">physics_archives</code><em class="property"> = &lt;UnboundField(SelectField, (), {'choices': [('all', 'all'), ('astro-ph', 'astro-ph'), ('cond-mat', 'cond-mat'), ('gr-qc', 'gr-qc'), ('hep-ex', 'hep-ex'), ('hep-lat', 'hep-lat'), ('hep-ph', 'hep-ph'), ('hep-th', 'hep-th'), ('math-ph', 'math-ph'), ('nlin', 'nlin'), ('nucl-ex', 'nucl-ex'), ('nucl-th', 'nucl-th'), ('physics', 'physics'), ('quant-ph', 'quant-ph')], 'default': 'all'})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.ClassificationForm.physics_archives" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.ClassificationForm.q_biology">
+<code class="descname">q_biology</code><em class="property"> = &lt;UnboundField(BooleanField, ('Quantitative Biology (q-bio)',), {})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.ClassificationForm.q_biology" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.ClassificationForm.q_finance">
+<code class="descname">q_finance</code><em class="property"> = &lt;UnboundField(BooleanField, ('Quantitative Finance (q-fin)',), {})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.ClassificationForm.q_finance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.ClassificationForm.statistics">
+<code class="descname">statistics</code><em class="property"> = &lt;UnboundField(BooleanField, ('Statistics (stat)',), {})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.ClassificationForm.statistics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.controllers.advanced.forms.DateForm">
+<em class="property">class </em><code class="descclassname">search.controllers.advanced.forms.</code><code class="descname">DateForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/forms.html#DateForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.forms.DateForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">wtforms.form.Form</span></code></p>
+<p>Subform with options for limiting results by publication date.</p>
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.DateForm.filter_by">
+<code class="descname">filter_by</code><em class="property"> = &lt;UnboundField(RadioField, ('Filter by',), {'choices': [('all_dates', 'All dates'), ('past_12', 'Past 12 months'), ('specific_year', 'Specific year'), ('date_range', 'Date range')], 'default': 'all_dates'})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.filter_by" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.DateForm.from_date">
+<code class="descname">from_date</code><em class="property"> = &lt;UnboundField(DateField, ('From',), {'validators': [&lt;wtforms.validators.Optional object&gt;, &lt;function yearInBounds&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.from_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.DateForm.to_date">
+<code class="descname">to_date</code><em class="property"> = &lt;UnboundField(DateField, ('to',), {'validators': [&lt;wtforms.validators.Optional object&gt;, &lt;function yearInBounds&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.to_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.forms.DateForm.validate_filter_by">
+<code class="descname">validate_filter_by</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/forms.html#DateForm.validate_filter_by"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.validate_filter_by" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure that related fields are filled.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.DateForm.year">
+<code class="descname">year</code><em class="property"> = &lt;UnboundField(DateField, ('Year',), {'format': '%Y', 'validators': [&lt;wtforms.validators.Optional object&gt;, &lt;function yearInBounds&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.year" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.controllers.advanced.forms.FieldForm">
+<em class="property">class </em><code class="descclassname">search.controllers.advanced.forms.</code><code class="descname">FieldForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/forms.html#FieldForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.forms.FieldForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">wtforms.form.Form</span></code></p>
+<p>Subform for query parts on specific fields.</p>
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.FieldForm.field">
+<code class="descname">field</code><em class="property"> = &lt;UnboundField(SelectField, ('Field',), {'choices': [('title', 'Title'), ('author', 'Author(s)'), ('abstract', 'Abstract'), ('comments', 'Comments'), ('journal_ref', 'Journal ref'), ('acm_class', 'ACM classification'), ('msc_class', 'MSC classification'), ('report_num', 'Report number'), ('paper_id', 'Identifier'), ('doi', 'DOI'), ('orcid', 'ORCID'), ('author_id', 'Author ID')]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.FieldForm.field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.FieldForm.operator">
+<code class="descname">operator</code><em class="property"> = &lt;UnboundField(SelectField, ('Operator',), {'choices': [('AND', 'AND'), ('OR', 'OR'), ('NOT', 'NOT')], 'default': 'AND'})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.FieldForm.operator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.FieldForm.term">
+<code class="descname">term</code><em class="property"> = &lt;UnboundField(StringField, ('Search term...',), {'filters': [&lt;function stripWhiteSpace&gt;], 'validators': [&lt;function doesNotStartWithWildcard&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.FieldForm.term" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="search.controllers.advanced.forms.yearInBounds">
+<code class="descclassname">search.controllers.advanced.forms.</code><code class="descname">yearInBounds</code><span class="sig-paren">(</span><em>form</em>, <em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/forms.html#yearInBounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.forms.yearInBounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>May not be prior to 1991, or later than the current year.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">arXiv Search</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">search</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="search.html">search package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">search</a><ul>
+  <li><a href="search.html">search package</a><ul>
+  <li><a href="search.controllers.html">search.controllers package</a><ul>
+      <li>Previous: <a href="search.controllers.html" title="previous chapter">search.controllers package</a></li>
+      <li>Next: <a href="search.controllers.authors.html" title="next chapter">search.controllers.authors package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/api/search.controllers.advanced.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
