@@ -38,34 +38,6 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-search.routes.external_api">
-<span id="search-routes-external-api-module"></span><h2>search.routes.external_api module<a class="headerlink" href="#module-search.routes.external_api" title="Permalink to this headline">¶</a></h2>
-<p>Provides REST API routes.</p>
-<dl class="function">
-<dt id="search.routes.external_api.json_response">
-<code class="descclassname">search.routes.external_api.</code><code class="descname">json_response</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/routes/external_api.html#json_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.routes.external_api.json_response" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate a wrapper for routes that JSONifies the response body.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="search.routes.external_api.ok">
-<code class="descclassname">search.routes.external_api.</code><code class="descname">ok</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/routes/external_api.html#ok"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.routes.external_api.ok" title="Permalink to this definition">¶</a></dt>
-<dd><p>Health check endpoint.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="search.routes.external_api.retrieve_document">
-<code class="descclassname">search.routes.external_api.</code><code class="descname">retrieve_document</code><span class="sig-paren">(</span><em>document_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/routes/external_api.html#retrieve_document"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.routes.external_api.retrieve_document" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retrieve an arXiv paper by ID.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="search.routes.external_api.search">
-<code class="descclassname">search.routes.external_api.</code><code class="descname">search</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/routes/external_api.html#search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.routes.external_api.search" title="Permalink to this definition">¶</a></dt>
-<dd><p>First pass at a search results page.</p>
-</dd></dl>
-
-</div>
 <div class="section" id="module-search.routes.ui">
 <span id="search-routes-ui-module"></span><h2>search.routes.ui module<a class="headerlink" href="#module-search.routes.ui" title="Permalink to this headline">¶</a></h2>
 <p>Provides REST API routes.</p>
@@ -73,12 +45,42 @@
 <dt id="search.routes.ui.advanced_search">
 <code class="descclassname">search.routes.ui.</code><code class="descname">advanced_search</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/routes/ui.html#advanced_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.routes.ui.advanced_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Advanced search interface.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.routes.ui.apply_response_headers">
+<code class="descclassname">search.routes.ui.</code><code class="descname">apply_response_headers</code><span class="sig-paren">(</span><em>response</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/routes/ui.html#apply_response_headers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.routes.ui.apply_response_headers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook for applying response headers to all responses.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="search.routes.ui.author_search">
 <code class="descclassname">search.routes.ui.</code><code class="descname">author_search</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/routes/ui.html#author_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.routes.ui.author_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Author search interface.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -113,6 +115,14 @@
 <dt id="search.routes.ui.search">
 <code class="descclassname">search.routes.ui.</code><code class="descname">search</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/routes/ui.html#search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.routes.ui.search" title="Permalink to this definition">¶</a></dt>
 <dd><p>First pass at a search results page.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">

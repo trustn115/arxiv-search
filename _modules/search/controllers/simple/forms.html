@@ -31,17 +31,16 @@
           <div class="body" role="main">
             
   <h1>Source code for search.controllers.simple.forms</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;wtforms representations for a simple search.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;Provides form rendering and validation for the simple search feature.&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">date</span>
 
 <span class="kn">from</span> <span class="nn">wtforms</span> <span class="k">import</span> <span class="n">Form</span><span class="p">,</span> <span class="n">BooleanField</span><span class="p">,</span> <span class="n">StringField</span><span class="p">,</span> <span class="n">SelectField</span><span class="p">,</span> <span class="n">validators</span><span class="p">,</span> \
-    <span class="n">FormField</span><span class="p">,</span> <span class="n">SelectMultipleField</span><span class="p">,</span> <span class="n">DateField</span><span class="p">,</span> <span class="n">ValidationError</span><span class="p">,</span> <span class="n">FieldList</span>
-
+    <span class="n">FormField</span><span class="p">,</span> <span class="n">SelectMultipleField</span><span class="p">,</span> <span class="n">DateField</span><span class="p">,</span> <span class="n">ValidationError</span><span class="p">,</span> <span class="n">FieldList</span><span class="p">,</span> \
+    <span class="n">widgets</span>
 <span class="kn">from</span> <span class="nn">wtforms.fields</span> <span class="k">import</span> <span class="n">HiddenField</span>
-<span class="kn">from</span> <span class="nn">wtforms</span> <span class="k">import</span> <span class="n">widgets</span>
 
-<span class="kn">from</span> <span class="nn">search.controllers.util</span> <span class="k">import</span> <span class="n">doesNotStartWithWildcard</span>
+<span class="kn">from</span> <span class="nn">search.controllers.util</span> <span class="k">import</span> <span class="n">doesNotStartWithWildcard</span><span class="p">,</span> <span class="n">stripWhiteSpace</span>
 
 
 <div class="viewcode-block" id="SimpleSearchForm"><a class="viewcode-back" href="../../../../api/search.controllers.simple.html#search.controllers.simple.forms.SimpleSearchForm">[docs]</a><span class="k">class</span> <span class="nc">SimpleSearchForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
@@ -51,9 +50,19 @@
         <span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;All fields&#39;</span><span class="p">),</span>
         <span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;Title&#39;</span><span class="p">),</span>
         <span class="p">(</span><span class="s1">&#39;author&#39;</span><span class="p">,</span> <span class="s1">&#39;Author(s)&#39;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;abstract&#39;</span><span class="p">,</span> <span class="s1">&#39;Abstract&#39;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s1">&#39;abstract&#39;</span><span class="p">,</span> <span class="s1">&#39;Abstract&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;comments&#39;</span><span class="p">,</span> <span class="s1">&#39;Comments&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;journal_ref&#39;</span><span class="p">,</span> <span class="s1">&#39;Journal ref&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;acm_class&#39;</span><span class="p">,</span> <span class="s1">&#39;ACM classification&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;msc_class&#39;</span><span class="p">,</span> <span class="s1">&#39;MSC classification&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;report_num&#39;</span><span class="p">,</span> <span class="s1">&#39;Report number&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;paper_id&#39;</span><span class="p">,</span> <span class="s1">&#39;Identifier&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;doi&#39;</span><span class="p">,</span> <span class="s1">&#39;DOI&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;orcid&#39;</span><span class="p">,</span> <span class="s1">&#39;ORCID&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;author_id&#39;</span><span class="p">,</span> <span class="s1">&#39;Author ID&#39;</span><span class="p">)</span>
     <span class="p">])</span>
     <span class="n">query</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span><span class="s1">&#39;Search or Article ID&#39;</span><span class="p">,</span>
+                        <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="n">stripWhiteSpace</span><span class="p">],</span>
                         <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">doesNotStartWithWildcard</span><span class="p">])</span>
     <span class="n">size</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s1">&#39;results per page&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span>
         <span class="p">(</span><span class="s1">&#39;25&#39;</span><span class="p">,</span> <span class="s1">&#39;25&#39;</span><span class="p">),</span>

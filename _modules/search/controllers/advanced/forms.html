@@ -31,17 +31,19 @@
           <div class="body" role="main">
             
   <h1>Source code for search.controllers.advanced.forms</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;wtforms representations for an advanced search.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;Provides form rendering and validation for the advanced search feature.&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">date</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span> <span class="nn">wtforms</span> <span class="k">import</span> <span class="n">Form</span><span class="p">,</span> <span class="n">BooleanField</span><span class="p">,</span> <span class="n">StringField</span><span class="p">,</span> <span class="n">SelectField</span><span class="p">,</span> <span class="n">validators</span><span class="p">,</span> \
-    <span class="n">FormField</span><span class="p">,</span> <span class="n">SelectMultipleField</span><span class="p">,</span> <span class="n">DateField</span><span class="p">,</span> <span class="n">ValidationError</span><span class="p">,</span> <span class="n">FieldList</span>
+    <span class="n">FormField</span><span class="p">,</span> <span class="n">SelectMultipleField</span><span class="p">,</span> <span class="n">DateField</span><span class="p">,</span> <span class="n">ValidationError</span><span class="p">,</span> <span class="n">FieldList</span><span class="p">,</span> \
+    <span class="n">RadioField</span>
 
 <span class="kn">from</span> <span class="nn">wtforms.fields</span> <span class="k">import</span> <span class="n">HiddenField</span>
 <span class="kn">from</span> <span class="nn">wtforms</span> <span class="k">import</span> <span class="n">widgets</span>
 
-<span class="kn">from</span> <span class="nn">search.controllers.util</span> <span class="k">import</span> <span class="n">doesNotStartWithWildcard</span>
+<span class="kn">from</span> <span class="nn">search.controllers.util</span> <span class="k">import</span> <span class="n">doesNotStartWithWildcard</span><span class="p">,</span> <span class="n">stripWhiteSpace</span>
 
 
 <div class="viewcode-block" id="FieldForm"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.html#search.controllers.advanced.forms.FieldForm">[docs]</a><span class="k">class</span> <span class="nc">FieldForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
@@ -49,14 +51,24 @@
 
     <span class="c1"># pylint: disable=too-few-public-methods</span>
 
-    <span class="n">term</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span><span class="s2">&quot;Search term...&quot;</span><span class="p">,</span> <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">doesNotStartWithWildcard</span><span class="p">])</span>
+    <span class="n">term</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span><span class="s2">&quot;Search term...&quot;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="n">stripWhiteSpace</span><span class="p">],</span>
+                       <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">doesNotStartWithWildcard</span><span class="p">])</span>
     <span class="n">operator</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s2">&quot;Operator&quot;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span>
         <span class="p">(</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="s1">&#39;AND&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;OR&#39;</span><span class="p">,</span> <span class="s1">&#39;OR&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;NOT&#39;</span><span class="p">,</span> <span class="s1">&#39;NOT&#39;</span><span class="p">)</span>
     <span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">)</span>
     <span class="n">field</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s2">&quot;Field&quot;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span>
         <span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;Title&#39;</span><span class="p">),</span>
         <span class="p">(</span><span class="s1">&#39;author&#39;</span><span class="p">,</span> <span class="s1">&#39;Author(s)&#39;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;abstract&#39;</span><span class="p">,</span> <span class="s1">&#39;Abstract&#39;</span><span class="p">)</span></div>
+        <span class="p">(</span><span class="s1">&#39;abstract&#39;</span><span class="p">,</span> <span class="s1">&#39;Abstract&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;comments&#39;</span><span class="p">,</span> <span class="s1">&#39;Comments&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;journal_ref&#39;</span><span class="p">,</span> <span class="s1">&#39;Journal ref&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;acm_class&#39;</span><span class="p">,</span> <span class="s1">&#39;ACM classification&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;msc_class&#39;</span><span class="p">,</span> <span class="s1">&#39;MSC classification&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;report_num&#39;</span><span class="p">,</span> <span class="s1">&#39;Report number&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;paper_id&#39;</span><span class="p">,</span> <span class="s1">&#39;Identifier&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;doi&#39;</span><span class="p">,</span> <span class="s1">&#39;DOI&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;orcid&#39;</span><span class="p">,</span> <span class="s1">&#39;ORCID&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;author_id&#39;</span><span class="p">,</span> <span class="s1">&#39;Author ID&#39;</span><span class="p">)</span></div>
     <span class="p">])</span>
 
 
@@ -82,51 +94,47 @@
     <span class="n">statistics</span> <span class="o">=</span> <span class="n">BooleanField</span><span class="p">(</span><span class="s1">&#39;Statistics (stat)&#39;</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="yearInBounds"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.html#search.controllers.advanced.forms.yearInBounds">[docs]</a><span class="k">def</span> <span class="nf">yearInBounds</span><span class="p">(</span><span class="n">form</span><span class="p">:</span> <span class="n">Form</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="n">DateField</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;May not be prior to 1991, or later than the current year.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">start_of_time</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">1991</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span> <span class="o">&lt;</span> <span class="n">start_of_time</span> <span class="ow">or</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span> <span class="o">&gt;</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">():</span></div>
+        <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;Not a valid publication year&#39;</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="DateForm"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.html#search.controllers.advanced.forms.DateForm">[docs]</a><span class="k">class</span> <span class="nc">DateForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Subform with options for limiting results by publication date.&quot;&quot;&quot;</span>
 
-    <span class="n">all_dates</span> <span class="o">=</span> <span class="n">BooleanField</span><span class="p">(</span><span class="s1">&#39;All dates&#39;</span><span class="p">)</span>
-    <span class="n">past_12</span> <span class="o">=</span> <span class="n">BooleanField</span><span class="p">(</span><span class="s1">&#39;Past 12 months&#39;</span><span class="p">)</span>
+    <span class="n">filter_by</span> <span class="o">=</span> <span class="n">RadioField</span><span class="p">(</span>
+        <span class="s1">&#39;Filter by&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span>
+            <span class="p">(</span><span class="s1">&#39;all_dates&#39;</span><span class="p">,</span> <span class="s1">&#39;All dates&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;past_12&#39;</span><span class="p">,</span> <span class="s1">&#39;Past 12 months&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;specific_year&#39;</span><span class="p">,</span> <span class="s1">&#39;Specific year&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;date_range&#39;</span><span class="p">,</span> <span class="s1">&#39;Date range&#39;</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="n">default</span><span class="o">=</span><span class="s1">&#39;all_dates&#39;</span>
+    <span class="p">)</span>
 
-    <span class="n">specific_year</span> <span class="o">=</span> <span class="n">BooleanField</span><span class="p">(</span><span class="s1">&#39;Specific year&#39;</span><span class="p">)</span>
-    <span class="n">year</span> <span class="o">=</span> <span class="n">DateField</span><span class="p">(</span><span class="s1">&#39;Year&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;%Y&#39;</span><span class="p">,</span> <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">validators</span><span class="o">.</span><span class="n">Optional</span><span class="p">()])</span>
+    <span class="n">year</span> <span class="o">=</span> <span class="n">DateField</span><span class="p">(</span><span class="s1">&#39;Year&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;%Y&#39;</span><span class="p">,</span>
+                     <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">validators</span><span class="o">.</span><span class="n">Optional</span><span class="p">(),</span> <span class="n">yearInBounds</span><span class="p">])</span>
+    <span class="n">from_date</span> <span class="o">=</span> <span class="n">DateField</span><span class="p">(</span><span class="s1">&#39;From&#39;</span><span class="p">,</span>
+                          <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">validators</span><span class="o">.</span><span class="n">Optional</span><span class="p">(),</span> <span class="n">yearInBounds</span><span class="p">])</span>
+    <span class="n">to_date</span> <span class="o">=</span> <span class="n">DateField</span><span class="p">(</span><span class="s1">&#39;to&#39;</span><span class="p">,</span> <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">validators</span><span class="o">.</span><span class="n">Optional</span><span class="p">(),</span> <span class="n">yearInBounds</span><span class="p">])</span>
 
-    <span class="n">date_range</span> <span class="o">=</span> <span class="n">BooleanField</span><span class="p">(</span><span class="s1">&#39;Date range&#39;</span><span class="p">)</span>
-    <span class="n">from_date</span> <span class="o">=</span> <span class="n">DateField</span><span class="p">(</span><span class="s1">&#39;From&#39;</span><span class="p">,</span> <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">validators</span><span class="o">.</span><span class="n">Optional</span><span class="p">()])</span>
-    <span class="n">to_date</span> <span class="o">=</span> <span class="n">DateField</span><span class="p">(</span><span class="s1">&#39;to&#39;</span><span class="p">,</span> <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">validators</span><span class="o">.</span><span class="n">Optional</span><span class="p">()])</span>
-
-<div class="viewcode-block" id="DateForm.validate_all_dates"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.html#search.controllers.advanced.forms.DateForm.validate_all_dates">[docs]</a>    <span class="k">def</span> <span class="nf">validate_all_dates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Only one option may be selected.&quot;&quot;&quot;</span>
-        <span class="n">selected</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;past_12&#39;</span><span class="p">,</span> <span class="s1">&#39;specific_year&#39;</span><span class="p">,</span> <span class="s1">&#39;date_range&#39;</span><span class="p">]:</span>
-            <span class="n">selected</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fname</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">selected</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span></div>
-            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;Only one date filter may be selected&#39;</span><span class="p">)</span>
-
-<div class="viewcode-block" id="DateForm.validate_specific_year"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.html#search.controllers.advanced.forms.DateForm.validate_specific_year">[docs]</a>    <span class="k">def</span> <span class="nf">validate_specific_year</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;If ``specific_year`` is selected, ``year`` must be set.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;year&#39;</span><span class="p">):</span></div>
+<div class="viewcode-block" id="DateForm.validate_filter_by"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.html#search.controllers.advanced.forms.DateForm.validate_filter_by">[docs]</a>    <span class="k">def</span> <span class="nf">validate_filter_by</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="n">RadioField</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Ensure that related fields are filled.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="s1">&#39;specific_year&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;year&#39;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;Please select a year&#39;</span><span class="p">)</span>
-
-<div class="viewcode-block" id="DateForm.validate_date_range"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.html#search.controllers.advanced.forms.DateForm.validate_date_range">[docs]</a>    <span class="k">def</span> <span class="nf">validate_date_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;The field(s) ``from_date`` and/or ``to_date`` must be set.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;from_date&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;to_date&#39;</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;Must select start and/or end date(s)&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;from_date&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;to_date&#39;</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;from_date&#39;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;to_date&#39;</span><span class="p">):</span></div>
-                <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;End date must be later than start date&#39;</span><span class="p">)</span>
-
-<div class="viewcode-block" id="DateForm.validate_year"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.html#search.controllers.advanced.forms.DateForm.validate_year">[docs]</a>    <span class="k">def</span> <span class="nf">validate_year</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;May not be prior to 1991, or later than the current year.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-        <span class="n">start_of_time</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">1991</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span> <span class="o">&lt;</span> <span class="n">start_of_time</span> <span class="ow">or</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span> <span class="o">&gt;</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">():</span></div></div>
-            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;Not a valid publication year&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="s1">&#39;date_range&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;from_date&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;to_date&#39;</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;Must select start and/or end date(s)&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;from_date&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;to_date&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;from_date&#39;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;to_date&#39;</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span>
+                        <span class="s1">&#39;End date must be later than start date&#39;</span></div></div>
+                    <span class="p">)</span>
 
 
 <div class="viewcode-block" id="AdvancedSearchForm"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.html#search.controllers.advanced.forms.AdvancedSearchForm">[docs]</a><span class="k">class</span> <span class="nc">AdvancedSearchForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>

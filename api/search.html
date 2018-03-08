@@ -77,13 +77,11 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="search.process.html">search.process package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="search.process.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="search.process.html#module-search.process.query">search.process.query module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="search.process.html#module-search.process.transform">search.process.transform module</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="search.routes.html">search.routes package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="search.routes.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="search.routes.html#module-search.routes.external_api">search.routes.external_api module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="search.routes.html#module-search.routes.ui">search.routes.ui module</a></li>
 </ul>
 </li>
@@ -172,8 +170,15 @@ disables it entirely.</p>
 
 <dl class="data">
 <dt id="search.config.LOGGER_NAME">
-<code class="descclassname">search.config.</code><code class="descname">LOGGER_NAME</code><em class="property"> = 'references'</em><a class="headerlink" href="#search.config.LOGGER_NAME" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">search.config.</code><code class="descname">LOGGER_NAME</code><em class="property"> = 'search'</em><a class="headerlink" href="#search.config.LOGGER_NAME" title="Permalink to this definition">¶</a></dt>
 <dd><p>the name of the logger</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="search.config.LOGLEVEL">
+<code class="descclassname">search.config.</code><code class="descname">LOGLEVEL</code><em class="property"> = 40</em><a class="headerlink" href="#search.config.LOGLEVEL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log level for search service.</p>
+<p>See <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging-levels">https://docs.python.org/3/library/logging.html#logging-levels</a> .</p>
 </dd></dl>
 
 <dl class="data">
@@ -184,10 +189,16 @@ length greater than this by returning a 413 status code.</p>
 </dd></dl>
 
 <dl class="data">
-<dt id="search.config.PERMANENT_SESSION_LIFETIME">
-<code class="descclassname">search.config.</code><code class="descname">PERMANENT_SESSION_LIFETIME</code><em class="property"> = 3600</em><a class="headerlink" href="#search.config.PERMANENT_SESSION_LIFETIME" title="Permalink to this definition">¶</a></dt>
-<dd><p>the lifetime of a permanent session as datetime.timedelta object. Starting with
-Flask 0.8 this can also be an integer representing seconds.</p>
+<dt id="search.config.METADATA_ENDPOINT">
+<code class="descclassname">search.config.</code><code class="descname">METADATA_ENDPOINT</code><em class="property"> = 'https://arxiv.org/docmeta/'</em><a class="headerlink" href="#search.config.METADATA_ENDPOINT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Location of endpoint(s) for metadata retrieval.</p>
+<p>Multiple endpoints may be provided with comma delimitation.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="search.config.METADATA_VERIFY_CERT">
+<code class="descclassname">search.config.</code><code class="descname">METADATA_VERIFY_CERT</code><em class="property"> = 'True'</em><a class="headerlink" href="#search.config.METADATA_VERIFY_CERT" title="Permalink to this definition">¶</a></dt>
+<dd><p>If <code class="docutils literal notranslate"><span class="pre">False</span></code>, SSL certificate verification will be disabled.</p>
 </dd></dl>
 
 <dl class="data">
@@ -241,47 +252,6 @@ application context.</p>
 </dd></dl>
 
 <dl class="data">
-<dt id="search.config.SESSION_COOKIE_DOMAIN">
-<code class="descclassname">search.config.</code><code class="descname">SESSION_COOKIE_DOMAIN</code><em class="property"> = None</em><a class="headerlink" href="#search.config.SESSION_COOKIE_DOMAIN" title="Permalink to this definition">¶</a></dt>
-<dd><p>the domain for the session cookie. If this is not set, the cookie will be valid
-for all subdomains of SERVER_NAME.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="search.config.SESSION_COOKIE_HTTPONLY">
-<code class="descclassname">search.config.</code><code class="descname">SESSION_COOKIE_HTTPONLY</code><em class="property"> = True</em><a class="headerlink" href="#search.config.SESSION_COOKIE_HTTPONLY" title="Permalink to this definition">¶</a></dt>
-<dd><p>controls if the cookie should be set with the httponly flag. Defaults to True.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="search.config.SESSION_COOKIE_NAME">
-<code class="descclassname">search.config.</code><code class="descname">SESSION_COOKIE_NAME</code><em class="property"> = 'references'</em><a class="headerlink" href="#search.config.SESSION_COOKIE_NAME" title="Permalink to this definition">¶</a></dt>
-<dd><p>the name of the session cookie</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="search.config.SESSION_COOKIE_PATH">
-<code class="descclassname">search.config.</code><code class="descname">SESSION_COOKIE_PATH</code><em class="property"> = None</em><a class="headerlink" href="#search.config.SESSION_COOKIE_PATH" title="Permalink to this definition">¶</a></dt>
-<dd><p>the path for the session cookie. If this is not set the cookie will be valid
-for all of APPLICATION_ROOT or if that is not set for ‘/’.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="search.config.SESSION_COOKIE_SECURE">
-<code class="descclassname">search.config.</code><code class="descname">SESSION_COOKIE_SECURE</code><em class="property"> = False</em><a class="headerlink" href="#search.config.SESSION_COOKIE_SECURE" title="Permalink to this definition">¶</a></dt>
-<dd><p>controls if the cookie should be set with the secure flag. Defaults to False.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="search.config.SESSION_REFRESH_EACH_REQUEST">
-<code class="descclassname">search.config.</code><code class="descname">SESSION_REFRESH_EACH_REQUEST</code><em class="property"> = True</em><a class="headerlink" href="#search.config.SESSION_REFRESH_EACH_REQUEST" title="Permalink to this definition">¶</a></dt>
-<dd><p>this flag controls how permanent sessions are refreshed. If set to True (which
-is the default) then the cookie is refreshed each request which automatically
-bumps the lifetime. If set to False a set-cookie header is only sent if the
-session is modified. Non permanent sessions are not affected by this.</p>
-</dd></dl>
-
-<dl class="data">
 <dt id="search.config.TEMPLATES_AUTO_RELOAD">
 <code class="descclassname">search.config.</code><code class="descname">TEMPLATES_AUTO_RELOAD</code><em class="property"> = False</em><a class="headerlink" href="#search.config.TEMPLATES_AUTO_RELOAD" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether to check for modifications of the template source and reload it
@@ -321,12 +291,6 @@ have to find out where an HTTP exception is coming from.</p>
 <dd><p>enable/disable x-sendfile</p>
 </dd></dl>
 
-<dl class="data">
-<dt id="search.config.VERSION">
-<code class="descclassname">search.config.</code><code class="descname">VERSION</code><em class="property"> = '0.2'</em><a class="headerlink" href="#search.config.VERSION" title="Permalink to this definition">¶</a></dt>
-<dd><p>The application version, used to sign extracted references.</p>
-</dd></dl>
-
 </div>
 <div class="section" id="module-search.context">
 <span id="search-context-module"></span><h2>search.context module<a class="headerlink" href="#module-search.context" title="Permalink to this headline">¶</a></h2>
@@ -364,7 +328,7 @@ have to find out where an HTTP exception is coming from.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">proxy or None</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocalProxy</span></code></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">LocalProxy</span></code>]</td>
 </tr>
 </tbody>
 </table>
@@ -410,6 +374,86 @@ have to find out where an HTTP exception is coming from.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-search.exceptions">
+<span id="search-exceptions-module"></span><h2>search.exceptions module<a class="headerlink" href="#module-search.exceptions" title="Permalink to this headline">¶</a></h2>
+<p>Handling of HTTP exceptions.</p>
+<p>This functionality should be incorporated into arXiv-base in a future release,
+at which time much (if not all) of this module should be removed.</p>
+<dl class="function">
+<dt id="search.exceptions.get_handlers">
+<code class="descclassname">search.exceptions.</code><code class="descname">get_handlers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/exceptions.html#get_handlers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.exceptions.get_handlers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of registered exception handlers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of (<code class="xref py py-class docutils literal notranslate"><span class="pre">HTTPException</span></code>, callable) tuples.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)">list</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.exceptions.handle_internal_server_error">
+<code class="descclassname">search.exceptions.</code><code class="descname">handle_internal_server_error</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/exceptions.html#handle_internal_server_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.exceptions.handle_internal_server_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render the base 500 error page.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.exceptions.handle_method_not_allowed">
+<code class="descclassname">search.exceptions.</code><code class="descname">handle_method_not_allowed</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/exceptions.html#handle_method_not_allowed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.exceptions.handle_method_not_allowed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render the base 405 error page.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.exceptions.handle_not_found">
+<code class="descclassname">search.exceptions.</code><code class="descname">handle_not_found</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/exceptions.html#handle_not_found"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.exceptions.handle_not_found" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render the base 404 error page.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.exceptions.handler">
+<code class="descclassname">search.exceptions.</code><code class="descname">handler</code><span class="sig-paren">(</span><em>exception</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/exceptions.html#handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.exceptions.handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a decorator to register a handler for an exception.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
 <div class="section" id="module-search.factory">
 <span id="search-factory-module"></span><h2>search.factory module<a class="headerlink" href="#module-search.factory" title="Permalink to this headline">¶</a></h2>
 <p>Application factory for references service components.</p>
@@ -417,20 +461,6 @@ have to find out where an HTTP exception is coming from.</p>
 <dt id="search.factory.create_ui_web_app">
 <code class="descclassname">search.factory.</code><code class="descname">create_ui_web_app</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/factory.html#create_ui_web_app"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.factory.create_ui_web_app" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize an instance of the search frontend UI web application.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Flask</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="search.factory.create_web_external_api_app">
-<code class="descclassname">search.factory.</code><code class="descname">create_web_external_api_app</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/factory.html#create_web_external_api_app"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.factory.create_web_external_api_app" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize an instance of the search API application.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

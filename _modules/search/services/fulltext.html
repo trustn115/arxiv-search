@@ -97,16 +97,9 @@
             <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
         <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: could not decode response: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
-                          <span class="p">(</span><span class="n">document_id</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">e</span></div>
-        <span class="k">return</span> <span class="n">Fulltext</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-
-<div class="viewcode-block" id="FulltextSession.ok"><a class="viewcode-back" href="../../../api/search.services.html#search.services.fulltext.FulltextSession.ok">[docs]</a>    <span class="k">def</span> <span class="nf">ok</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Health check.&quot;&quot;&quot;</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">requests</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoint</span><span class="p">)</span><span class="o">.</span><span class="n">ok</span>
-        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-            <span class="k">pass</span></div></div>
-        <span class="k">return</span> <span class="kc">False</span>
+                          <span class="p">(</span><span class="n">document_id</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">e</span></div></div>
+        <span class="k">return</span> <span class="n">Fulltext</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">)</span>     <span class="c1"># type: ignore</span>
+        <span class="c1"># See https://github.com/python/mypy/issues/3937</span>
 
 
 <div class="viewcode-block" id="init_app"><a class="viewcode-back" href="../../../api/search.services.html#search.services.fulltext.init_app">[docs]</a><span class="k">def</span> <span class="nf">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -124,26 +117,20 @@
     <span class="k">return</span> <span class="n">FulltextSession</span><span class="p">(</span><span class="n">endpoint</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="current_session"><a class="viewcode-back" href="../../../api/search.services.html#search.services.fulltext.current_session">[docs]</a><span class="k">def</span> <span class="nf">current_session</span><span class="p">():</span>
+<div class="viewcode-block" id="current_session"><a class="viewcode-back" href="../../../api/search.services.html#search.services.fulltext.current_session">[docs]</a><span class="k">def</span> <span class="nf">current_session</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">FulltextSession</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Get/create :class:`.FulltextSession` for this context.&quot;&quot;&quot;</span>
     <span class="n">g</span> <span class="o">=</span> <span class="n">get_application_global</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">g</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">get_session</span><span class="p">()</span>
     <span class="k">if</span> <span class="s1">&#39;fulltext&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">g</span><span class="p">:</span>
-        <span class="n">g</span><span class="o">.</span><span class="n">fulltext</span> <span class="o">=</span> <span class="n">get_session</span><span class="p">()</span></div>
-    <span class="k">return</span> <span class="n">g</span><span class="o">.</span><span class="n">fulltext</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">fulltext</span> <span class="o">=</span> <span class="n">get_session</span><span class="p">()</span> <span class="c1"># type: ignore</span></div>
+    <span class="k">return</span> <span class="n">g</span><span class="o">.</span><span class="n">fulltext</span> <span class="c1"># type: ignore</span>
 
 
 <div class="viewcode-block" id="retrieve"><a class="viewcode-back" href="../../../api/search.services.html#search.services.fulltext.retrieve">[docs]</a><span class="nd">@wraps</span><span class="p">(</span><span class="n">FulltextSession</span><span class="o">.</span><span class="n">retrieve</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">retrieve</span><span class="p">(</span><span class="n">document_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Fulltext</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Retrieves an arxiv document by id.&quot;&quot;&quot;</span></div>
+    <span class="sd">&quot;&quot;&quot;Retrieve an arxiv document by id.&quot;&quot;&quot;</span></div>
     <span class="k">return</span> <span class="n">current_session</span><span class="p">()</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span><span class="n">document_id</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="ok"><a class="viewcode-back" href="../../../api/search.services.html#search.services.fulltext.ok">[docs]</a><span class="nd">@wraps</span><span class="p">(</span><span class="n">FulltextSession</span><span class="o">.</span><span class="n">ok</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">ok</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Return a 200 OK.&quot;&quot;&quot;</span></div>
-    <span class="k">return</span> <span class="n">current_session</span><span class="p">()</span><span class="o">.</span><span class="n">ok</span><span class="p">()</span>
 </pre></div>
 
           </div>

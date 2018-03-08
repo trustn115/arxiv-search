@@ -38,57 +38,6 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-search.process.query">
-<span id="search-process-query-module"></span><h2>search.process.query module<a class="headerlink" href="#module-search.process.query" title="Permalink to this headline">¶</a></h2>
-<p>Search query parsing and sanitization.</p>
-<dl class="function">
-<dt id="search.process.query.paginate">
-<code class="descclassname">search.process.query.</code><code class="descname">paginate</code><span class="sig-paren">(</span><em>query</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/process/query.html#paginate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.process.query.paginate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update pagination parameters on a <a class="reference internal" href="search.domain.html#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">Query</span></code></a> from request parameters.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>query</strong> (<a class="reference internal" href="search.domain.html#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">Query</span></code></a>) – </li>
-<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – </li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="search.domain.html#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">Query</span></code></a></p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="search.domain.html#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">Query</span></code></a></p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="search.process.query.prepare">
-<code class="descclassname">search.process.query.</code><code class="descname">prepare</code><span class="sig-paren">(</span><em>query_params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/process/query.html#prepare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.process.query.prepare" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sanitize raw query parameters, and generate a <a class="reference internal" href="search.domain.html#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">Query</span></code></a>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>query_params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – </td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="search.domain.html#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">Query</span></code></a></td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="search.domain.html#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">Query</span></code></a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
 <div class="section" id="module-search.process.transform">
 <span id="search-process-transform-module"></span><h2>search.process.transform module<a class="headerlink" href="#module-search.process.transform" title="Permalink to this headline">¶</a></h2>
 <p>Responsible for transforming metadata &amp; fulltext into a search document.</p>

@@ -34,7 +34,7 @@
 <span></span><span class="sd">&quot;&quot;&quot;Helpers for working with Flask globals.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 <span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">g</span><span class="p">,</span> <span class="n">Flask</span>
 <span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">current_app</span> <span class="k">as</span> <span class="n">flask_app</span>
 <span class="kn">import</span> <span class="nn">werkzeug</span>
@@ -57,13 +57,13 @@
     <span class="c1"># pylint: disable=protected-access</span>
     <span class="k">if</span> <span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">Flask</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span>
+            <span class="k">return</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span> <span class="c1"># type: ignore</span>
     <span class="k">if</span> <span class="n">flask_app</span><span class="p">:</span>    <span class="c1"># Proxy object; falsey if there is no application context.</span>
-        <span class="k">return</span> <span class="n">flask_app</span><span class="o">.</span><span class="n">config</span></div>
+        <span class="k">return</span> <span class="n">flask_app</span><span class="o">.</span><span class="n">config</span> <span class="c1"># type: ignore</span></div>
     <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
 
 
-<div class="viewcode-block" id="get_application_global"><a class="viewcode-back" href="../../api/search.html#search.context.get_application_global">[docs]</a><span class="k">def</span> <span class="nf">get_application_global</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">werkzeug</span><span class="o">.</span><span class="n">local</span><span class="o">.</span><span class="n">LocalProxy</span><span class="p">:</span>
+<div class="viewcode-block" id="get_application_global"><a class="viewcode-back" href="../../api/search.html#search.context.get_application_global">[docs]</a><span class="k">def</span> <span class="nf">get_application_global</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">werkzeug</span><span class="o">.</span><span class="n">local</span><span class="o">.</span><span class="n">LocalProxy</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the current application global proxy object.</span>
 
@@ -72,7 +72,7 @@
 <span class="sd">    proxy or None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">g</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">g</span></div>
+        <span class="k">return</span> <span class="n">g</span> <span class="c1"># type: ignore</span></div>
     <span class="k">return</span> <span class="kc">None</span>
 </pre></div>
 

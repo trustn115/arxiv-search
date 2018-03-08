@@ -33,7 +33,7 @@
             
   <div class="section" id="module-search.services">
 <span id="search-services-package"></span><h1>search.services package<a class="headerlink" href="#module-search.services" title="Permalink to this headline">¶</a></h1>
-<p>arxiv search services.</p>
+<p>Provides service integration modules for use by controllers.</p>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -45,20 +45,6 @@
 <em class="property">class </em><code class="descclassname">search.services.fulltext.</code><code class="descname">FulltextSession</code><span class="sig-paren">(</span><em>endpoint</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/fulltext.html#FulltextSession"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.fulltext.FulltextSession" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>An HTTP session with the fulltext endpoint.</p>
-<dl class="method">
-<dt id="search.services.fulltext.FulltextSession.ok">
-<code class="descname">ok</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/fulltext.html#FulltextSession.ok"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.fulltext.FulltextSession.ok" title="Permalink to this definition">¶</a></dt>
-<dd><p>Health check.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 <dl class="method">
 <dt id="search.services.fulltext.FulltextSession.retrieve">
 <code class="descname">retrieve</code><span class="sig-paren">(</span><em>document_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/fulltext.html#FulltextSession.retrieve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.fulltext.FulltextSession.retrieve" title="Permalink to this definition">¶</a></dt>
@@ -99,6 +85,14 @@ extractor version.</p>
 <dt id="search.services.fulltext.current_session">
 <code class="descclassname">search.services.fulltext.</code><code class="descname">current_session</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/fulltext.html#current_session"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.fulltext.current_session" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get/create <a class="reference internal" href="#search.services.fulltext.FulltextSession" title="search.services.fulltext.FulltextSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">FulltextSession</span></code></a> for this context.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#search.services.fulltext.FulltextSession" title="search.services.fulltext.FulltextSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">FulltextSession</span></code></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -124,20 +118,6 @@ extractor version.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="search.services.fulltext.ok">
-<code class="descclassname">search.services.fulltext.</code><code class="descname">ok</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/fulltext.html#ok"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.fulltext.ok" title="Permalink to this definition">¶</a></dt>
-<dd><p>Health check.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -180,7 +160,18 @@ extractor version.</p>
 </div>
 <div class="section" id="module-search.services.index">
 <span id="search-services-index-module"></span><h2>search.services.index module<a class="headerlink" href="#module-search.services.index" title="Permalink to this headline">¶</a></h2>
-<p>Integration with search index.</p>
+<p>Provides integration with an ElasticSearch cluster.</p>
+<p>The primary entrypoint to this module is <a class="reference internal" href="#search.services.index.search" title="search.services.index.search"><code class="xref py py-func docutils literal notranslate"><span class="pre">search()</span></code></a>, which handles
+<code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.Query</span></code> instances passed by controllers, and returns a
+<a class="reference internal" href="search.domain.html#search.domain.base.DocumentSet" title="search.domain.base.DocumentSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">DocumentSet</span></code></a> containing search results. <a class="reference internal" href="#search.services.index.get_document" title="search.services.index.get_document"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_document()</span></code></a> is
+available for future use, e.g. as part of a search API.</p>
+<p>In addition, <a class="reference internal" href="#search.services.index.add_document" title="search.services.index.add_document"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_document()</span></code></a> and <a class="reference internal" href="#search.services.index.bulk_add_documents" title="search.services.index.bulk_add_documents"><code class="xref py py-func docutils literal notranslate"><span class="pre">bulk_add_documents()</span></code></a> are provided
+for indexing (e.g. by the
+<a class="reference internal" href="search.agent.html#search.agent.consumer.MetadataRecordProcessor" title="search.agent.consumer.MetadataRecordProcessor"><code class="xref py py-mod docutils literal notranslate"><span class="pre">search.agent.consumer.MetadataRecordProcessor</span></code></a>).</p>
+<p><a class="reference internal" href="#search.services.index.SearchSession" title="search.services.index.SearchSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">SearchSession</span></code></a> encapsulates configuration parameters and a connection
+to the Elasticsearch cluster for thread-safety. The functions mentioned above
+load the appropriate instance of <a class="reference internal" href="#search.services.index.SearchSession" title="search.services.index.SearchSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">SearchSession</span></code></a> depending on the
+context of the request.</p>
 <dl class="exception">
 <dt id="search.services.index.DocumentNotFound">
 <em class="property">exception </em><code class="descclassname">search.services.index.</code><code class="descname">DocumentNotFound</code><a class="reference internal" href="../_modules/search/services/index.html#DocumentNotFound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.DocumentNotFound" title="Permalink to this definition">¶</a></dt>
@@ -202,11 +193,24 @@ extractor version.</p>
 <p>There was a problem adding a document to the index.</p>
 </dd></dl>
 
+<dl class="data">
+<dt id="search.services.index.MAX_RESULTS">
+<code class="descclassname">search.services.index.</code><code class="descname">MAX_RESULTS</code><em class="property"> = 10000</em><a class="headerlink" href="#search.services.index.MAX_RESULTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the maximum result offset for pagination.</p>
+</dd></dl>
+
 <dl class="exception">
 <dt id="search.services.index.MappingError">
 <em class="property">exception </em><code class="descclassname">search.services.index.</code><code class="descname">MappingError</code><a class="reference internal" href="../_modules/search/services/index.html#MappingError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.MappingError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
 <p>There was a problem with the search document mapping.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="search.services.index.OutsideAllowedRange">
+<em class="property">exception </em><code class="descclassname">search.services.index.</code><code class="descname">OutsideAllowedRange</code><a class="reference internal" href="../_modules/search/services/index.html#OutsideAllowedRange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.OutsideAllowedRange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<p>A page outside of the allowed range has been requested.</p>
 </dd></dl>
 
 <dl class="exception">
@@ -218,9 +222,15 @@ extractor version.</p>
 index, or to a mal-formed query.</p>
 </dd></dl>
 
+<dl class="data">
+<dt id="search.services.index.STRING_LITERAL">
+<code class="descclassname">search.services.index.</code><code class="descname">STRING_LITERAL</code><em class="property"> = re.compile('([\'\\&quot;][^\'\\&quot;]*[\'\\&quot;])')</em><a class="headerlink" href="#search.services.index.STRING_LITERAL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pattern for string literals (quoted) in search queries.</p>
+</dd></dl>
+
 <dl class="class">
 <dt id="search.services.index.SearchSession">
-<em class="property">class </em><code class="descclassname">search.services.index.</code><code class="descname">SearchSession</code><span class="sig-paren">(</span><em>host</em>, <em>index</em>, <em>port=9200</em>, <em>scheme='http'</em>, <em>user=None</em>, <em>password=None</em>, <em>**extra</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index.html#SearchSession"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.SearchSession" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">search.services.index.</code><code class="descname">SearchSession</code><span class="sig-paren">(</span><em>host</em>, <em>index</em>, <em>port=9200</em>, <em>scheme='http'</em>, <em>user=None</em>, <em>password=None</em>, <em>mapping=None</em>, <em>**extra</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index.html#SearchSession"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.SearchSession" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Encapsulates session with Elasticsearch host.</p>
 <dl class="method">
@@ -229,21 +239,20 @@ index, or to a mal-formed query.</p>
 <dd><p>Add a document to the search index.</p>
 <p>Uses <code class="docutils literal notranslate"><span class="pre">paper_id_v</span></code> as the primary identifier for the document. If the
 document is already indexed, will quietly overwrite.</p>
-<dl class="docutils">
-<dt>document <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="search.domain.html#search.domain.base.Document" title="search.domain.base.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a></span></dt>
-<dd>Must be a valid search document, per <code class="docutils literal notranslate"><span class="pre">schema/Document.json</span></code>.</dd>
-</dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
-<li><a class="reference internal" href="#search.services.index.IndexConnectionError" title="search.services.index.IndexConnectionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IndexConnectionError</span></code></a> – Problem communicating with Elasticsearch host.</li>
-<li><a class="reference internal" href="#search.services.index.QueryError" title="search.services.index.QueryError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">QueryError</span></code></a> – Problem serializing <code class="docutils literal notranslate"><span class="pre">document</span></code> for indexing.</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>document</strong> (<a class="reference internal" href="search.domain.html#search.domain.base.Document" title="search.domain.base.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a>) – Must be a valid search document, per <code class="docutils literal notranslate"><span class="pre">schema/Document.json</span></code>.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><a class="reference internal" href="#search.services.index.IndexConnectionError" title="search.services.index.IndexConnectionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">IndexConnectionError</span></code></a> – Problem communicating with Elasticsearch host.</li>
+<li><a class="reference internal" href="#search.services.index.QueryError" title="search.services.index.QueryError"><code class="xref py py-class docutils literal notranslate"><span class="pre">QueryError</span></code></a> – Problem serializing <code class="docutils literal notranslate"><span class="pre">document</span></code> for indexing.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
 </td>
 </tr>
 </tbody>
@@ -251,8 +260,53 @@ document is already indexed, will quietly overwrite.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="search.services.index.SearchSession.bulk_add_documents">
+<code class="descname">bulk_add_documents</code><span class="sig-paren">(</span><em>documents</em>, <em>docs_per_chunk=500</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index.html#SearchSession.bulk_add_documents"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.SearchSession.bulk_add_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add documents to the search index using the bulk API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>document</strong> (<a class="reference internal" href="search.domain.html#search.domain.base.Document" title="search.domain.base.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a>) – Must be a valid search document, per <code class="docutils literal notranslate"><span class="pre">schema/Document.json</span></code>.</li>
+<li><strong>docs_per_chunk</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Number of documents to send to ES in a single chunk</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><a class="reference internal" href="#search.services.index.IndexConnectionError" title="search.services.index.IndexConnectionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IndexConnectionError</span></code></a> – Problem communicating with Elasticsearch host.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">BulkIndexingError</span></code> – Problem serializing <code class="docutils literal notranslate"><span class="pre">document</span></code> for indexing.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.services.index.SearchSession.cluster_available">
+<code class="descname">cluster_available</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index.html#SearchSession.cluster_available"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.SearchSession.cluster_available" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether or not the ES cluster is available.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="search.services.index.SearchSession.create_index">
-<code class="descname">create_index</code><span class="sig-paren">(</span><em>mappings</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index.html#SearchSession.create_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.SearchSession.create_index" title="Permalink to this definition">¶</a></dt>
+<code class="descname">create_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index.html#SearchSession.create_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.SearchSession.create_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create the search index.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -336,22 +390,83 @@ elastic.co/guide/en/elasticsearch/reference/current/mapping.html</td>
 <dd><p>Add a document to the search index.</p>
 <p>Uses <code class="docutils literal notranslate"><span class="pre">paper_id_v</span></code> as the primary identifier for the document. If the
 document is already indexed, will quietly overwrite.</p>
-<dl class="docutils">
-<dt>document <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="search.domain.html#search.domain.base.Document" title="search.domain.base.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a></span></dt>
-<dd>Must be a valid search document, per <code class="docutils literal notranslate"><span class="pre">schema/Document.json</span></code>.</dd>
-</dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
-<li><a class="reference internal" href="#search.services.index.IndexConnectionError" title="search.services.index.IndexConnectionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IndexConnectionError</span></code></a> – Problem communicating with Elasticsearch host.</li>
-<li><a class="reference internal" href="#search.services.index.QueryError" title="search.services.index.QueryError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">QueryError</span></code></a> – Problem serializing <code class="docutils literal notranslate"><span class="pre">document</span></code> for indexing.</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>document</strong> (<a class="reference internal" href="search.domain.html#search.domain.base.Document" title="search.domain.base.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a>) – Must be a valid search document, per <code class="docutils literal notranslate"><span class="pre">schema/Document.json</span></code>.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><a class="reference internal" href="#search.services.index.IndexConnectionError" title="search.services.index.IndexConnectionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">IndexConnectionError</span></code></a> – Problem communicating with Elasticsearch host.</li>
+<li><a class="reference internal" href="#search.services.index.QueryError" title="search.services.index.QueryError"><code class="xref py py-class docutils literal notranslate"><span class="pre">QueryError</span></code></a> – Problem serializing <code class="docutils literal notranslate"><span class="pre">document</span></code> for indexing.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
 </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.bulk_add_documents">
+<code class="descclassname">search.services.index.</code><code class="descname">bulk_add_documents</code><span class="sig-paren">(</span><em>self</em>, <em>documents</em>, <em>docs_per_chunk=500</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index.html#bulk_add_documents"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.bulk_add_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add documents to the search index using the bulk API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>document</strong> (<a class="reference internal" href="search.domain.html#search.domain.base.Document" title="search.domain.base.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a>) – Must be a valid search document, per <code class="docutils literal notranslate"><span class="pre">schema/Document.json</span></code>.</li>
+<li><strong>docs_per_chunk</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Number of documents to send to ES in a single chunk</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><a class="reference internal" href="#search.services.index.IndexConnectionError" title="search.services.index.IndexConnectionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IndexConnectionError</span></code></a> – Problem communicating with Elasticsearch host.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">BulkIndexingError</span></code> – Problem serializing <code class="docutils literal notranslate"><span class="pre">document</span></code> for indexing.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.cluster_available">
+<code class="descclassname">search.services.index.</code><code class="descname">cluster_available</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index.html#cluster_available"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.cluster_available" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether or not the ES cluster is available.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.create_index">
+<code class="descclassname">search.services.index.</code><code class="descname">create_index</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index.html#create_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.create_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the search index.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mappings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – See
+elastic.co/guide/en/elasticsearch/reference/current/mapping.html</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -361,6 +476,14 @@ document is already indexed, will quietly overwrite.</p>
 <dt id="search.services.index.current_session">
 <code class="descclassname">search.services.index.</code><code class="descname">current_session</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index.html#current_session"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.current_session" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get/create <a class="reference internal" href="#search.services.index.SearchSession" title="search.services.index.SearchSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">SearchSession</span></code></a> for this context.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#search.services.index.SearchSession" title="search.services.index.SearchSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">SearchSession</span></code></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -470,6 +593,12 @@ document is already indexed, will quietly overwrite.</p>
 <div class="section" id="module-search.services.metadata">
 <span id="search-services-metadata-module"></span><h2>search.services.metadata module<a class="headerlink" href="#module-search.services.metadata" title="Permalink to this headline">¶</a></h2>
 <p>Provides acces to paper metadata from the core arXiv repository.</p>
+<p>The primary entrypoint to this module is <a class="reference internal" href="#search.services.metadata.retrieve" title="search.services.metadata.retrieve"><code class="xref py py-func docutils literal notranslate"><span class="pre">retrieve()</span></code></a>, which retrieves
+<a class="reference internal" href="search.domain.html#search.domain.base.DocMeta" title="search.domain.base.DocMeta"><code class="xref py py-class docutils literal notranslate"><span class="pre">DocMeta</span></code></a> for a published arXiv paper.</p>
+<p><a class="reference internal" href="#search.services.metadata.DocMetaSession" title="search.services.metadata.DocMetaSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">DocMetaSession</span></code></a> encapsulates configuration parameters and a connection
+to the docmeta endpoint(s) for thread-safety and efficiency. The functions
+mentioned above load the appropriate instance of <a class="reference internal" href="#search.services.metadata.DocMetaSession" title="search.services.metadata.DocMetaSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">DocMetaSession</span></code></a>
+depending on the context of the request.</p>
 <dl class="exception">
 <dt id="search.services.metadata.BadResponse">
 <em class="property">exception </em><code class="descclassname">search.services.metadata.</code><code class="descname">BadResponse</code><a class="reference internal" href="../_modules/search/services/metadata.html#BadResponse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.metadata.BadResponse" title="Permalink to this definition">¶</a></dt>
@@ -486,18 +615,18 @@ document is already indexed, will quietly overwrite.</p>
 
 <dl class="class">
 <dt id="search.services.metadata.DocMetaSession">
-<em class="property">class </em><code class="descclassname">search.services.metadata.</code><code class="descname">DocMetaSession</code><span class="sig-paren">(</span><em>endpoint</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/metadata.html#DocMetaSession"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.metadata.DocMetaSession" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">search.services.metadata.</code><code class="descname">DocMetaSession</code><span class="sig-paren">(</span><em>*endpoints</em>, <em>verify_cert=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/metadata.html#DocMetaSession"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.metadata.DocMetaSession" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>An HTTP session with the docmeta endpoint.</p>
-<dl class="method">
-<dt id="search.services.metadata.DocMetaSession.ok">
-<code class="descname">ok</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/metadata.html#DocMetaSession.ok"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.metadata.DocMetaSession.ok" title="Permalink to this definition">¶</a></dt>
-<dd><p>Health check.</p>
+<dl class="attribute">
+<dt id="search.services.metadata.DocMetaSession.endpoint">
+<code class="descname">endpoint</code><a class="headerlink" href="#search.services.metadata.DocMetaSession.endpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a metadata endpoint.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -553,6 +682,14 @@ document is already indexed, will quietly overwrite.</p>
 <dt id="search.services.metadata.current_session">
 <code class="descclassname">search.services.metadata.</code><code class="descname">current_session</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/metadata.html#current_session"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.metadata.current_session" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get/create <a class="reference internal" href="#search.services.metadata.DocMetaSession" title="search.services.metadata.DocMetaSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">DocMetaSession</span></code></a> for this context.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#search.services.metadata.DocMetaSession" title="search.services.metadata.DocMetaSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">DocMetaSession</span></code></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -578,20 +715,6 @@ document is already indexed, will quietly overwrite.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="search.services.metadata.ok">
-<code class="descclassname">search.services.metadata.</code><code class="descname">ok</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/metadata.html#ok"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.metadata.ok" title="Permalink to this definition">¶</a></dt>
-<dd><p>Health check.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
 </tr>
 </tbody>
 </table>

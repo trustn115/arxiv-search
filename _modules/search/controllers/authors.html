@@ -31,22 +31,27 @@
           <div class="body" role="main">
             
   <h1>Source code for search.controllers.authors</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Controllers for author search.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Handle requests to support the author name search feature.</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="sd">The primary entrypoint to this module is :func:`.search`, which handles</span>
+<span class="sd">GET requests to the author search endpoint. It uses :class:`.AuthorSearchForm`</span>
+<span class="sd">to generate form HTML, validate request parameters, and produce informative</span>
+<span class="sd">error messages for the user.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span> <span class="nn">werkzeug.exceptions</span> <span class="k">import</span> <span class="n">InternalServerError</span>
 
 <span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">status</span>
 <span class="kn">from</span> <span class="nn">search</span> <span class="k">import</span> <span class="n">logging</span>
 
-<span class="kn">from</span> <span class="nn">search.process</span> <span class="k">import</span> <span class="n">query</span>
 <span class="kn">from</span> <span class="nn">search.services</span> <span class="k">import</span> <span class="n">index</span><span class="p">,</span> <span class="n">fulltext</span><span class="p">,</span> <span class="n">metadata</span>
 <span class="kn">from</span> <span class="nn">search.util</span> <span class="k">import</span> <span class="n">parse_arxiv_id</span>
-<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">AuthorQuery</span><span class="p">,</span> <span class="n">Author</span><span class="p">,</span> <span class="n">AuthorList</span>
-
+<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">AuthorQuery</span><span class="p">,</span> <span class="n">Author</span><span class="p">,</span> <span class="n">AuthorList</span><span class="p">,</span> <span class="n">Query</span><span class="p">,</span> <span class="n">asdict</span>
+<span class="kn">from</span> <span class="nn">search.controllers.util</span> <span class="k">import</span> <span class="n">paginate</span>
 <span class="kn">from</span> <span class="nn">.forms</span> <span class="k">import</span> <span class="n">AuthorSearchForm</span>
-<span class="c1"># from search.routes.ui import external_url_builder</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -73,6 +78,12 @@
 <span class="sd">        HTTP status code.</span>
 <span class="sd">    dict</span>
 <span class="sd">        Extra headers to add to the response.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    :class:`.InternalServerError`</span>
+<span class="sd">        Raised when there is a problem communicating with ES, or there was an</span>
+<span class="sd">        unexpected problem executing the query.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;search request from advanced form&#39;</span><span class="p">)</span>
     <span class="n">response_data</span> <span class="o">=</span> <span class="p">{}</span>
@@ -89,27 +100,38 @@
     <span class="n">response_data</span><span class="p">[</span><span class="s1">&#39;show_form&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">request_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;show_form&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">query_is_present</span>
     <span class="p">)</span>
+
+    <span class="n">q</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Query</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">query_is_present</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">():</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;form is valid&#39;</span><span class="p">)</span>
             <span class="n">q</span> <span class="o">=</span> <span class="n">_query_from_form</span><span class="p">(</span><span class="n">form</span><span class="p">)</span>
 
             <span class="c1"># Pagination is handled outside of the form.</span>
-            <span class="n">q</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">paginate</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">request_params</span><span class="p">)</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">paginate</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">request_params</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="c1"># Execute the search. We&#39;ll use the results directly in</span>
                 <span class="c1">#  template rendering, so they get added directly to the</span>
                 <span class="c1">#  response content.</span>
-                <span class="n">response_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
+                <span class="n">response_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">asdict</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">q</span><span class="p">)))</span>
             <span class="k">except</span> <span class="n">index</span><span class="o">.</span><span class="n">IndexConnectionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="c1"># There was a (hopefully transient) connection problem. Either</span>
                 <span class="c1">#  this will clear up relatively quickly (next request), or</span>
                 <span class="c1">#  there is a more serious outage.</span>
-                <span class="n">response_data</span><span class="p">[</span><span class="s1">&#39;index_error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;IndexConnectionError: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">InternalServerError</span><span class="p">(</span>
+                    <span class="s2">&quot;There was a problem connecting to the search index. This &quot;</span>
+                    <span class="s2">&quot;is quite likely a transient issue, so please try your &quot;</span>
+                    <span class="s2">&quot;search again. If this problem persists, please report it &quot;</span>
+                    <span class="s2">&quot;to help@arxiv.org.&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
             <span class="k">except</span> <span class="n">index</span><span class="o">.</span><span class="n">QueryError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="c1"># Base exception routers should pick this up and show bug page.</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;QueryError: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
                 <span class="k">raise</span> <span class="n">InternalServerError</span><span class="p">(</span>
-                    <span class="s1">&#39;Encountered an error in search query&#39;</span>
+                    <span class="s2">&quot;There was a problem executing your query. Please try &quot;</span>
+                    <span class="s2">&quot;your search again.  If this problem persists, please &quot;</span>
+                    <span class="s2">&quot;report it to help@arxiv.org.&quot;</span>
                 <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
 
             <span class="n">response_data</span><span class="p">[</span><span class="s1">&#39;query&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">q</span>
@@ -135,8 +157,14 @@
 <span class="sd">    -------</span>
 <span class="sd">    :class:`.AuthorQuery`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">q</span> <span class="o">=</span> <span class="n">AuthorQuery</span><span class="p">(</span><span class="n">authors</span><span class="o">=</span><span class="n">AuthorList</span><span class="p">([</span>
-        <span class="n">Author</span><span class="p">(</span><span class="n">forename</span><span class="o">=</span><span class="n">author</span><span class="p">[</span><span class="s1">&#39;forename&#39;</span><span class="p">],</span> <span class="n">surname</span><span class="o">=</span><span class="n">author</span><span class="p">[</span><span class="s1">&#39;surname&#39;</span><span class="p">])</span>
+    <span class="c1"># Fix for these typing issues is coming soon!</span>
+    <span class="c1">#  See: https://github.com/python/mypy/pull/4397</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">AuthorQuery</span><span class="p">(</span><span class="n">authors</span><span class="o">=</span><span class="n">AuthorList</span><span class="p">([</span>    <span class="c1"># type: ignore</span>
+        <span class="n">Author</span><span class="p">(</span>     <span class="c1"># type: ignore</span>
+            <span class="n">forename</span><span class="o">=</span><span class="n">author</span><span class="p">[</span><span class="s1">&#39;forename&#39;</span><span class="p">],</span>
+            <span class="n">surname</span><span class="o">=</span><span class="n">author</span><span class="p">[</span><span class="s1">&#39;surname&#39;</span><span class="p">],</span>
+            <span class="n">fullname</span><span class="o">=</span><span class="n">author</span><span class="p">[</span><span class="s1">&#39;fullname&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
         <span class="k">for</span> <span class="n">author</span> <span class="ow">in</span> <span class="n">form</span><span class="o">.</span><span class="n">authors</span><span class="o">.</span><span class="n">data</span>
     <span class="p">]))</span>
     <span class="n">order</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">data</span>
@@ -162,6 +190,8 @@
         <span class="n">params</span><span class="p">[</span><span class="s1">&#39;authors-0-forename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;forename&#39;</span><span class="p">]</span>
     <span class="k">if</span> <span class="s1">&#39;surname&#39;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
         <span class="n">params</span><span class="p">[</span><span class="s1">&#39;authors-0-surname&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;surname&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s1">&#39;fullname&#39;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+        <span class="n">params</span><span class="p">[</span><span class="s1">&#39;authors-0-fullname&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;fullname&#39;</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">params</span>
 </pre></div>
 

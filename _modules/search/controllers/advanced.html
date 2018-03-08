@@ -31,23 +31,32 @@
           <div class="body" role="main">
             
   <h1>Source code for search.controllers.advanced</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Controller for advanced search.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Handle requests to support the advanced search feature.</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="sd">The primary entrypoint to this module is :func:`.search`, which handles</span>
+<span class="sd">GET requests to the author search endpoint. It uses</span>
+<span class="sd">:class:`.AdvancedSearchForm` to generate form HTML, validate request</span>
+<span class="sd">parameters, and produce informative error messages for the user.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">date</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">dateutil.relativedelta</span> <span class="k">import</span> <span class="n">relativedelta</span>
 <span class="kn">from</span> <span class="nn">pytz</span> <span class="k">import</span> <span class="n">timezone</span>
 
 <span class="kn">from</span> <span class="nn">werkzeug.datastructures</span> <span class="k">import</span> <span class="n">MultiDict</span>
-<span class="kn">from</span> <span class="nn">werkzeug.exceptions</span> <span class="k">import</span> <span class="n">InternalServerError</span>
+
 <span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">status</span>
 
+<span class="kn">from</span> <span class="nn">search.exceptions</span> <span class="k">import</span> <span class="n">InternalServerError</span>
 <span class="kn">from</span> <span class="nn">search.services</span> <span class="k">import</span> <span class="n">index</span><span class="p">,</span> <span class="n">fulltext</span><span class="p">,</span> <span class="n">metadata</span>
-<span class="kn">from</span> <span class="nn">search.process</span> <span class="k">import</span> <span class="n">query</span>
 <span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">AdvancedQuery</span><span class="p">,</span> <span class="n">FieldedSearchTerm</span><span class="p">,</span> <span class="n">DateRange</span><span class="p">,</span> \
-    <span class="n">Classification</span><span class="p">,</span> <span class="n">FieldedSearchList</span><span class="p">,</span> <span class="n">ClassificationList</span>
+    <span class="n">Classification</span><span class="p">,</span> <span class="n">FieldedSearchList</span><span class="p">,</span> <span class="n">ClassificationList</span><span class="p">,</span> <span class="n">Query</span><span class="p">,</span> <span class="n">asdict</span>
 <span class="kn">from</span> <span class="nn">search</span> <span class="k">import</span> <span class="n">logging</span>
+<span class="kn">from</span> <span class="nn">search.controllers.util</span> <span class="k">import</span> <span class="n">paginate</span>
+
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">forms</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -81,15 +90,15 @@
 <span class="sd">    ------</span>
 <span class="sd">    InternalServerError</span>
 <span class="sd">        Raised when there is an unrecoverable error while interacting with the</span>
-<span class="sd">        search index. This should be handled in the base routes, to display a</span>
-<span class="sd">        &quot;bug&quot; error page to the user.</span>
+<span class="sd">        search index.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;search request from advanced form&#39;</span><span class="p">)</span>
-    <span class="n">response_data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">response_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">response_data</span><span class="p">[</span><span class="s1">&#39;show_form&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;advanced&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">request_params</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;show_form: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">response_data</span><span class="p">[</span><span class="s1">&#39;show_form&#39;</span><span class="p">]))</span>
     <span class="n">form</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">request_params</span><span class="p">)</span>
 
+    <span class="n">q</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Query</span><span class="p">]</span>
     <span class="c1"># We want to avoid attempting to validate if no query has been entered.</span>
     <span class="c1">#  If a query was actually submitted via the form, &#39;advanced&#39; will be</span>
     <span class="c1">#  present in the request parameters.</span>
@@ -99,23 +108,31 @@
             <span class="n">q</span> <span class="o">=</span> <span class="n">_query_from_form</span><span class="p">(</span><span class="n">form</span><span class="p">)</span>
 
             <span class="c1"># Pagination is handled outside of the form.</span>
-            <span class="n">q</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">paginate</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">request_params</span><span class="p">)</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">paginate</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">request_params</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="c1"># Execute the search. We&#39;ll use the results directly in</span>
                 <span class="c1">#  template rendering, so they get added directly to the</span>
                 <span class="c1">#  response content.</span>
-                <span class="n">response_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
+                <span class="n">response_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">asdict</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">q</span><span class="p">)))</span>
             <span class="k">except</span> <span class="n">index</span><span class="o">.</span><span class="n">IndexConnectionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="c1"># There was a (hopefully transient) connection problem. Either</span>
                 <span class="c1">#  this will clear up relatively quickly (next request), or</span>
                 <span class="c1">#  there is a more serious outage.</span>
-                <span class="n">response_data</span><span class="p">[</span><span class="s1">&#39;index_error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;IndexConnectionError: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">InternalServerError</span><span class="p">(</span>
+                    <span class="s2">&quot;There was a problem connecting to the search index. This &quot;</span>
+                    <span class="s2">&quot;is quite likely a transient issue, so please try your &quot;</span>
+                    <span class="s2">&quot;search again. If this problem persists, please report it &quot;</span>
+                    <span class="s2">&quot;to help@arxiv.org.&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
             <span class="k">except</span> <span class="n">index</span><span class="o">.</span><span class="n">QueryError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="c1"># Base exception routers should pick this up and show bug page.</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;QueryError: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
                 <span class="k">raise</span> <span class="n">InternalServerError</span><span class="p">(</span>
-                    <span class="s1">&#39;Encountered an error in search query&#39;</span>
+                    <span class="s2">&quot;There was a problem executing your query. Please try &quot;</span>
+                    <span class="s2">&quot;your search again.  If this problem persists, please &quot;</span>
+                    <span class="s2">&quot;report it to help@arxiv.org.&quot;</span>
                 <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
-
             <span class="n">response_data</span><span class="p">[</span><span class="s1">&#39;query&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">q</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;form is invalid: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">errors</span><span class="p">))</span>
@@ -164,18 +181,22 @@
     <span class="p">]</span>
     <span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">):</span>
+            <span class="c1"># Fix for these typing issues is coming soon!</span>
+            <span class="c1">#  See: https://github.com/python/mypy/pull/4397</span>
             <span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">Classification</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">archive</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+                <span class="n">Classification</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">archive</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
             <span class="p">)</span>
     <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;physics&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;physics_archives&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
         <span class="k">if</span> <span class="s1">&#39;all&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;physics_archives&#39;</span><span class="p">]:</span>
             <span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">Classification</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s1">&#39;physics&#39;</span><span class="p">)</span>
+                <span class="n">Classification</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s1">&#39;physics&#39;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">Classification</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s1">&#39;physics&#39;</span><span class="p">,</span>
-                               <span class="n">archive</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;physics_archives&#39;</span><span class="p">])</span>
+                <span class="n">Classification</span><span class="p">(</span>     <span class="c1"># type: ignore</span>
+                    <span class="n">group</span><span class="o">=</span><span class="s1">&#39;physics&#39;</span><span class="p">,</span>
+                    <span class="n">archive</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;physics_archives&#39;</span><span class="p">]</span>
+                <span class="p">)</span>
             <span class="p">)</span>
     <span class="k">return</span> <span class="n">q</span>
 
@@ -190,35 +211,39 @@
 
 <span class="k">def</span> <span class="nf">_update_query_with_dates</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n">AdvancedQuery</span><span class="p">,</span> <span class="n">date_data</span><span class="p">:</span> <span class="n">MultiDict</span><span class="p">)</span> \
         <span class="o">-&gt;</span> <span class="n">AdvancedQuery</span><span class="p">:</span>
-
-    <span class="k">if</span> <span class="n">date_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;all_dates&#39;</span><span class="p">):</span>    <span class="c1"># Nothing to do; all dates by default.</span>
+    <span class="n">filter_by</span> <span class="o">=</span> <span class="n">date_data</span><span class="p">[</span><span class="s1">&#39;filter_by&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">filter_by</span> <span class="o">==</span> <span class="s1">&#39;all_dates&#39;</span><span class="p">:</span>    <span class="c1"># Nothing to do; all dates by default.</span>
         <span class="k">return</span> <span class="n">q</span>
-    <span class="k">elif</span> <span class="n">date_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;past_12&#39;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="n">filter_by</span> <span class="o">==</span> <span class="s1">&#39;past_12&#39;</span><span class="p">:</span>
         <span class="n">one_year_ago</span> <span class="o">=</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span> <span class="o">-</span> <span class="n">relativedelta</span><span class="p">(</span><span class="n">months</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
-        <span class="n">q</span><span class="o">.</span><span class="n">date_range</span> <span class="o">=</span> <span class="n">DateRange</span><span class="p">(</span>
+        <span class="c1"># Fix for these typing issues is coming soon!</span>
+        <span class="c1">#  See: https://github.com/python/mypy/pull/4397</span>
+        <span class="n">q</span><span class="o">.</span><span class="n">date_range</span> <span class="o">=</span> <span class="n">DateRange</span><span class="p">(</span>   <span class="c1"># type: ignore</span>
             <span class="n">start_date</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="n">one_year_ago</span><span class="o">.</span><span class="n">year</span><span class="p">,</span>
                                 <span class="n">month</span><span class="o">=</span><span class="n">one_year_ago</span><span class="o">.</span><span class="n">month</span><span class="p">,</span>
                                 <span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                                 <span class="n">tzinfo</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span>
         <span class="p">)</span>
-    <span class="k">elif</span> <span class="n">date_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;specific_year&#39;</span><span class="p">):</span>
-        <span class="n">q</span><span class="o">.</span><span class="n">date_range</span> <span class="o">=</span> <span class="n">DateRange</span><span class="p">(</span>
+    <span class="k">elif</span> <span class="n">filter_by</span> <span class="o">==</span> <span class="s1">&#39;specific_year&#39;</span><span class="p">:</span>
+        <span class="n">q</span><span class="o">.</span><span class="n">date_range</span> <span class="o">=</span> <span class="n">DateRange</span><span class="p">(</span>   <span class="c1"># type: ignore</span>
             <span class="n">start_date</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="n">date_data</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                                 <span class="n">hour</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">),</span>
             <span class="n">end_date</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="n">date_data</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                               <span class="n">hour</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">),</span>
         <span class="p">)</span>
-    <span class="k">elif</span> <span class="n">date_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;date_range&#39;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="n">filter_by</span> <span class="o">==</span> <span class="s1">&#39;date_range&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">date_data</span><span class="p">[</span><span class="s1">&#39;from_date&#39;</span><span class="p">]:</span>
-            <span class="n">date_data</span><span class="p">[</span><span class="s1">&#39;from_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">date_data</span><span class="p">[</span><span class="s1">&#39;from_date&#39;</span><span class="p">],</span>
-                                                      <span class="n">datetime</span><span class="o">.</span><span class="n">min</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
-                                                      <span class="n">tzinfo</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span>
+            <span class="n">date_data</span><span class="p">[</span><span class="s1">&#39;from_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span>    <span class="c1"># type: ignore</span>
+                <span class="n">date_data</span><span class="p">[</span><span class="s1">&#39;from_date&#39;</span><span class="p">],</span>
+                <span class="n">datetime</span><span class="o">.</span><span class="n">min</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
+                <span class="n">tzinfo</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">date_data</span><span class="p">[</span><span class="s1">&#39;to_date&#39;</span><span class="p">]:</span>
-            <span class="n">date_data</span><span class="p">[</span><span class="s1">&#39;to_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">date_data</span><span class="p">[</span><span class="s1">&#39;to_date&#39;</span><span class="p">],</span>
-                                                    <span class="n">datetime</span><span class="o">.</span><span class="n">min</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
-                                                    <span class="n">tzinfo</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span>
+            <span class="n">date_data</span><span class="p">[</span><span class="s1">&#39;to_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span>    <span class="c1"># type: ignore</span>
+                <span class="n">date_data</span><span class="p">[</span><span class="s1">&#39;to_date&#39;</span><span class="p">],</span>
+                <span class="n">datetime</span><span class="o">.</span><span class="n">min</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
+                <span class="n">tzinfo</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span>
 
-        <span class="n">q</span><span class="o">.</span><span class="n">date_range</span> <span class="o">=</span> <span class="n">DateRange</span><span class="p">(</span>
+        <span class="n">q</span><span class="o">.</span><span class="n">date_range</span> <span class="o">=</span> <span class="n">DateRange</span><span class="p">(</span>   <span class="c1"># type: ignore</span>
             <span class="n">start_date</span><span class="o">=</span><span class="n">date_data</span><span class="p">[</span><span class="s1">&#39;from_date&#39;</span><span class="p">],</span>
             <span class="n">end_date</span><span class="o">=</span><span class="n">date_data</span><span class="p">[</span><span class="s1">&#39;to_date&#39;</span><span class="p">],</span>
         <span class="p">)</span>

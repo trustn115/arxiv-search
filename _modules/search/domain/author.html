@@ -32,34 +32,55 @@
             
   <h1>Source code for search.domain.author</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Representations of authors, author lists, and author queries.&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">Query</span><span class="p">,</span> <span class="n">Property</span><span class="p">,</span> <span class="n">Base</span>
+
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="k">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span> <span class="nn">search.domain.base</span> <span class="k">import</span> <span class="n">Query</span>
 
 
-<div class="viewcode-block" id="Author"><a class="viewcode-back" href="../../../api/search.domain.html#search.domain.author.Author">[docs]</a><span class="k">class</span> <span class="nc">Author</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Represents an author.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Author"><a class="viewcode-back" href="../../../api/search.domain.html#search.domain.author.Author">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Author</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;An author query part, for use in an :class:`.AuthorQuery`.&quot;&quot;&quot;</span>
 
-    <span class="n">forename</span> <span class="o">=</span> <span class="n">Property</span><span class="p">(</span><span class="s1">&#39;forename&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
-    <span class="n">surname</span> <span class="o">=</span> <span class="n">Property</span><span class="p">(</span><span class="s1">&#39;forensurnameame&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+    <span class="n">forename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">surname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">fullname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Prints the author name.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">forename</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.forename}</span><span class="s1"> </span><span class="si">{self.surname}</span><span class="s1">&#39;</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">surname</span>
+    <span class="c1"># TODO: gawd this is ugly.</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Print the author name.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fullname</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">surname</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">forename</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.forename}</span><span class="s1">[f] </span><span class="si">{self.surname}</span><span class="s1">[s]&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.surname}</span><span class="s1">[s]&#39;</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{name}</span><span class="s1"> OR </span><span class="si">{self.fullname}</span><span class="s1">&#39;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">fullname</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fullname</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">forename</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.forename}</span><span class="s1">[f] </span><span class="si">{self.surname}</span><span class="s1">[s]&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.surname}</span><span class="s1">[s]&#39;</span></div>
+        <span class="k">return</span> <span class="n">name</span>
 
 
 <div class="viewcode-block" id="AuthorList"><a class="viewcode-back" href="../../../api/search.domain.html#search.domain.author.AuthorList">[docs]</a><span class="k">class</span> <span class="nc">AuthorList</span><span class="p">(</span><span class="nb">list</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Represents a list of authors.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;A list of author query parts, for use in an :class:`AuthorQuery`.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Prints comma-delimited list of authors.&quot;&quot;&quot;</span></div>
-        <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">au</span><span class="p">)</span> <span class="k">for</span> <span class="n">au</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Print a comma-delimited list of authors.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39; AND &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">f</span><span class="s2">&quot;({str(au)})&quot;</span> <span class="k">for</span> <span class="n">au</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">])</span></div>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
 
-<div class="viewcode-block" id="AuthorQuery"><a class="viewcode-back" href="../../../api/search.domain.html#search.domain.author.AuthorQuery">[docs]</a><span class="k">class</span> <span class="nc">AuthorQuery</span><span class="p">(</span><span class="n">Query</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Represents an author query.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="AuthorQuery"><a class="viewcode-back" href="../../../api/search.domain.html#search.domain.author.AuthorQuery">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">AuthorQuery</span><span class="p">(</span><span class="n">Query</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a query by author name.&quot;&quot;&quot;</span>
 </div>
-    <span class="n">authors</span> <span class="o">=</span> <span class="n">Property</span><span class="p">(</span><span class="s1">&#39;authors&#39;</span><span class="p">,</span> <span class="n">AuthorList</span><span class="p">)</span>
+    <span class="n">authors</span><span class="p">:</span> <span class="n">AuthorList</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">AuthorList</span><span class="p">)</span>
 </pre></div>
 
           </div>

@@ -38,9 +38,10 @@
 <span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">Flask</span>
 
 <span class="kn">from</span> <span class="nn">arxiv.base</span> <span class="k">import</span> <span class="n">Base</span>
-<span class="kn">from</span> <span class="nn">search.routes</span> <span class="k">import</span> <span class="n">ui</span><span class="p">,</span> <span class="n">external_api</span>
+<span class="kn">from</span> <span class="nn">search.routes</span> <span class="k">import</span> <span class="n">ui</span>
 <span class="kn">from</span> <span class="nn">search.services</span> <span class="k">import</span> <span class="n">index</span>
 <span class="kn">from</span> <span class="nn">search.converter</span> <span class="k">import</span> <span class="n">ArXivConverter</span>
+<span class="kn">from</span> <span class="nn">search</span> <span class="k">import</span> <span class="n">exceptions</span>
 
 
 <div class="viewcode-block" id="create_ui_web_app"><a class="viewcode-back" href="../../api/search.html#search.factory.create_ui_web_app">[docs]</a><span class="k">def</span> <span class="nf">create_ui_web_app</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Flask</span><span class="p">:</span>
@@ -56,24 +57,13 @@
     <span class="n">index</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
 
     <span class="n">Base</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
-    <span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">blueprint</span><span class="p">)</span></div>
-    <span class="k">return</span> <span class="n">app</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">blueprint</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="create_web_external_api_app"><a class="viewcode-back" href="../../api/search.html#search.factory.create_web_external_api_app">[docs]</a><span class="k">def</span> <span class="nf">create_web_external_api_app</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Flask</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Initialize an instance of the search API application.&quot;&quot;&quot;</span>
-    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;boto&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
-    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;boto3&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
-    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;botocore&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
-
-    <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="s1">&#39;search&#39;</span><span class="p">)</span>
-    <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">from_pyfile</span><span class="p">(</span><span class="s1">&#39;config.py&#39;</span><span class="p">)</span>
-    <span class="n">app</span><span class="o">.</span><span class="n">url_map</span><span class="o">.</span><span class="n">converters</span><span class="p">[</span><span class="s1">&#39;arxiv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ArXivConverter</span>
-
-    <span class="n">index</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
-
-    <span class="n">Base</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
-    <span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">external_api</span><span class="o">.</span><span class="n">blueprint</span><span class="p">)</span></div>
+    <span class="c1"># Attach error handlers.</span>
+    <span class="c1"># TODO: remove this when base exception handling is released in arXiv-base.</span>
+    <span class="k">for</span> <span class="n">error</span><span class="p">,</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">get_handlers</span><span class="p">():</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">errorhandler</span><span class="p">(</span><span class="n">error</span><span class="p">)(</span><span class="n">handler</span><span class="p">)</span>
+</div>
     <span class="k">return</span> <span class="n">app</span>
 </pre></div>
 

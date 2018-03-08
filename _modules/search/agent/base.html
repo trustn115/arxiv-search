@@ -34,16 +34,15 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Provides a base class for Kinesis record handling.</span>
 
-<span class="sd">TODO: This should move to arXiv-base, per ARXIVNG-281.</span>
-
-<span class="sd">http://docs.aws.amazon.com/streams/latest/dev/kinesis-record-processor-implementation-app-py.html</span>
-<span class="sd">https://github.com/awslabs/amazon-kinesis-client-python/blob/master/samples/sample_kclpy_app.py</span>
+<span class="sd">.. _todo: This should move to arXiv-base, per ARXIVNG-281.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
 <span class="kn">import</span> <span class="nn">amazon_kclpy</span>
 <span class="kn">from</span> <span class="nn">amazon_kclpy</span> <span class="k">import</span> <span class="n">kcl</span>
 <span class="kn">from</span> <span class="nn">amazon_kclpy.v2</span> <span class="k">import</span> <span class="n">processor</span>
@@ -66,23 +65,23 @@
 <span class="sd">    streams.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Initialize checkpointing state and retry configuration.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_SLEEP_SECONDS</span> <span class="o">=</span> <span class="mi">5</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_CHECKPOINT_RETRIES</span> <span class="o">=</span> <span class="mi">5</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_CHECKPOINT_FREQ</span> <span class="o">=</span> <span class="mi">60</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_largest_seq</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_largest_seq</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_largest_sub_seq</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_checkpoint_time</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_checkpoint_time</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="BaseRecordProcessor.initialize"><a class="viewcode-back" href="../../../api/search.agent.html#search.agent.base.BaseRecordProcessor.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initialize_input</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseRecordProcessor.initialize"><a class="viewcode-back" href="../../../api/search.agent.html#search.agent.base.BaseRecordProcessor.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initialize_input</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Called once by a KCLProcess before any calls to process_records.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_largest_seq</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_checkpoint_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
 <div class="viewcode-block" id="BaseRecordProcessor.checkpoint"><a class="viewcode-back" href="../../../api/search.agent.html#search.agent.base.BaseRecordProcessor.checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpointer</span><span class="p">:</span> <span class="n">amazon_kclpy</span><span class="o">.</span><span class="n">kcl</span><span class="o">.</span><span class="n">Checkpointer</span><span class="p">,</span>
-                   <span class="n">sequence_number</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                   <span class="n">sub_sequence_number</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                   <span class="n">sequence_number</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">sub_sequence_number</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Make periodic checkpoints while processing records.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CHECKPOINT_RETRIES</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
@@ -117,8 +116,8 @@
                                  <span class="s2">&quot; error was </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_SLEEP_SECONDS</span><span class="p">)</span>
 
-<div class="viewcode-block" id="BaseRecordProcessor.should_update_sequence"><a class="viewcode-back" href="../../../api/search.agent.html#search.agent.base.BaseRecordProcessor.should_update_sequence">[docs]</a>    <span class="k">def</span> <span class="nf">should_update_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                               <span class="n">sub_sequence_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseRecordProcessor.should_update_sequence"><a class="viewcode-back" href="../../../api/search.agent.html#search.agent.base.BaseRecordProcessor.should_update_sequence">[docs]</a>    <span class="k">def</span> <span class="nf">should_update_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence_number</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+                               <span class="n">sub_sequence_number</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Determine whether a new larger sequence number is available.</span>
 
@@ -132,9 +131,9 @@
 <span class="sd">        bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_largest_seq</span> <span class="o">==</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span>
-                <span class="n">sequence_number</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_largest_seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span>
+                <span class="n">sequence_number</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_largest_seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span>   <span class="c1"># type: ignore</span>
                 <span class="p">(</span><span class="n">sequence_number</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_largest_seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span></div>
-                 <span class="n">sub_sequence_number</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_largest_seq</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                 <span class="n">sub_sequence_number</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_largest_seq</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>   <span class="c1"># type: ignore</span>
 
 <div class="viewcode-block" id="BaseRecordProcessor.shutdown"><a class="viewcode-back" href="../../../api/search.agent.html#search.agent.base.BaseRecordProcessor.shutdown">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shutdown</span><span class="p">:</span> <span class="n">ShutdownInput</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -186,6 +185,8 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_largest_seq</span> <span class="o">=</span> <span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">sub_seq</span><span class="p">)</span>
 
             <span class="c1"># Checkpoints every self._CHECKPOINT_FREQ seconds</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_checkpoint_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;last checkpoint time is not set&#39;</span><span class="p">)</span>
             <span class="n">last_check</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_checkpoint_time</span>
             <span class="k">if</span> <span class="n">last_check</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CHECKPOINT_FREQ</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">(</span><span class="n">records</span><span class="o">.</span><span class="n">checkpointer</span><span class="p">,</span>

@@ -34,7 +34,11 @@
             
   <div class="section" id="module-search.controllers.authors">
 <span id="search-controllers-authors-package"></span><h1>search.controllers.authors package<a class="headerlink" href="#module-search.controllers.authors" title="Permalink to this headline">¶</a></h1>
-<p>Controllers for author search.</p>
+<p>Handle requests to support the author name search feature.</p>
+<p>The primary entrypoint to this module is <a class="reference internal" href="#search.controllers.authors.search" title="search.controllers.authors.search"><code class="xref py py-func docutils literal notranslate"><span class="pre">search()</span></code></a>, which handles
+GET requests to the author search endpoint. It uses <a class="reference internal" href="#search.controllers.authors.forms.AuthorSearchForm" title="search.controllers.authors.forms.AuthorSearchForm"><code class="xref py py-class docutils literal notranslate"><span class="pre">AuthorSearchForm</span></code></a>
+to generate form HTML, validate request parameters, and produce informative
+error messages for the user.</p>
 <dl class="function">
 <dt id="search.controllers.authors.search">
 <code class="descclassname">search.controllers.authors.</code><code class="descname">search</code><span class="sig-paren">(</span><em>request_params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/authors.html#search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.authors.search" title="Permalink to this definition">¶</a></dt>
@@ -55,7 +59,10 @@ name links on abs page).</p>
 </ul>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">InternalServerError</span></code> – Raised when there is a problem communicating with ES, or there was an
+unexpected problem executing the query.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]</td>
 </tr>
 </tbody>
 </table>
@@ -66,7 +73,7 @@ name links on abs page).</p>
 </div>
 <div class="section" id="module-search.controllers.authors.forms">
 <span id="search-controllers-authors-forms-module"></span><h2>search.controllers.authors.forms module<a class="headerlink" href="#module-search.controllers.authors.forms" title="Permalink to this headline">¶</a></h2>
-<p>wtforms representations for an author.</p>
+<p>Provides form rendering and validation for the author name search feature.</p>
 <dl class="class">
 <dt id="search.controllers.authors.forms.AuthorForm">
 <em class="property">class </em><code class="descclassname">search.controllers.authors.forms.</code><code class="descname">AuthorForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/authors/forms.html#AuthorForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.authors.forms.AuthorForm" title="Permalink to this definition">¶</a></dt>
@@ -74,12 +81,17 @@ name links on abs page).</p>
 <p>wtforms.Form representing an author.</p>
 <dl class="attribute">
 <dt id="search.controllers.authors.forms.AuthorForm.forename">
-<code class="descname">forename</code><em class="property"> = &lt;UnboundField(StringField, ('Forename',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;, &lt;function doesNotStartWithWildcard&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.authors.forms.AuthorForm.forename" title="Permalink to this definition">¶</a></dt>
+<code class="descname">forename</code><em class="property"> = &lt;UnboundField(StringField, ('Forename',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;, &lt;function doesNotStartWithWildcard&gt;], 'filters': [&lt;function stripWhiteSpace&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.authors.forms.AuthorForm.forename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.authors.forms.AuthorForm.fullname">
+<code class="descname">fullname</code><em class="property"> = &lt;UnboundField(StringField, ('Full name',), {'filters': [&lt;function stripWhiteSpace&gt;], 'validators': [&lt;function validate_fullname&gt;, &lt;function doesNotStartWithWildcard&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.authors.forms.AuthorForm.fullname" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="search.controllers.authors.forms.AuthorForm.surname">
-<code class="descname">surname</code><em class="property"> = &lt;UnboundField(StringField, ('Surname',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;function doesNotStartWithWildcard&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.authors.forms.AuthorForm.surname" title="Permalink to this definition">¶</a></dt>
+<code class="descname">surname</code><em class="property"> = &lt;UnboundField(StringField, ('Surname',), {'filters': [&lt;function stripWhiteSpace&gt;], 'validators': [&lt;function doesNotStartWithWildcard&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.authors.forms.AuthorForm.surname" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -104,6 +116,20 @@ name links on abs page).</p>
 <code class="descname">size</code><em class="property"> = &lt;UnboundField(SelectField, ('results per page',), {'default': 25, 'choices': [('25', '25'), ('50', '50'), ('100', '100')]})&gt;</em><a class="headerlink" href="#search.controllers.authors.forms.AuthorSearchForm.size" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="function">
+<dt id="search.controllers.authors.forms.validate_fullname">
+<code class="descclassname">search.controllers.authors.forms.</code><code class="descname">validate_fullname</code><span class="sig-paren">(</span><em>form</em>, <em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/authors/forms.html#validate_fullname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.authors.forms.validate_fullname" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either fullname or surname must be set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>

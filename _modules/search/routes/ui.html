@@ -33,16 +33,18 @@
   <h1>Source code for search.routes.ui</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Provides REST API routes.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
 <span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="k">import</span> <span class="n">urljoin</span><span class="p">,</span> <span class="n">urlparse</span><span class="p">,</span> <span class="n">parse_qs</span><span class="p">,</span> <span class="n">urlencode</span><span class="p">,</span> <span class="n">urlunparse</span>
 
 <span class="kn">from</span> <span class="nn">flask.json</span> <span class="k">import</span> <span class="n">jsonify</span>
-<span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">url_for</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">url_for</span><span class="p">,</span> \
+    <span class="n">Response</span>
 <span class="kn">from</span> <span class="nn">werkzeug.urls</span> <span class="k">import</span> <span class="n">Href</span><span class="p">,</span> <span class="n">url_encode</span><span class="p">,</span> <span class="n">url_parse</span><span class="p">,</span> <span class="n">url_unparse</span><span class="p">,</span> <span class="n">url_encode</span>
 
 <span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">status</span>
 <span class="kn">from</span> <span class="nn">search</span> <span class="k">import</span> <span class="n">logging</span>
+<span class="kn">from</span> <span class="nn">search.exceptions</span> <span class="k">import</span> <span class="n">InternalServerError</span>
 <span class="kn">from</span> <span class="nn">search.controllers</span> <span class="k">import</span> <span class="n">simple</span><span class="p">,</span> <span class="n">advanced</span><span class="p">,</span> <span class="n">authors</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -50,34 +52,45 @@
 <span class="n">blueprint</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">&#39;ui&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span> <span class="n">url_prefix</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="apply_response_headers"><a class="viewcode-back" href="../../../api/search.routes.html#search.routes.ui.apply_response_headers">[docs]</a><span class="nd">@blueprint</span><span class="o">.</span><span class="n">after_request</span>
+<span class="k">def</span> <span class="nf">apply_response_headers</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Hook for applying response headers to all responses.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Prevent UI redress attacks&quot;&quot;&quot;</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Content-Security-Policy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;frame-ancestors &#39;none&#39;&quot;</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;X-Frame-Options&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;SAMEORIGIN&quot;</span></div>
+    <span class="k">return</span> <span class="n">response</span>
+
+
 <div class="viewcode-block" id="search"><a class="viewcode-back" href="../../../api/search.routes.html#search.routes.ui.search">[docs]</a><span class="nd">@blueprint</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
-<span class="k">def</span> <span class="nf">search</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">search</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Response</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;First pass at a search results page.&quot;&quot;&quot;</span>
     <span class="n">response</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">simple</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;controller returned code: </span><span class="si">{code}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;search/search.html&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">response</span><span class="p">)</span>
     <span class="k">elif</span> <span class="p">(</span><span class="n">code</span> <span class="o">==</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_301_MOVED_PERMANENTLY</span>
-          <span class="ow">or</span> <span class="n">code</span> <span class="o">==</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_303_SEE_OTHER</span><span class="p">):</span></div>
-        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Location&#39;</span><span class="p">],</span> <span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="p">)</span>
+          <span class="ow">or</span> <span class="n">code</span> <span class="o">==</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_303_SEE_OTHER</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Location&#39;</span><span class="p">],</span> <span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="p">)</span></div>
+    <span class="k">raise</span> <span class="n">InternalServerError</span><span class="p">(</span><span class="s1">&#39;Unexpected error&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="advanced_search"><a class="viewcode-back" href="../../../api/search.routes.html#search.routes.ui.advanced_search">[docs]</a><span class="nd">@blueprint</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;advanced&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
-<span class="k">def</span> <span class="nf">advanced_search</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">advanced_search</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Response</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Advanced search interface.&quot;&quot;&quot;</span>
     <span class="n">response</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="p">)</span></div>
     <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;search/advanced_search.html&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">response</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="author_search"><a class="viewcode-back" href="../../../api/search.routes.html#search.routes.ui.author_search">[docs]</a><span class="nd">@blueprint</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;authors&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
-<span class="k">def</span> <span class="nf">author_search</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">author_search</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Response</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Author search interface.&quot;&quot;&quot;</span>
     <span class="n">response</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">authors</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span></div>
     <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;search/author_search.html&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">response</span><span class="p">)</span>
 
 
 <span class="c1"># TODO: we need something more robust here; this is just to get us rolling.</span>
-<span class="k">def</span> <span class="nf">_browse_url</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_browse_url</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Generate a URL for a browse route.&quot;&quot;&quot;</span>
     <span class="n">paper_id</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;paper_id&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">paper_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
@@ -92,7 +105,8 @@
 <div class="viewcode-block" id="external_url_builder"><a class="viewcode-back" href="../../../api/search.routes.html#search.routes.ui.external_url_builder">[docs]</a><span class="nd">@blueprint</span><span class="o">.</span><span class="n">context_processor</span>
 <span class="k">def</span> <span class="nf">external_url_builder</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Add an external URL builder function to the template context.&quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">external_url</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">external_url</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Build an URL to external endpoint.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">service</span> <span class="o">==</span> <span class="s1">&#39;browse&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">_browse_url</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
@@ -110,7 +124,8 @@
         <span class="n">args</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">args</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">page</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">page_size</span>
         <span class="n">parts</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">url_encode</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">url_unparse</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span></div>
+        <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">url_unparse</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">url</span></div>
     <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">url_for_page</span><span class="o">=</span><span class="n">url_for_page</span><span class="p">)</span>
 
 
@@ -125,7 +140,8 @@
         <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params_to_remove</span><span class="p">:</span>
             <span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">parts</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">url_encode</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">url_unparse</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span></div>
+        <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">url_unparse</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">url</span></div>
     <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">current_url_sans_parameters</span><span class="o">=</span><span class="n">current_url_sans_parameters</span><span class="p">)</span>
 </pre></div>
 

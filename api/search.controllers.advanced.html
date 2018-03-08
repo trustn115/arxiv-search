@@ -34,7 +34,11 @@
             
   <div class="section" id="module-search.controllers.advanced">
 <span id="search-controllers-advanced-package"></span><h1>search.controllers.advanced package<a class="headerlink" href="#module-search.controllers.advanced" title="Permalink to this headline">¶</a></h1>
-<p>Controller for advanced search.</p>
+<p>Handle requests to support the advanced search feature.</p>
+<p>The primary entrypoint to this module is <a class="reference internal" href="#search.controllers.advanced.search" title="search.controllers.advanced.search"><code class="xref py py-func docutils literal notranslate"><span class="pre">search()</span></code></a>, which handles
+GET requests to the author search endpoint. It uses
+<a class="reference internal" href="#search.controllers.advanced.forms.AdvancedSearchForm" title="search.controllers.advanced.forms.AdvancedSearchForm"><code class="xref py py-class docutils literal notranslate"><span class="pre">AdvancedSearchForm</span></code></a> to generate form HTML, validate request
+parameters, and produce informative error messages for the user.</p>
 <dl class="function">
 <dt id="search.controllers.advanced.search">
 <code class="descclassname">search.controllers.advanced.</code><code class="descname">search</code><span class="sig-paren">(</span><em>request_params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced.html#search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.search" title="Permalink to this definition">¶</a></dt>
@@ -55,8 +59,7 @@ advanced search view.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InternalServerError</span></code> – Raised when there is an unrecoverable error while interacting with the
-search index. This should be handled in the base routes, to display a
-“bug” error page to the user.</td>
+search index.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]</td>
 </tr>
@@ -69,7 +72,7 @@ search index. This should be handled in the base routes, to display a
 </div>
 <div class="section" id="module-search.controllers.advanced.forms">
 <span id="search-controllers-advanced-forms-module"></span><h2>search.controllers.advanced.forms module<a class="headerlink" href="#module-search.controllers.advanced.forms" title="Permalink to this headline">¶</a></h2>
-<p>wtforms representations for an advanced search.</p>
+<p>Provides form rendering and validation for the advanced search feature.</p>
 <dl class="class">
 <dt id="search.controllers.advanced.forms.AdvancedSearchForm">
 <em class="property">class </em><code class="descclassname">search.controllers.advanced.forms.</code><code class="descname">AdvancedSearchForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/forms.html#AdvancedSearchForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.forms.AdvancedSearchForm" title="Permalink to this definition">¶</a></dt>
@@ -166,81 +169,24 @@ search index. This should be handled in the base routes, to display a
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">wtforms.form.Form</span></code></p>
 <p>Subform with options for limiting results by publication date.</p>
 <dl class="attribute">
-<dt id="search.controllers.advanced.forms.DateForm.all_dates">
-<code class="descname">all_dates</code><em class="property"> = &lt;UnboundField(BooleanField, ('All dates',), {})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.all_dates" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="search.controllers.advanced.forms.DateForm.date_range">
-<code class="descname">date_range</code><em class="property"> = &lt;UnboundField(BooleanField, ('Date range',), {})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.date_range" title="Permalink to this definition">¶</a></dt>
+<dt id="search.controllers.advanced.forms.DateForm.filter_by">
+<code class="descname">filter_by</code><em class="property"> = &lt;UnboundField(RadioField, ('Filter by',), {'choices': [('all_dates', 'All dates'), ('past_12', 'Past 12 months'), ('specific_year', 'Specific year'), ('date_range', 'Date range')], 'default': 'all_dates'})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.filter_by" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="search.controllers.advanced.forms.DateForm.from_date">
-<code class="descname">from_date</code><em class="property"> = &lt;UnboundField(DateField, ('From',), {'validators': [&lt;wtforms.validators.Optional object&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.from_date" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="search.controllers.advanced.forms.DateForm.past_12">
-<code class="descname">past_12</code><em class="property"> = &lt;UnboundField(BooleanField, ('Past 12 months',), {})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.past_12" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="search.controllers.advanced.forms.DateForm.specific_year">
-<code class="descname">specific_year</code><em class="property"> = &lt;UnboundField(BooleanField, ('Specific year',), {})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.specific_year" title="Permalink to this definition">¶</a></dt>
+<code class="descname">from_date</code><em class="property"> = &lt;UnboundField(DateField, ('From',), {'validators': [&lt;wtforms.validators.Optional object&gt;, &lt;function yearInBounds&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.from_date" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="search.controllers.advanced.forms.DateForm.to_date">
-<code class="descname">to_date</code><em class="property"> = &lt;UnboundField(DateField, ('to',), {'validators': [&lt;wtforms.validators.Optional object&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.to_date" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_date</code><em class="property"> = &lt;UnboundField(DateField, ('to',), {'validators': [&lt;wtforms.validators.Optional object&gt;, &lt;function yearInBounds&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.to_date" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="search.controllers.advanced.forms.DateForm.validate_all_dates">
-<code class="descname">validate_all_dates</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/forms.html#DateForm.validate_all_dates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.validate_all_dates" title="Permalink to this definition">¶</a></dt>
-<dd><p>Only one option may be selected.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="search.controllers.advanced.forms.DateForm.validate_date_range">
-<code class="descname">validate_date_range</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/forms.html#DateForm.validate_date_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.validate_date_range" title="Permalink to this definition">¶</a></dt>
-<dd><p>The field(s) <code class="docutils literal notranslate"><span class="pre">from_date</span></code> and/or <code class="docutils literal notranslate"><span class="pre">to_date</span></code> must be set.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="search.controllers.advanced.forms.DateForm.validate_specific_year">
-<code class="descname">validate_specific_year</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/forms.html#DateForm.validate_specific_year"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.validate_specific_year" title="Permalink to this definition">¶</a></dt>
-<dd><p>If <code class="docutils literal notranslate"><span class="pre">specific_year</span></code> is selected, <code class="docutils literal notranslate"><span class="pre">year</span></code> must be set.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="search.controllers.advanced.forms.DateForm.validate_year">
-<code class="descname">validate_year</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/forms.html#DateForm.validate_year"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.validate_year" title="Permalink to this definition">¶</a></dt>
-<dd><p>May not be prior to 1991, or later than the current year.</p>
+<dt id="search.controllers.advanced.forms.DateForm.validate_filter_by">
+<code class="descname">validate_filter_by</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/forms.html#DateForm.validate_filter_by"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.validate_filter_by" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure that related fields are filled.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -253,7 +199,7 @@ search index. This should be handled in the base routes, to display a
 
 <dl class="attribute">
 <dt id="search.controllers.advanced.forms.DateForm.year">
-<code class="descname">year</code><em class="property"> = &lt;UnboundField(DateField, ('Year',), {'format': '%Y', 'validators': [&lt;wtforms.validators.Optional object&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.year" title="Permalink to this definition">¶</a></dt>
+<code class="descname">year</code><em class="property"> = &lt;UnboundField(DateField, ('Year',), {'format': '%Y', 'validators': [&lt;wtforms.validators.Optional object&gt;, &lt;function yearInBounds&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.DateForm.year" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -265,7 +211,7 @@ search index. This should be handled in the base routes, to display a
 <p>Subform for query parts on specific fields.</p>
 <dl class="attribute">
 <dt id="search.controllers.advanced.forms.FieldForm.field">
-<code class="descname">field</code><em class="property"> = &lt;UnboundField(SelectField, ('Field',), {'choices': [('title', 'Title'), ('author', 'Author(s)'), ('abstract', 'Abstract')]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.FieldForm.field" title="Permalink to this definition">¶</a></dt>
+<code class="descname">field</code><em class="property"> = &lt;UnboundField(SelectField, ('Field',), {'choices': [('title', 'Title'), ('author', 'Author(s)'), ('abstract', 'Abstract'), ('comments', 'Comments'), ('journal_ref', 'Journal ref'), ('acm_class', 'ACM classification'), ('msc_class', 'MSC classification'), ('report_num', 'Report number'), ('paper_id', 'Identifier'), ('doi', 'DOI'), ('orcid', 'ORCID'), ('author_id', 'Author ID')]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.FieldForm.field" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -275,9 +221,23 @@ search index. This should be handled in the base routes, to display a
 
 <dl class="attribute">
 <dt id="search.controllers.advanced.forms.FieldForm.term">
-<code class="descname">term</code><em class="property"> = &lt;UnboundField(StringField, ('Search term...',), {'validators': [&lt;function doesNotStartWithWildcard&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.FieldForm.term" title="Permalink to this definition">¶</a></dt>
+<code class="descname">term</code><em class="property"> = &lt;UnboundField(StringField, ('Search term...',), {'filters': [&lt;function stripWhiteSpace&gt;], 'validators': [&lt;function doesNotStartWithWildcard&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.FieldForm.term" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="function">
+<dt id="search.controllers.advanced.forms.yearInBounds">
+<code class="descclassname">search.controllers.advanced.forms.</code><code class="descname">yearInBounds</code><span class="sig-paren">(</span><em>form</em>, <em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/forms.html#yearInBounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.forms.yearInBounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>May not be prior to 1991, or later than the current year.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>

@@ -34,7 +34,12 @@
             
   <div class="section" id="module-search.controllers">
 <span id="search-controllers-package"></span><h1>search.controllers package<a class="headerlink" href="#module-search.controllers" title="Permalink to this headline">¶</a></h1>
-<p>arxiv search controllers.</p>
+<p>Houses controllers for search.</p>
+<p>Each controller corresponds to a distinct search feature with its own request
+handling logic. Each controller API exposes a <code class="docutils literal notranslate"><span class="pre">search()</span></code> function that
+accepts a set of request parameters (<code class="docutils literal notranslate"><span class="pre">dict</span></code>-like) and returns a 3-tuple
+of response data (<code class="docutils literal notranslate"><span class="pre">dict</span></code>), status code (<code class="docutils literal notranslate"><span class="pre">int</span></code>), and extra response headers
+(<code class="docutils literal notranslate"><span class="pre">dict</span></code>).</p>
 <div class="section" id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
@@ -72,6 +77,47 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.controllers.util.paginate">
+<code class="descclassname">search.controllers.util.</code><code class="descname">paginate</code><span class="sig-paren">(</span><em>query</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/util.html#paginate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.util.paginate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update pagination parameters on a <a class="reference internal" href="search.domain.html#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">Query</span></code></a> from request parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>query</strong> (<a class="reference internal" href="search.domain.html#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">Query</span></code></a>) – </li>
+<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="search.domain.html#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">Query</span></code></a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="search.domain.html#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">Query</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.controllers.util.stripWhiteSpace">
+<code class="descclassname">search.controllers.util.</code><code class="descname">stripWhiteSpace</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/util.html#stripWhiteSpace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.util.stripWhiteSpace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Strip whitespace from form input.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
 </tr>
 </tbody>
 </table>

@@ -40,17 +40,13 @@ each notification, the agent retrieves metadata for the most recent version of
 the indicated paper from the <a class="reference internal" href="search.services.html#module-search.services.metadata" title="search.services.metadata"><code class="xref py py-mod docutils literal notranslate"><span class="pre">search.services.metadata</span></code></a> service. The agent
 also retrieves metadata for earlier versions, if there are multiple versions
 available. Each version is passed to the <a class="reference internal" href="search.services.html#module-search.services.index" title="search.services.index"><code class="xref py py-mod docutils literal notranslate"><span class="pre">search.services.index</span></code></a> service,
-and becomes available for discovery via the <code class="xref py py-mod docutils literal notranslate"><span class="pre">search.routes.ui</span></code> and
-<a class="reference internal" href="search.routes.html#module-search.routes.external_api" title="search.routes.external_api"><code class="xref py py-mod docutils literal notranslate"><span class="pre">search.routes.external_api</span></code></a>.</p>
+and becomes available for discovery via <a class="reference internal" href="search.routes.html#module-search.routes.ui" title="search.routes.ui"><code class="xref py py-mod docutils literal notranslate"><span class="pre">search.routes.ui</span></code></a>.</p>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-search.agent.base">
 <span id="search-agent-base-module"></span><h2>search.agent.base module<a class="headerlink" href="#module-search.agent.base" title="Permalink to this headline">¶</a></h2>
 <p>Provides a base class for Kinesis record handling.</p>
-<p>TODO: This should move to arXiv-base, per ARXIVNG-281.</p>
-<p><a class="reference external" href="http://docs.aws.amazon.com/streams/latest/dev/kinesis-record-processor-implementation-app-py.html">http://docs.aws.amazon.com/streams/latest/dev/kinesis-record-processor-implementation-app-py.html</a>
-<a class="reference external" href="https://github.com/awslabs/amazon-kinesis-client-python/blob/master/samples/sample_kclpy_app.py">https://github.com/awslabs/amazon-kinesis-client-python/blob/master/samples/sample_kclpy_app.py</a></p>
 <dl class="class">
 <dt id="search.agent.base.BaseRecordProcessor">
 <em class="property">class </em><code class="descclassname">search.agent.base.</code><code class="descname">BaseRecordProcessor</code><a class="reference internal" href="../_modules/search/agent/base.html#BaseRecordProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.base.BaseRecordProcessor" title="Permalink to this definition">¶</a></dt>
@@ -81,6 +77,14 @@ streams.</p>
 <dt id="search.agent.base.BaseRecordProcessor.initialize">
 <code class="descname">initialize</code><span class="sig-paren">(</span><em>initialize_input</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/base.html#BaseRecordProcessor.initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.base.BaseRecordProcessor.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called once by a KCLProcess before any calls to process_records.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -205,23 +209,39 @@ any other methods of this record processor.</p>
 <dl class="method">
 <dt id="search.agent.consumer.MetadataRecordProcessor.index_paper">
 <code class="descname">index_paper</code><span class="sig-paren">(</span><em>arxiv_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/consumer.html#MetadataRecordProcessor.index_paper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.consumer.MetadataRecordProcessor.index_paper" title="Permalink to this definition">¶</a></dt>
-<dd><p>Index a paper, including its previous versions.</p>
+<dd><p>Index a single paper, including its previous versions.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>arxiv_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – A <strong>versionless</strong> arXiv e-print identifier.</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>arxiv_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – A <strong>versionless</strong> arXiv e-print identifier.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.agent.consumer.MetadataRecordProcessor.index_papers">
+<code class="descname">index_papers</code><span class="sig-paren">(</span><em>arxiv_ids</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/consumer.html#MetadataRecordProcessor.index_papers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.consumer.MetadataRecordProcessor.index_papers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Index multiple papers, including their previous versions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>arxiv_id</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>]</em>) – A list of <strong>versionless</strong> arXiv e-print identifiers.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
-<li><a class="reference internal" href="#search.agent.consumer.DocumentFailed" title="search.agent.consumer.DocumentFailed"><code class="xref py py-exc docutils literal notranslate"><span class="pre">DocumentFailed</span></code></a> – Indexing of the document failed. This may have no bearing on the
+<li><a class="reference internal" href="#search.agent.consumer.DocumentFailed" title="search.agent.consumer.DocumentFailed"><code class="xref py py-exc docutils literal notranslate"><span class="pre">DocumentFailed</span></code></a> – Indexing of the documents failed. This may have no bearing on the
 success of subsequent papers.</li>
-<li><a class="reference internal" href="#search.agent.consumer.IndexingFailed" title="search.agent.consumer.IndexingFailed"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IndexingFailed</span></code></a> – Indexing of the document failed in a way that indicates recovery
+<li><a class="reference internal" href="#search.agent.consumer.IndexingFailed" title="search.agent.consumer.IndexingFailed"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IndexingFailed</span></code></a> – Indexing of the documents failed in a way that indicates recovery
 is unlikely for subsequent papers.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="search.domain.html#search.domain.base.Document" title="search.domain.base.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
 </td>
 </tr>
 </tbody>
@@ -245,7 +265,7 @@ is unlikely for subsequent papers.</li>
 <dl class="method">
 <dt id="search.agent.consumer.MetadataRecordProcessor.process_record">
 <code class="descname">process_record</code><span class="sig-paren">(</span><em>data</em>, <em>partition_key</em>, <em>sequence_number</em>, <em>sub_sequence_number</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/consumer.html#MetadataRecordProcessor.process_record"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.consumer.MetadataRecordProcessor.process_record" title="Permalink to this definition">¶</a></dt>
-<dd><p>Called for each record that is passed to process_records.</p>
+<dd><p>Call for each record that is passed to process_records.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
