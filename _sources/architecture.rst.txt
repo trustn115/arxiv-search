@@ -99,8 +99,8 @@ Containers
 
 .. _figure-ng-search-subsystems:
 
-.. figure:: _static/diagrams/ng-search-subsystems.png
-   :target: _static/diagrams/ng-search-subsystems.png
+.. figure:: _static/diagrams/ng-search-containers.png
+   :target: _static/diagrams/ng-search-containers.png
 
    Container view of arXiv search.
 
