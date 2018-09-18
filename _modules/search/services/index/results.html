@@ -1,0 +1,251 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.services.index.results &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for search.services.index.results</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functions for processing search results (after execution).</span>
+
+<span class="sd">The primary public function in this module is :func:`.to_documentset`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">floor</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">elasticsearch_dsl.response</span> <span class="k">import</span> <span class="n">Response</span><span class="p">,</span> <span class="n">Hit</span>
+<span class="kn">from</span> <span class="nn">elasticsearch_dsl.utils</span> <span class="k">import</span> <span class="n">AttrList</span><span class="p">,</span> <span class="n">AttrDict</span>
+<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Query</span><span class="p">,</span> <span class="n">DocumentSet</span><span class="p">,</span> <span class="n">Classification</span><span class="p">,</span> <span class="n">Person</span>
+<span class="kn">from</span> <span class="nn">arxiv.base</span> <span class="k">import</span> <span class="n">logging</span>
+
+<span class="kn">from</span> <span class="nn">.util</span> <span class="k">import</span> <span class="n">MAX_RESULTS</span><span class="p">,</span> <span class="n">TEXISM</span>
+<span class="kn">from</span> <span class="nn">.highlighting</span> <span class="k">import</span> <span class="n">add_highlighting</span><span class="p">,</span> <span class="n">preview</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">propagate</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="k">def</span> <span class="nf">_to_author</span><span class="p">(</span><span class="n">author_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Person</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Prevent e-mail, other extraneous data, from escaping.&quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">author_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;email&#39;</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;full_name&#39;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">Person</span><span class="o">.</span><span class="n">fields</span><span class="p">():</span>
+            <span class="k">continue</span>
+        <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="k">return</span> <span class="n">Person</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">)</span>   <span class="c1"># type: ignore</span>
+
+
+<div class="viewcode-block" id="to_document"><a class="viewcode-back" href="../../../../api/search.services.index.results.html#search.services.index.results.to_document">[docs]</a><span class="k">def</span> <span class="nf">to_document</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Hit</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">highlight</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Transform an ES search result back into a :class:`.Document`.&quot;&quot;&quot;</span>
+    <span class="c1"># typing: ignore</span>
+    <span class="n">result</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;match&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Hit on field, but no highlighting.</span>
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;truncated&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>    <span class="c1"># Preview is truncated.</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Raw data is a </span><span class="si">%s</span><span class="s1"> instance&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">raw</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">Document</span><span class="o">.</span><span class="n">fields</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Hit</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">raw</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># We want to prevent ES-specific data types from escaping the module</span>
+        <span class="c1"># API.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">AttrList</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_l_</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">AttrDict</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;primary_classification&#39;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">Classification</span><span class="p">(</span><span class="o">**</span><span class="n">value</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;secondary_classification&#39;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="n">Classification</span><span class="p">(</span><span class="o">**</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;authors&#39;</span><span class="p">,</span> <span class="s1">&#39;owners&#39;</span><span class="p">]:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="n">_to_author</span><span class="p">(</span><span class="n">au</span><span class="p">)</span> <span class="k">for</span> <span class="n">au</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;submitter&#39;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">_to_author</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;announced_date_first&#39;</span> <span class="ow">and</span> \
+                <span class="n">value</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;%Y-%m&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;submitted_date&#39;</span><span class="p">,</span> <span class="s1">&#39;submitted_date_first&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;submitted_date_latest&#39;</span><span class="p">]:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">T%H:%M:%S%z&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Could not parse </span><span class="si">{key}</span><span class="s1">: </span><span class="si">{value}</span><span class="s1"> as datetime&#39;</span><span class="p">)</span>
+                <span class="k">pass</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;acm_class&#39;</span><span class="p">,</span> <span class="s1">&#39;msc_class&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">value</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Response</span><span class="p">:</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">score</span>    <span class="c1"># type: ignore</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;abstract&#39;</span><span class="p">))</span> <span class="ow">is</span> <span class="nb">str</span> <span class="ow">and</span> <span class="n">highlight</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;preview&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;preview&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;preview&#39;</span><span class="p">][</span><span class="s1">&#39;abstract&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">preview</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;abstract&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;preview&#39;</span><span class="p">][</span><span class="s1">&#39;abstract&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;&amp;hellip;&#39;</span><span class="p">):</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;truncated&#39;</span><span class="p">][</span><span class="s1">&#39;abstract&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">if</span> <span class="n">highlight</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Response</span><span class="p">:</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;highlight&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: add highlighting to result&#39;</span><span class="p">,</span>
+                     <span class="n">raw</span><span class="o">.</span><span class="n">paper_id</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">add_highlighting</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Document</span><span class="p">(</span><span class="o">**</span><span class="n">result</span><span class="p">)</span>   <span class="c1"># type: ignore</span></div>
+    <span class="c1"># See https://github.com/python/mypy/issues/3937</span>
+
+
+<div class="viewcode-block" id="to_documentset"><a class="viewcode-back" href="../../../../api/search.services.index.results.html#search.services.index.results.to_documentset">[docs]</a><span class="k">def</span> <span class="nf">to_documentset</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="n">Query</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">Response</span><span class="p">,</span> <span class="n">highlight</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="n">DocumentSet</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transform a response from ES to a :class:`.DocumentSet`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    query : :class:`.Query`</span>
+<span class="sd">        The original search query.</span>
+<span class="sd">    response : :class:`.Response`</span>
+<span class="sd">        The response from Elasticsearch.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :class:`.DocumentSet`</span>
+<span class="sd">        The set of :class:`.Document`s responding to the query on the current</span>
+<span class="sd">        page, along with pagination metadata.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">max_pages</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">MAX_RESULTS</span><span class="o">/</span><span class="n">query</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">N_pages_raw</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">][</span><span class="s1">&#39;total&#39;</span><span class="p">]</span><span class="o">/</span><span class="n">query</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">N_pages</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">floor</span><span class="p">(</span><span class="n">N_pages_raw</span><span class="p">))</span> <span class="o">+</span> \
+        <span class="nb">int</span><span class="p">(</span><span class="n">N_pages_raw</span> <span class="o">%</span> <span class="n">query</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;got </span><span class="si">%i</span><span class="s1"> results&#39;</span><span class="p">,</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">][</span><span class="s1">&#39;total&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">DocumentSet</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>  <span class="c1"># type: ignore</span>
+        <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">query</span><span class="o">.</span><span class="n">page_start</span><span class="p">,</span>
+            <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">page_start</span> <span class="o">+</span> <span class="n">query</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+                       <span class="n">response</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">][</span><span class="s1">&#39;total&#39;</span><span class="p">]),</span>
+            <span class="s1">&#39;total&#39;</span><span class="p">:</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">][</span><span class="s1">&#39;total&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;current_page&#39;</span><span class="p">:</span> <span class="n">query</span><span class="o">.</span><span class="n">page</span><span class="p">,</span>
+            <span class="s1">&#39;total_pages&#39;</span><span class="p">:</span> <span class="n">N_pages</span><span class="p">,</span>
+            <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="n">query</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+            <span class="s1">&#39;max_pages&#39;</span><span class="p">:</span> <span class="n">max_pages</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;results&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">to_document</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">highlight</span><span class="o">=</span><span class="n">highlight</span><span class="p">)</span> <span class="k">for</span> <span class="n">raw</span> <span class="ow">in</span> <span class="n">response</span><span class="p">]</span>
+    <span class="p">})</span></div>
+    <span class="c1"># See https://github.com/python/mypy/issues/3937</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">search</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  <li><a href="../index.html">search.services.index</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

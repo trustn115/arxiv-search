@@ -1,0 +1,177 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.services.tests.test_metadata module &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="search.services.fulltext module" href="search.services.fulltext.html" />
+    <link rel="prev" title="search.services.tests.test_fulltext module" href="search.services.tests.test_fulltext.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-search.services.tests.test_metadata">
+<span id="search-services-tests-test-metadata-module"></span><h1>search.services.tests.test_metadata module<a class="headerlink" href="#module-search.services.tests.test_metadata" title="Permalink to this headline">¶</a></h1>
+<p>Tests for <a class="reference internal" href="search.services.metadata.html#module-search.services.metadata" title="search.services.metadata"><code class="xref py py-mod docutils literal notranslate"><span class="pre">search.services.metadata</span></code></a>.</p>
+<dl class="class">
+<dt id="search.services.tests.test_metadata.TestRetrieveExistantMetadata">
+<em class="property">class </em><code class="descclassname">search.services.tests.test_metadata.</code><code class="descname">TestRetrieveExistantMetadata</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/tests/test_metadata.html#TestRetrieveExistantMetadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.tests.test_metadata.TestRetrieveExistantMetadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Metadata is available for a paper.</p>
+<dl class="method">
+<dt id="search.services.tests.test_metadata.TestRetrieveExistantMetadata.test_calls_metadata_endpoint">
+<code class="descname">test_calls_metadata_endpoint</code><span class="sig-paren">(</span><em>mock_get</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/tests/test_metadata.html#TestRetrieveExistantMetadata.test_calls_metadata_endpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.tests.test_metadata.TestRetrieveExistantMetadata.test_calls_metadata_endpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="search.services.metadata.html#search.services.metadata.retrieve" title="search.services.metadata.retrieve"><code class="xref py py-func docutils literal notranslate"><span class="pre">metadata.retrieve()</span></code></a> calls passed endpoint with GET.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.services.tests.test_metadata.TestRetrieveExistantMetadata.test_calls_metadata_endpoint_roundrobin">
+<code class="descname">test_calls_metadata_endpoint_roundrobin</code><span class="sig-paren">(</span><em>mock_get</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/tests/test_metadata.html#TestRetrieveExistantMetadata.test_calls_metadata_endpoint_roundrobin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.tests.test_metadata.TestRetrieveExistantMetadata.test_calls_metadata_endpoint_roundrobin" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="search.services.metadata.html#search.services.metadata.retrieve" title="search.services.metadata.retrieve"><code class="xref py py-func docutils literal notranslate"><span class="pre">metadata.retrieve()</span></code></a> calls passed endpoint with GET.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.services.tests.test_metadata.TestRetrieveMalformedRecord">
+<em class="property">class </em><code class="descclassname">search.services.tests.test_metadata.</code><code class="descname">TestRetrieveMalformedRecord</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/tests/test_metadata.html#TestRetrieveMalformedRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.tests.test_metadata.TestRetrieveMalformedRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Metadata endpoint returns non-JSON response.</p>
+<dl class="method">
+<dt id="search.services.tests.test_metadata.TestRetrieveMalformedRecord.test_response_is_not_json">
+<code class="descname">test_response_is_not_json</code><span class="sig-paren">(</span><em>mock_get</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/tests/test_metadata.html#TestRetrieveMalformedRecord.test_response_is_not_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.tests.test_metadata.TestRetrieveMalformedRecord.test_response_is_not_json" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="search.services.metadata.html#search.services.metadata.retrieve" title="search.services.metadata.retrieve"><code class="xref py py-func docutils literal notranslate"><span class="pre">metadata.retrieve()</span></code></a> raises IOError when not valid JSON.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.services.tests.test_metadata.TestRetrieveNonexistantRecord">
+<em class="property">class </em><code class="descclassname">search.services.tests.test_metadata.</code><code class="descname">TestRetrieveNonexistantRecord</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/tests/test_metadata.html#TestRetrieveNonexistantRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.tests.test_metadata.TestRetrieveNonexistantRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Metadata is not available for a paper.</p>
+<dl class="method">
+<dt id="search.services.tests.test_metadata.TestRetrieveNonexistantRecord.test_raise_ioerror_on_404">
+<code class="descname">test_raise_ioerror_on_404</code><span class="sig-paren">(</span><em>mock_get</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/tests/test_metadata.html#TestRetrieveNonexistantRecord.test_raise_ioerror_on_404"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.tests.test_metadata.TestRetrieveNonexistantRecord.test_raise_ioerror_on_404" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="search.services.metadata.html#search.services.metadata.retrieve" title="search.services.metadata.retrieve"><code class="xref py py-func docutils literal notranslate"><span class="pre">metadata.retrieve()</span></code></a> raises IOError when unvailable.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.services.tests.test_metadata.TestRetrieveNonexistantRecord.test_raise_ioerror_on_503">
+<code class="descname">test_raise_ioerror_on_503</code><span class="sig-paren">(</span><em>mock_get</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/tests/test_metadata.html#TestRetrieveNonexistantRecord.test_raise_ioerror_on_503"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.tests.test_metadata.TestRetrieveNonexistantRecord.test_raise_ioerror_on_503" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="search.services.metadata.html#search.services.metadata.retrieve" title="search.services.metadata.retrieve"><code class="xref py py-func docutils literal notranslate"><span class="pre">metadata.retrieve()</span></code></a> raises IOError when unvailable.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.services.tests.test_metadata.TestRetrieveNonexistantRecord.test_raise_ioerror_on_sslerror">
+<code class="descname">test_raise_ioerror_on_sslerror</code><span class="sig-paren">(</span><em>mock_get</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/tests/test_metadata.html#TestRetrieveNonexistantRecord.test_raise_ioerror_on_sslerror"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.tests.test_metadata.TestRetrieveNonexistantRecord.test_raise_ioerror_on_sslerror" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="search.services.metadata.html#search.services.metadata.retrieve" title="search.services.metadata.retrieve"><code class="xref py py-func docutils literal notranslate"><span class="pre">metadata.retrieve()</span></code></a> raises IOError when SSL fails.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">search</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="search.html">search package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">search</a><ul>
+  <li><a href="search.html">search package</a><ul>
+  <li><a href="search.services.html">search.services package</a><ul>
+  <li><a href="search.services.tests.html">search.services.tests package</a><ul>
+      <li>Previous: <a href="search.services.tests.test_fulltext.html" title="previous chapter">search.services.tests.test_fulltext module</a></li>
+      <li>Next: <a href="search.services.fulltext.html" title="next chapter">search.services.fulltext module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/api/search.services.tests.test_metadata.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

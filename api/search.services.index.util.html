@@ -1,0 +1,352 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.services.index.util module &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="search.services.tests package" href="search.services.tests.html" />
+    <link rel="prev" title="search.services.index.simple module" href="search.services.index.simple.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-search.services.index.util">
+<span id="search-services-index-util-module"></span><h1>search.services.index.util module<a class="headerlink" href="#module-search.services.index.util" title="Permalink to this headline">¶</a></h1>
+<p>Helpers for building ES queries.</p>
+<dl class="data">
+<dt id="search.services.index.util.DATE_PARTIAL">
+<code class="descclassname">search.services.index.util.</code><code class="descname">DATE_PARTIAL</code><em class="property"> = '(?:^|[\\s])(\\d{2})((?:0[1-9]{1})|(?:1[0-2]{1}))(?:$|[\\s])'</em><a class="headerlink" href="#search.services.index.util.DATE_PARTIAL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to match parts of paper IDs that encode the announcement date.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="search.services.index.util.MAX_RESULTS">
+<code class="descclassname">search.services.index.util.</code><code class="descname">MAX_RESULTS</code><em class="property"> = 10000</em><a class="headerlink" href="#search.services.index.util.MAX_RESULTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the maximum result offset for pagination.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="search.services.index.util.OLD_ID_NUMBER">
+<code class="descclassname">search.services.index.util.</code><code class="descname">OLD_ID_NUMBER</code><em class="property"> = '(910[7-9]|911[0-2]|9[2-9](0[1-9]|1[0-2])|0[0-6](0[1-9]|1[0-2])|070[1-3])(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])'</em><a class="headerlink" href="#search.services.index.util.OLD_ID_NUMBER" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number part of the old arXiv identifier looks like YYMMNNN.</p>
+<p>The old arXiv identifier scheme was used between 1991-07 and 2007-03
+(inclusive).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.util.Q_">
+<code class="descclassname">search.services.index.util.</code><code class="descname">Q_</code><span class="sig-paren">(</span><em>qtype</em>, <em>field</em>, <em>value</em>, <em>operator='or'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/util.html#Q_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.util.Q_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a <code class="xref py py-class docutils literal notranslate"><span class="pre">Q</span></code>, but handle wildcards first.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function Q at 0x1080b2268&gt;</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="search.services.index.util.STRING_LITERAL">
+<code class="descclassname">search.services.index.util.</code><code class="descname">STRING_LITERAL</code><em class="property"> = re.compile('([\\&quot;][^\\&quot;]*[\\&quot;])')</em><a class="headerlink" href="#search.services.index.util.STRING_LITERAL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pattern for string literals (quoted) in search queries.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.util.escape">
+<code class="descclassname">search.services.index.util.</code><code class="descname">escape</code><span class="sig-paren">(</span><em>term</em>, <em>quotes=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/util.html#escape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.util.escape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Escape special characters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.util.has_wildcard">
+<code class="descclassname">search.services.index.util.</code><code class="descname">has_wildcard</code><span class="sig-paren">(</span><em>term</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/util.html#has_wildcard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.util.has_wildcard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether or not <code class="docutils literal notranslate"><span class="pre">term</span></code> contains a wildcard.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.util.is_literal_query">
+<code class="descclassname">search.services.index.util.</code><code class="descname">is_literal_query</code><span class="sig-paren">(</span><em>term</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/util.html#is_literal_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.util.is_literal_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether the term is intended to be treated as a literal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.util.is_old_papernum">
+<code class="descclassname">search.services.index.util.</code><code class="descname">is_old_papernum</code><span class="sig-paren">(</span><em>term</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/util.html#is_old_papernum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.util.is_old_papernum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether term matches 7-digit pattern for old arXiv ID numbers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.util.is_tex_query">
+<code class="descclassname">search.services.index.util.</code><code class="descname">is_tex_query</code><span class="sig-paren">(</span><em>term</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/util.html#is_tex_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.util.is_tex_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether the term is intended as a TeX query.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.util.parse_date">
+<code class="descclassname">search.services.index.util.</code><code class="descname">parse_date</code><span class="sig-paren">(</span><em>term</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/util.html#parse_date"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.util.parse_date" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempt to find date-related information in the query.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>term</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Search term.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">First element is the responding date-related fragment, second element
+is the remainder of <cite>term</cite> (without the date).</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)">tuple</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – Raised if no date-related information is found in <cite>term</cite>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.util.parse_date_partial">
+<code class="descclassname">search.services.index.util.</code><code class="descname">parse_date_partial</code><span class="sig-paren">(</span><em>term</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/util.html#parse_date_partial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.util.parse_date_partial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a 4-digit ID date partial into a full year-month value.</p>
+<p>This can be used to search for papers by announcement date.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>term</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Search term.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Date in <cite>yyyy-MM</cite> format, if found.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.util.remove_single_characters">
+<code class="descclassname">search.services.index.util.</code><code class="descname">remove_single_characters</code><span class="sig-paren">(</span><em>term</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/util.html#remove_single_characters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.util.remove_single_characters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove any single characters in the search string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.util.sort">
+<code class="descclassname">search.services.index.util.</code><code class="descname">sort</code><span class="sig-paren">(</span><em>query</em>, <em>search</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/util.html#sort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.util.sort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply sorting to a <code class="xref py py-class docutils literal notranslate"><span class="pre">Search</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Search</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.util.strip_punctuation">
+<code class="descclassname">search.services.index.util.</code><code class="descname">strip_punctuation</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/util.html#strip_punctuation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.util.strip_punctuation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all punctuation characters from a string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.util.strip_tex">
+<code class="descclassname">search.services.index.util.</code><code class="descname">strip_tex</code><span class="sig-paren">(</span><em>term</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/util.html#strip_tex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.util.strip_tex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove TeX-isms from a term.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.util.wildcard_escape">
+<code class="descclassname">search.services.index.util.</code><code class="descname">wildcard_escape</code><span class="sig-paren">(</span><em>querystring</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/util.html#wildcard_escape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.util.wildcard_escape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect wildcard characters, and escape any that occur within a literal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>querystring</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><em>str</em> – Query string with wildcard characters enclosed in literals escaped.</li>
+<li><em>bool</em> – If a non-literal wildcard character is present, returns True.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">search</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="search.html">search package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">search</a><ul>
+  <li><a href="search.html">search package</a><ul>
+  <li><a href="search.services.html">search.services package</a><ul>
+  <li><a href="search.services.index.html">search.services.index package</a><ul>
+      <li>Previous: <a href="search.services.index.simple.html" title="previous chapter">search.services.index.simple module</a></li>
+      <li>Next: <a href="search.services.tests.html" title="next chapter">search.services.tests package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/api/search.services.index.util.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

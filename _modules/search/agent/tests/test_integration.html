@@ -1,0 +1,234 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.agent.tests.test_integration &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for search.agent.tests.test_integration</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Integration tests for :mod:`search.agent` with Kinesis.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="k">import</span> <span class="n">TestCase</span><span class="p">,</span> <span class="n">mock</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">boto3</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="kn">from</span> <span class="nn">search.agent</span> <span class="k">import</span> <span class="n">process_stream</span>
+<span class="kn">from</span> <span class="nn">arxiv.base.agent</span> <span class="k">import</span> <span class="n">StopProcessing</span>
+<span class="kn">from</span> <span class="nn">search.services</span> <span class="k">import</span> <span class="n">metadata</span>
+<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">DocMeta</span>
+<span class="kn">from</span> <span class="nn">search.factory</span> <span class="k">import</span> <span class="n">create_ui_web_app</span>
+
+<span class="n">BASE_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))[</span><span class="mi">0</span><span class="p">],</span>
+                         <span class="s1">&#39;../../../tests/data/examples&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="TestKinesisIntegration"><a class="viewcode-back" href="../../../../api/search.agent.tests.test_integration.html#search.agent.tests.test_integration.TestKinesisIntegration">[docs]</a><span class="k">class</span> <span class="nc">TestKinesisIntegration</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test :class:`.MetadataRecordProcessor` with a live Kinesis stream.&quot;&quot;&quot;</span>
+
+    <span class="n">__test__</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;WITH_INTEGRATION&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)))</span>
+
+<div class="viewcode-block" id="TestKinesisIntegration.setUpClass"><a class="viewcode-back" href="../../../../api/search.agent.tests.test_integration.html#search.agent.tests.test_integration.TestKinesisIntegration.setUpClass">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">setUpClass</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Spin up ES and index documents.&quot;&quot;&quot;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ELASTICSEARCH_SERVICE_HOST&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;localhost&#39;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ELASTICSEARCH_SERVICE_PORT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;9201&quot;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ELASTICSEARCH_PORT_9201_PROTO&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;http&quot;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ELASTICSEARCH_VERIFY&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;false&#39;</span>
+
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;KINESIS_STREAM&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;MetadataIsAvailable&#39;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;KINESIS_SHARD_ID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;0&#39;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;KINESIS_CHECKPOINT_VOLUME&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;KINESIS_ENDPOINT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;http://127.0.0.1:6568&#39;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;KINESIS_VERIFY&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;false&#39;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;KINESIS_START_TYPE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TRIM_HORIZON&#39;</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;pulling localstack image&#39;</span><span class="p">)</span>
+        <span class="n">pull_localstack</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="s2">&quot;docker pull atlassianlabs/localstack&quot;</span><span class="p">,</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;starting localstack&#39;</span><span class="p">)</span>
+        <span class="n">start_localstack</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="s2">&quot;docker run -d -p 6568:4568 --name ltest atlassianlabs/localstack&quot;</span><span class="p">,</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">start_localstack</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="n">f</span><span class="s1">&#39;Could not start localstack: </span><span class="si">{start_localstack.stdout}</span><span class="s1">.&#39;</span>
+                <span class="n">f</span><span class="s1">&#39; Is one already running? Is port 6568 available?&#39;</span>
+            <span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">ls_container</span> <span class="o">=</span> <span class="n">start_localstack</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;localstack started as </span><span class="si">{cls.ls_container}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="bp">cls</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span>
+            <span class="s1">&#39;kinesis&#39;</span><span class="p">,</span>
+            <span class="n">region_name</span><span class="o">=</span><span class="s1">&#39;us-east-1&#39;</span><span class="p">,</span>
+            <span class="n">endpoint_url</span><span class="o">=</span><span class="s2">&quot;http://localhost:6568&quot;</span><span class="p">,</span>
+            <span class="n">aws_access_key_id</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="n">aws_secret_access_key</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span>
+            <span class="n">verify</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;creating stream ahead of time, to populate with records&#39;</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">create_stream</span><span class="p">(</span>
+            <span class="n">StreamName</span><span class="o">=</span><span class="s1">&#39;MetadataIsAvailable&#39;</span><span class="p">,</span>
+            <span class="n">ShardCount</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;created stream, ready to test&#39;</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">create_ui_web_app</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TestKinesisIntegration.tearDownClass"><a class="viewcode-back" href="../../../../api/search.agent.tests.test_integration.html#search.agent.tests.test_integration.TestKinesisIntegration.tearDownClass">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">tearDownClass</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tear down Elasticsearch once all tests have run.&quot;&quot;&quot;</span>
+        <span class="n">stop_es</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;docker rm -f </span><span class="si">{cls.ls_container}</span><span class="s2">&quot;</span><span class="p">,</span>
+                                 <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+                                 <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+                                 <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestKinesisIntegration.test_process"><a class="viewcode-back" href="../../../../api/search.agent.tests.test_integration.html#search.agent.tests.test_integration.TestKinesisIntegration.test_process">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.agent.consumer.index&#39;</span><span class="p">)</span>
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.agent.consumer.metadata&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_metadata</span><span class="p">,</span> <span class="n">mock_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add some records to the stream, and run processing loop for 5s.&quot;&quot;&quot;</span>
+        <span class="n">to_index</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;1712.04442&quot;</span><span class="p">,</span>    <span class="c1"># flux capacitor</span>
+            <span class="s2">&quot;1511.07473&quot;</span><span class="p">,</span>    <span class="c1"># flux capacitor</span>
+            <span class="s2">&quot;1604.04228&quot;</span><span class="p">,</span>    <span class="c1"># flux capacitor</span>
+            <span class="s2">&quot;1403.6219&quot;</span><span class="p">,</span>     <span class="c1"># λ</span>
+            <span class="s2">&quot;1404.3450&quot;</span><span class="p">,</span>     <span class="c1"># $z_1$</span>
+            <span class="s2">&quot;1703.09067&quot;</span><span class="p">,</span>    <span class="c1"># $\lambda$</span>
+            <span class="s2">&quot;1408.6682&quot;</span><span class="p">,</span>     <span class="c1"># $\lambda$</span>
+            <span class="s2">&quot;1607.05107&quot;</span><span class="p">,</span>    <span class="c1"># Schröder</span>
+            <span class="s2">&quot;1509.08727&quot;</span><span class="p">,</span>    <span class="c1"># Schroder</span>
+            <span class="s2">&quot;1710.01597&quot;</span><span class="p">,</span>    <span class="c1"># Schroeder</span>
+            <span class="s2">&quot;1708.07156&quot;</span><span class="p">,</span>    <span class="c1"># w w</span>
+            <span class="s2">&quot;1401.1012&quot;</span><span class="p">,</span>     <span class="c1"># Wonmin Son</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">document_id</span> <span class="ow">in</span> <span class="n">to_index</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;document_id&#39;</span><span class="p">:</span> <span class="n">document_id</span><span class="p">}),</span>
+                <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">put_record</span><span class="p">(</span>
+                <span class="n">StreamName</span><span class="o">=</span><span class="s1">&#39;MetadataIsAvailable&#39;</span><span class="p">,</span> <span class="n">Data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">PartitionKey</span><span class="o">=</span><span class="s1">&#39;0&#39;</span>
+            <span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">retrieve</span><span class="p">(</span><span class="n">document_id</span><span class="p">):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{document_id}</span><span class="s1">.json&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+        <span class="n">mock_metadata</span><span class="o">.</span><span class="n">retrieve</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="n">retrieve</span>
+
+        <span class="c1"># Preserve exceptions</span>
+        <span class="n">mock_metadata</span><span class="o">.</span><span class="n">RequestFailed</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">RequestFailed</span>
+        <span class="n">mock_metadata</span><span class="o">.</span><span class="n">SecurityException</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">SecurityException</span>
+        <span class="n">mock_metadata</span><span class="o">.</span><span class="n">ConnectionFailed</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">ConnectionFailed</span>
+        <span class="n">mock_metadata</span><span class="o">.</span><span class="n">BadResponse</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">BadResponse</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">app_context</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">process_stream</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">StopProcessing</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertGreater</span><span class="p">(</span><span class="n">mock_metadata</span><span class="o">.</span><span class="n">bulk_retrieve</span><span class="o">.</span><span class="n">call_count</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">search</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  <li><a href="../../agent.html">search.agent</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

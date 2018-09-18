@@ -1,0 +1,354 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.services.index.authors &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for search.services.index.authors</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Query-builders and helpers for searching by author name.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">reduce</span><span class="p">,</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">ior</span><span class="p">,</span> <span class="n">iand</span>
+
+<span class="kn">from</span> <span class="nn">elasticsearch_dsl</span> <span class="k">import</span> <span class="n">Search</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">SF</span>
+
+<span class="kn">from</span> <span class="nn">arxiv.base</span> <span class="k">import</span> <span class="n">logging</span>
+
+<span class="kn">from</span> <span class="nn">.util</span> <span class="k">import</span> <span class="n">wildcard_escape</span><span class="p">,</span> <span class="n">escape</span><span class="p">,</span> <span class="n">STRING_LITERAL</span><span class="p">,</span> \
+    <span class="n">remove_single_characters</span><span class="p">,</span> <span class="n">has_wildcard</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">propagate</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="c1"># We don&#39;t remove stopwords from author names at index time because</span>
+<span class="c1"># institutions and collaborations are often treated as authors just like</span>
+<span class="c1"># people.</span>
+<span class="n">STOP</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;and&quot;</span><span class="p">,</span> <span class="s2">&quot;or&quot;</span><span class="p">,</span> <span class="s2">&quot;the&quot;</span><span class="p">,</span> <span class="s2">&quot;of&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;for&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_remove_stopwords</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Remove common stopwords, except in literal queries.&quot;&quot;&quot;</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">STRING_LITERAL</span><span class="p">,</span> <span class="n">term</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">stopword</span> <span class="ow">in</span> <span class="n">STOP</span><span class="p">:</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;(^|\s+)</span><span class="si">{stopword}</span><span class="s2">(\s+|$)&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">part</span><span class="p">)</span>
+                 <span class="k">if</span> <span class="ow">not</span> <span class="n">part</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">part</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+                 <span class="k">else</span> <span class="n">part</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">]</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Q_"><a class="viewcode-back" href="../../../../api/search.services.index.authors.html#search.services.index.authors.Q_">[docs]</a><span class="k">def</span> <span class="nf">Q_</span><span class="p">(</span><span class="n">qtype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Generate an appropriate :class:`Q` based on wildcard presence.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">has_wildcard</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;wildcard&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">escape</span><span class="p">(</span><span class="n">value</span><span class="p">)}})</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="n">qtype</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="n">escape</span><span class="p">(</span><span class="n">value</span><span class="p">)})</span></div>
+
+
+<div class="viewcode-block" id="part_query"><a class="viewcode-back" href="../../../../api/search.services.index.authors.html#search.services.index.authors.part_query">[docs]</a><span class="k">def</span> <span class="nf">part_query</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;authors&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build a query that matches within a single author using name parts.</span>
+
+<span class="sd">    Anything before the first comma is treated as the author&#39;s surname, and</span>
+<span class="sd">    everything after the first comma is treated as the author&#39;s first name</span>
+<span class="sd">    or initials.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    term : str</span>
+<span class="sd">        Search term for a single author.</span>
+<span class="sd">    path : str</span>
+<span class="sd">        Nested document path.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :class:`.Q`</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">AUTHOR_QUERY_FIELDS</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">f</span><span class="s2">&quot;</span><span class="si">{path}</span><span class="s2">.full_name&quot;</span><span class="p">,</span>
+        <span class="n">f</span><span class="s2">&quot;</span><span class="si">{path}</span><span class="s2">.last_name&quot;</span><span class="p">,</span>
+        <span class="n">f</span><span class="s2">&quot;</span><span class="si">{path}</span><span class="s2">.full_name_initialized&quot;</span>
+    <span class="p">]</span>
+    <span class="n">term</span> <span class="o">=</span> <span class="n">term</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{path}</span><span class="s1"> part_query for </span><span class="si">{term}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Commas are used to distinguish surname and forename.</span>
+    <span class="n">forename_is_individuated</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span> <span class="ow">in</span> <span class="n">term</span>
+    <span class="k">if</span> <span class="n">forename_is_individuated</span><span class="p">:</span>
+        <span class="c1"># We treat the entire part as a search for a single author. The part</span>
+        <span class="c1"># before the comma is treated as a surname, and the part after the</span>
+        <span class="c1"># comma is treated as a forename or a prefix of the forename.</span>
+        <span class="n">name_parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">term</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
+        <span class="n">surname</span> <span class="o">=</span> <span class="n">name_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">forename</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name_parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="c1"># Doing a query string so that wildcards and literals are just handled.</span>
+        <span class="n">q_surname</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;query_string&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{path}</span><span class="s2">.last_name&quot;</span><span class="p">],</span>
+                      <span class="n">query</span><span class="o">=</span><span class="n">escape</span><span class="p">(</span><span class="n">surname</span><span class="p">),</span>
+                      <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+                      <span class="n">allow_leading_wildcard</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">forename</span><span class="p">:</span>
+            <span class="c1"># If a wildcard is provided in the forename, we treat it as a</span>
+            <span class="c1"># query string query. This has the disadvantage of losing term</span>
+            <span class="c1"># order, but the advantage of handling wildcards as expected.</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Forename: </span><span class="si">{forename}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">has_wildcard</span><span class="p">(</span><span class="n">forename</span><span class="p">):</span>
+                <span class="n">q_forename</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;query_string&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{path}</span><span class="s2">.first_name&quot;</span><span class="p">],</span>
+                               <span class="n">query</span><span class="o">=</span><span class="n">escape</span><span class="p">(</span><span class="n">forename</span><span class="p">),</span>
+                               <span class="n">auto_generate_phrase_queries</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                               <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+                               <span class="n">allow_leading_wildcard</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># Otherwise, we expect the forename to match as a phrase. The</span>
+            <span class="c1"># _prefix bit means that the last word can match as a prefix of the</span>
+            <span class="c1"># corresponding term.</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">q_forename</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match_phrase_prefix&quot;</span><span class="p">,</span>
+                               <span class="o">**</span><span class="p">{</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{path}</span><span class="s2">__first_name&quot;</span><span class="p">:</span> <span class="n">forename</span><span class="p">})</span>
+
+            <span class="c1"># It may be the case that the forename consists of initials or some</span>
+            <span class="c1"># other prefix/partial forename. For a match of this kind, each</span>
+            <span class="c1"># part of the forename part must be a prefix of a term in the</span>
+            <span class="c1"># forename.</span>
+            <span class="k">if</span> <span class="n">path</span> <span class="o">==</span> <span class="s1">&#39;authors&#39;</span> <span class="ow">and</span> <span class="n">forename</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Consider initials: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">forename</span><span class="p">)</span>
+                <span class="n">q_forename</span> <span class="o">|=</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match_phrase_prefix&quot;</span><span class="p">,</span>
+                                <span class="o">**</span><span class="p">{</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{path}</span><span class="s2">__initials&quot;</span><span class="p">:</span> <span class="n">forename</span><span class="p">})</span>
+
+            <span class="c1"># We will treat this as a search for a single author; surname and</span>
+            <span class="c1"># forename parts must match in the same (nested) author.</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">q_surname</span> <span class="o">&amp;</span> <span class="n">q_forename</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">q_surname</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Match across all fields within a single author. We don&#39;t know which</span>
+        <span class="c1"># bits of the query match which bits of the author name. This will</span>
+        <span class="c1"># handle wildcards, literals, etc.</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;query_string&quot;</span><span class="p">,</span>
+              <span class="n">fields</span><span class="o">=</span><span class="n">AUTHOR_QUERY_FIELDS</span><span class="p">,</span> <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+              <span class="n">allow_leading_wildcard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+              <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;cross_fields&quot;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">escape</span><span class="p">(</span><span class="n">term</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;nested&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">q</span><span class="p">,</span> <span class="n">score_mode</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="string_query"><a class="viewcode-back" href="../../../../api/search.services.index.authors.html#search.services.index.authors.string_query">[docs]</a><span class="k">def</span> <span class="nf">string_query</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;authors&#39;</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;AND&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Build a query that handles query strings within a single author.&quot;&quot;&quot;</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;query_string&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{path}</span><span class="s2">.full_name&quot;</span><span class="p">],</span>
+          <span class="n">default_operator</span><span class="o">=</span><span class="n">operator</span><span class="p">,</span> <span class="n">allow_leading_wildcard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+          <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;cross_fields&quot;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">escape</span><span class="p">(</span><span class="n">term</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;nested&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">q</span><span class="p">,</span> <span class="n">score_mode</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="author_query"><a class="viewcode-back" href="../../../../api/search.services.index.authors.html#search.services.index.authors.author_query">[docs]</a><span class="k">def</span> <span class="nf">author_query</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;and&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Construct a query based on author (and owner) names.</span>
+
+<span class="sd">    Substrings delimited by semicolons should only match if the terms in that</span>
+<span class="sd">    substring match within a single author.</span>
+
+<span class="sd">    If a substring (delimited or not) contains a comma, everything before the</span>
+<span class="sd">    first comma will be treated as a surname, and the remainder treated as</span>
+<span class="sd">    either the forename or initials. In this scenario, all terms must match</span>
+<span class="sd">    within a single author.</span>
+
+<span class="sd">    Otherwise, we will simply match all of the parts of the query across all</span>
+<span class="sd">    of the available author/owner fields. Each part of the query must match in</span>
+<span class="sd">    at least one field in at least one author/owner.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    term: str</span>
+<span class="sd">        Raw querystring. Should not be escaped or normalized in any way.</span>
+<span class="sd">    operator : str</span>
+<span class="sd">        Default: &#39;AND&#39;; anything else treated as &#39;OR&#39;. If &#39;OR&#39;, relaxes the</span>
+<span class="sd">        requirement that all parts of the query match. This is useful for</span>
+<span class="sd">        &quot;all fields&quot; searches, in which only part of the query may be expected</span>
+<span class="sd">        to match on an author/owner name.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :class:`.Q`</span>
+<span class="sd">        An Elasticsearch DSL query part.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Author query for </span><span class="si">{term}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">term</span> <span class="o">=</span> <span class="n">term</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="c1"># Check for balanced double-quotes.</span>
+    <span class="k">if</span> <span class="s1">&#39;&quot;&#39;</span> <span class="ow">in</span> <span class="n">term</span> <span class="ow">and</span> <span class="n">term</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Probably a literal search.</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Contains literal: </span><span class="si">{term}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Apply literal parts of the query separately.</span>
+        <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">iand</span> <span class="k">if</span> <span class="n">operator</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;AND&#39;</span> <span class="k">else</span> <span class="n">ior</span><span class="p">,</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">string_query</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">operator</span><span class="p">)</span>
+             <span class="o">|</span> <span class="n">string_query</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;owners&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">operator</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">STRING_LITERAL</span><span class="p">,</span> <span class="n">term</span><span class="p">)</span> <span class="k">if</span> <span class="n">part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="p">])</span>
+
+    <span class="n">term</span> <span class="o">=</span> <span class="n">term</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>    <span class="c1"># Just ignore unbalanced quotes.</span>
+
+    <span class="k">if</span> <span class="s2">&quot;;&quot;</span> <span class="ow">in</span> <span class="n">term</span><span class="p">:</span>     <span class="c1"># Authors are individuated.</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Authors are individuated: </span><span class="si">{term}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Operator: </span><span class="si">{operator}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">iand</span> <span class="k">if</span> <span class="n">operator</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;AND&quot;</span> <span class="k">else</span> <span class="n">ior</span><span class="p">,</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">part_query</span><span class="p">(</span><span class="n">author_part</span><span class="p">)</span> <span class="o">|</span> <span class="n">part_query</span><span class="p">(</span><span class="n">author_part</span><span class="p">,</span> <span class="s2">&quot;owners&quot;</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">author_part</span> <span class="ow">in</span> <span class="n">term</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">author_part</span>
+        <span class="p">])</span>
+
+    <span class="k">if</span> <span class="s2">&quot;,&quot;</span> <span class="ow">in</span> <span class="n">term</span><span class="p">:</span>     <span class="c1"># Forename is individuated.</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Forename is individuated: </span><span class="si">{term}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">part_query</span><span class="p">(</span><span class="n">term</span><span class="p">)</span> <span class="o">|</span> <span class="n">part_query</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="s2">&quot;owners&quot;</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;General author search: </span><span class="si">{term}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># We include both w/in author and among author matches, so that more</span>
+    <span class="c1"># precise matches get more weight.</span>
+    <span class="c1">#</span>
+    <span class="c1"># A query_string query on the combined field will yield matches among</span>
+    <span class="c1"># authors.</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;query_string&#39;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;authors_combined&#39;</span><span class="p">],</span>
+          <span class="n">query</span><span class="o">=</span><span class="n">escape</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">quotes</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+          <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">)</span>
+
+    <span class="c1"># A nested query_string query on full name will match within individual</span>
+    <span class="c1"># authors.</span>
+    <span class="n">q</span> <span class="o">|=</span> <span class="p">(</span>
+        <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;nested&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;authors&#39;</span><span class="p">,</span> <span class="n">score_mode</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">,</span>
+          <span class="n">query</span><span class="o">=</span><span class="n">Q</span><span class="p">(</span><span class="s2">&quot;query_string&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;authors.full_name&#39;</span><span class="p">],</span>
+                  <span class="n">default_operator</span><span class="o">=</span><span class="n">operator</span><span class="p">,</span> <span class="n">allow_leading_wildcard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">query</span><span class="o">=</span><span class="n">escape</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">quotes</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
+        <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;nested&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;owners&#39;</span><span class="p">,</span> <span class="n">score_mode</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">,</span>
+            <span class="n">query</span><span class="o">=</span><span class="n">Q</span><span class="p">(</span><span class="s2">&quot;query_string&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;owners.full_name&#39;</span><span class="p">],</span>
+                    <span class="n">default_operator</span><span class="o">=</span><span class="n">operator</span><span class="p">,</span> <span class="n">allow_leading_wildcard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">query</span><span class="o">=</span><span class="n">escape</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">quotes</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">q</span></div>
+
+
+<div class="viewcode-block" id="author_id_query"><a class="viewcode-back" href="../../../../api/search.services.index.authors.html#search.services.index.authors.author_id_query">[docs]</a><span class="k">def</span> <span class="nf">author_id_query</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;and&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Generate a query part for Author ID using the ES DSL.&quot;&quot;&quot;</span>
+    <span class="n">term</span> <span class="o">=</span> <span class="n">term</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>     <span class="c1"># Just in case.</span>
+    <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="s1">&#39;or&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;nested&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;owners&quot;</span><span class="p">,</span>
+                <span class="n">query</span><span class="o">=</span><span class="n">Q</span><span class="p">(</span><span class="s2">&quot;terms&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;owners__author_id&quot;</span><span class="p">:</span> <span class="n">term</span><span class="o">.</span><span class="n">split</span><span class="p">()}))</span>
+            <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;terms&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;submitter__author_id&quot;</span><span class="p">:</span> <span class="n">term</span><span class="o">.</span><span class="n">split</span><span class="p">()})</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">iand</span><span class="p">,</span> <span class="p">[(</span>
+        <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;nested&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;owners&quot;</span><span class="p">,</span>
+            <span class="n">query</span><span class="o">=</span><span class="n">Q</span><span class="p">(</span><span class="s2">&quot;term&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;owners__author_id&quot;</span><span class="p">:</span> <span class="n">part</span><span class="p">}))</span>
+        <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;term&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;submitter__author_id&quot;</span><span class="p">:</span> <span class="n">part</span><span class="p">})</span>
+    <span class="p">)</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">term</span><span class="o">.</span><span class="n">split</span><span class="p">()])</span></div>
+
+
+<div class="viewcode-block" id="orcid_query"><a class="viewcode-back" href="../../../../api/search.services.index.authors.html#search.services.index.authors.orcid_query">[docs]</a><span class="k">def</span> <span class="nf">orcid_query</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;and&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Generate a query part for ORCID ID using the ES DSL.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="s1">&#39;or&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;nested&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;owners&quot;</span><span class="p">,</span>
+                <span class="n">query</span><span class="o">=</span><span class="n">Q</span><span class="p">(</span><span class="s2">&quot;terms&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;owners__orcid&quot;</span><span class="p">:</span> <span class="n">term</span><span class="o">.</span><span class="n">split</span><span class="p">()}))</span>
+            <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;terms&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;submitter__orcid&quot;</span><span class="p">:</span> <span class="n">term</span><span class="o">.</span><span class="n">split</span><span class="p">()})</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">iand</span><span class="p">,</span> <span class="p">[(</span>
+        <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;nested&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;owners&quot;</span><span class="p">,</span>
+            <span class="n">query</span><span class="o">=</span><span class="n">Q</span><span class="p">(</span><span class="s2">&quot;term&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;owners__orcid&quot;</span><span class="p">:</span> <span class="n">part</span><span class="p">}))</span>
+        <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;term&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;submitter__orcid&quot;</span><span class="p">:</span> <span class="n">part</span><span class="p">})</span>
+    <span class="p">)</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">term</span><span class="o">.</span><span class="n">split</span><span class="p">()])</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">search</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  <li><a href="../index.html">search.services.index</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

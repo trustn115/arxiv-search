@@ -1,0 +1,135 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.agent &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for search.agent</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The search agent is responsible for updating the index as papers are published.</span>
+
+<span class="sd">The agent consumes notifications on the ``MetadataIsAvailable`` stream. For</span>
+<span class="sd">each notification, the agent retrieves metadata for the most recent version of</span>
+<span class="sd">the indicated paper from the :mod:`search.services.metadata` service. The agent</span>
+<span class="sd">also retrieves metadata for earlier versions, if there are multiple versions</span>
+<span class="sd">available. Each version is passed to the :mod:`search.services.index` service,</span>
+<span class="sd">and becomes available for discovery via :mod:`search.routes.ui`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">current_app</span> <span class="k">as</span> <span class="n">app</span>
+
+<span class="kn">from</span> <span class="nn">arxiv.base</span> <span class="k">import</span> <span class="n">agent</span>
+<span class="kn">from</span> <span class="nn">.consumer</span> <span class="k">import</span> <span class="n">MetadataRecordProcessor</span><span class="p">,</span> <span class="n">DocumentFailed</span><span class="p">,</span> <span class="n">IndexingFailed</span>
+
+
+<div class="viewcode-block" id="process_stream"><a class="viewcode-back" href="../../api/search.agent.html#search.agent.process_stream">[docs]</a><span class="k">def</span> <span class="nf">process_stream</span><span class="p">(</span><span class="n">duration</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Configure and run the record processor.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    duration : int</span>
+<span class="sd">        Time (in seconds) to run record processing. If None (default), will</span>
+<span class="sd">        run &quot;forever&quot;.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># We use the Flask application instance for configuration, and to manage</span>
+    <span class="c1"># integrations with metadata service, search index.</span>
+    <span class="n">agent</span><span class="o">.</span><span class="n">process_stream</span><span class="p">(</span><span class="n">MetadataRecordProcessor</span><span class="p">,</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+                         <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">search</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

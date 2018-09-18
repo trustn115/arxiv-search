@@ -4,20 +4,21 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>search.process package &#8212; arXiv search 0.2 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="search.routes package" href="search.routes.html" />
-    <link rel="prev" title="search.domain package" href="search.domain.html" />
+    <link rel="next" title="search.process.tests module" href="search.process.tests.html" />
+    <link rel="prev" title="search.domain.base module" href="search.domain.base.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -30,6 +31,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="module-search.process">
@@ -37,45 +40,18 @@
 <p>arxiv search processes.</p>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="module-search.process.transform">
-<span id="search-process-transform-module"></span><h2>search.process.transform module<a class="headerlink" href="#module-search.process.transform" title="Permalink to this headline">¶</a></h2>
-<p>Responsible for transforming metadata &amp; fulltext into a search document.</p>
-<dl class="function">
-<dt id="search.process.transform.to_search_document">
-<code class="descclassname">search.process.transform.</code><code class="descname">to_search_document</code><span class="sig-paren">(</span><em>metadata</em>, <em>fulltext=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/process/transform.html#to_search_document"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.process.transform.to_search_document" title="Permalink to this definition">¶</a></dt>
-<dd><p>Transform metadata (and fulltext) into a valid search document.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>metadata</strong> (<a class="reference internal" href="search.domain.html#search.domain.base.DocMeta" title="search.domain.base.DocMeta"><code class="xref py py-class docutils literal notranslate"><span class="pre">DocMeta</span></code></a>) – </li>
-<li><strong>fulltext</strong> (<a class="reference internal" href="search.domain.html#search.domain.base.Fulltext" title="search.domain.base.Fulltext"><code class="xref py py-class docutils literal notranslate"><span class="pre">Fulltext</span></code></a>) – </li>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="search.process.tests.html">search.process.tests module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="search.process.transform.html">search.process.transform module</a></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="search.domain.html#search.domain.base.Document" title="search.domain.base.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a></p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="search.domain.html#search.domain.base.Document" title="search.domain.base.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a></p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
+</div>
 </div>
 </div>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -92,7 +68,9 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../architecture.html">arXiv Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../search_api.html">Search API (Alpha)</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">search</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="search.html">search package</a></li>
 </ul>
@@ -105,8 +83,8 @@
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="modules.html">search</a><ul>
   <li><a href="search.html">search package</a><ul>
-      <li>Previous: <a href="search.domain.html" title="previous chapter">search.domain package</a></li>
-      <li>Next: <a href="search.routes.html" title="next chapter">search.routes package</a></li>
+      <li>Previous: <a href="search.domain.base.html" title="previous chapter">search.domain.base module</a></li>
+      <li>Next: <a href="search.process.tests.html" title="next chapter">search.process.tests module</a></li>
   </ul></li>
   </ul></li>
   </ul></li>
@@ -132,8 +110,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="../_sources/api/search.process.rst.txt"

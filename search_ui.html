@@ -1,0 +1,183 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Search Interface &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Search API (Alpha)" href="search_api.html" />
+    <link rel="prev" title="Architectural overview" href="architecture.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="search-interface">
+<h1>Search Interface<a class="headerlink" href="#search-interface" title="Permalink to this headline">¶</a></h1>
+<p>The current version of the arXiv search application is designed to meet the
+goals outlined in arXiv-NG milestone H1: Replace Legacy Search.</p>
+<ul class="simple">
+<li>H1.1. Replace the current advanced search interface, search results, and
+search by author name.</li>
+<li>H1.2. The search result view should support pagination, and ordering by
+publication date or relevance.</li>
+<li>H1.3. An indexing agent updates the search index at publication time in
+response to a Kinesis notification, using metadata from the docmeta endpoint
+in the classic system.</li>
+</ul>
+<div class="section" id="key-requirements">
+<h2>Key Requirements<a class="headerlink" href="#key-requirements" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Simple search:<ul>
+<li>Users should be able to search for arXiv papers by title, author, and
+abstract.</li>
+<li>Searches can originate from any part of the arXiv.org site, via the
+search bar in the site header.</li>
+</ul>
+</li>
+<li>Advanced search:<ul>
+<li>Users can search for papers using boolean combinations of search terms on
+title, author names, and/or abstract.</li>
+<li>Users can filter results by primary classification, and submission date.</li>
+<li>Submission date supports prior year, specific year, and date range.</li>
+</ul>
+</li>
+<li>Author name search:<ul>
+<li>Users should be able to search for papers by author name.</li>
+<li>This should support queries originating on the abs page, and in search
+results.</li>
+</ul>
+</li>
+<li>UI: The overall flavor of the search views should be substantially
+similar to the classic views, but with styling that improves
+readability, usability, and accessibility.</li>
+</ul>
+</div>
+<div class="section" id="quality-goals">
+<h2>Quality Goals<a class="headerlink" href="#quality-goals" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Code quality:<ul>
+<li>90% test coverage on Python components that we develop/control.</li>
+<li>Linting: <code class="docutils literal notranslate"><span class="pre">pylint</span></code> passes with &gt;= 9/10.</li>
+<li>Documentation: <code class="docutils literal notranslate"><span class="pre">pydocstyle</span></code> passes.</li>
+<li>Static checking: <code class="docutils literal notranslate"><span class="pre">mypy</span></code> passes.</li>
+</ul>
+</li>
+<li>Performance &amp; reliability:<ul>
+<li>Response time: 99% of requests have a latency of 1 second or less.</li>
+<li>Error rate: parity with classic search.</li>
+<li>Request rate: support request volume of existing search * safety factor 3.</li>
+</ul>
+</li>
+<li>Accessibility: meet or exceed WCAG 2.0 level A for accessibility.</li>
+</ul>
+</div>
+<div class="section" id="constraints">
+<h2>Constraints<a class="headerlink" href="#constraints" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Must be implemented in Python/Flask, and be deployable behind Apache as a
+Python/WSGI application.</li>
+<li>The search application itself must be stateless. It must be able to connect
+to an arbitrary ElasticSearch cluster, which can be specified via
+configuration.</li>
+<li>Notifications about new content are delivered via the Kinesis notification
+broker.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architectural overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Search Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#key-requirements">Key Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quality-goals">Quality Goals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#constraints">Constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">search</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="architecture.html" title="previous chapter">Architectural overview</a></li>
+      <li>Next: <a href="search_api.html" title="next chapter">Search API (Alpha)</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="_sources/search_ui.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

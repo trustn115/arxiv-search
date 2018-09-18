@@ -1,0 +1,782 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.controllers.advanced.tests &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for search.controllers.advanced.tests</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Tests for advanced search controller, :mod:`search.controllers.advanced`.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="k">import</span> <span class="n">TestCase</span><span class="p">,</span> <span class="n">mock</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">date</span><span class="p">,</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">dateutil.relativedelta</span> <span class="k">import</span> <span class="n">relativedelta</span>
+<span class="kn">from</span> <span class="nn">werkzeug</span> <span class="k">import</span> <span class="n">MultiDict</span>
+<span class="kn">from</span> <span class="nn">werkzeug.exceptions</span> <span class="k">import</span> <span class="n">InternalServerError</span><span class="p">,</span> <span class="n">BadRequest</span>
+
+<span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">status</span>
+
+<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">Query</span><span class="p">,</span> <span class="n">DateRange</span><span class="p">,</span> <span class="n">FieldedSearchTerm</span><span class="p">,</span> <span class="n">Classification</span><span class="p">,</span>\
+    <span class="n">AdvancedQuery</span><span class="p">,</span> <span class="n">DocumentSet</span>
+<span class="kn">from</span> <span class="nn">search.controllers</span> <span class="k">import</span> <span class="n">advanced</span>
+<span class="kn">from</span> <span class="nn">search.controllers.advanced.forms</span> <span class="k">import</span> <span class="n">MultiFormatDateField</span>
+<span class="kn">from</span> <span class="nn">search.controllers.advanced.forms</span> <span class="k">import</span> <span class="n">AdvancedSearchForm</span>
+
+<span class="kn">from</span> <span class="nn">search.services.index</span> <span class="k">import</span> <span class="n">IndexConnectionError</span><span class="p">,</span> <span class="n">QueryError</span>
+
+
+<div class="viewcode-block" id="TestMultiFormatDateField"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestMultiFormatDateField">[docs]</a><span class="k">class</span> <span class="nc">TestMultiFormatDateField</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests the :class:`.MultiFormatDateField`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestMultiFormatDateField.test_value_with_one_format"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestMultiFormatDateField.test_value_with_one_format">[docs]</a>    <span class="k">def</span> <span class="nf">test_value_with_one_format</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;One date format is specified.&quot;&quot;&quot;</span>
+        <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="n">MultiFormatDateField</span><span class="p">(</span>
+            <span class="n">formats</span><span class="o">=</span><span class="p">[</span><span class="n">fmt</span><span class="p">],</span>
+            <span class="n">_form</span><span class="o">=</span><span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">(),</span>
+            <span class="n">_name</span><span class="o">=</span><span class="s1">&#39;test&#39;</span>
+        <span class="p">)</span>
+        <span class="n">field</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">_value</span><span class="p">(),</span> <span class="n">value</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">fmt</span><span class="p">),</span>
+                         <span class="s2">&quot;Should use the first (only) format to render value&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestMultiFormatDateField.test_process_with_one_format"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestMultiFormatDateField.test_process_with_one_format">[docs]</a>    <span class="k">def</span> <span class="nf">test_process_with_one_format</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;One date format is specified.&quot;&quot;&quot;</span>
+        <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="n">MultiFormatDateField</span><span class="p">(</span>
+            <span class="n">formats</span><span class="o">=</span><span class="p">[</span><span class="n">fmt</span><span class="p">],</span>
+            <span class="n">_form</span><span class="o">=</span><span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">(),</span>
+            <span class="n">_name</span><span class="o">=</span><span class="s1">&#39;test&#39;</span>
+        <span class="p">)</span>
+        <span class="n">field</span><span class="o">.</span><span class="n">process_formdata</span><span class="p">([</span><span class="s1">&#39;2012-01-02 05:55:02&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="s2">&quot;Should parse successfully&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestMultiFormatDateField.test_process_with_several_formats"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestMultiFormatDateField.test_process_with_several_formats">[docs]</a>    <span class="k">def</span> <span class="nf">test_process_with_several_formats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Several date formats are specified.&quot;&quot;&quot;</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="n">MultiFormatDateField</span><span class="p">(</span>
+            <span class="n">formats</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;%Y-%m&#39;</span><span class="p">,</span> <span class="s1">&#39;%Y&#39;</span><span class="p">],</span>
+            <span class="n">_form</span><span class="o">=</span><span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">(),</span>
+            <span class="n">_name</span><span class="o">=</span><span class="s1">&#39;test&#39;</span>
+        <span class="p">)</span>
+        <span class="n">field</span><span class="o">.</span><span class="n">process_formdata</span><span class="p">([</span><span class="s1">&#39;2012-03-02&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="s2">&quot;Should parse successfully&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="mi">2012</span><span class="p">)</span>
+
+        <span class="n">field</span><span class="o">.</span><span class="n">process_formdata</span><span class="p">([</span><span class="s1">&#39;2014-05&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="s2">&quot;Should parse successfully&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="mi">2014</span><span class="p">)</span>
+
+        <span class="n">field</span><span class="o">.</span><span class="n">process_formdata</span><span class="p">([</span><span class="s1">&#39;2011&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="s2">&quot;Should parse successfully&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="mi">2011</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestSearchController"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestSearchController">[docs]</a><span class="k">class</span> <span class="nc">TestSearchController</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests for :func:`.advanced.search`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestSearchController.test_no_form_data"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestSearchController.test_no_form_data">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.advanced.index&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_no_form_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;No form data has been submitted.&quot;&quot;&quot;</span>
+        <span class="n">request_data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">()</span>
+        <span class="n">response_data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">request_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="s2">&quot;Response should be OK.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;form&#39;</span><span class="p">,</span> <span class="n">response_data</span><span class="p">,</span> <span class="s2">&quot;Response should include form.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">call_count</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+                         <span class="s2">&quot;No search should be attempted&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestSearchController.test_single_field_term"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestSearchController.test_single_field_term">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.advanced.index&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_single_field_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Form data and ``advanced`` param are present.&quot;&quot;&quot;</span>
+        <span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">DocumentSet</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="p">{},</span> <span class="n">results</span><span class="o">=</span><span class="p">[])</span>
+
+        <span class="n">request_data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;advanced&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span>
+        <span class="p">})</span>
+        <span class="n">response_data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">request_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">call_count</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>
+                         <span class="s2">&quot;A search should be attempted&quot;</span><span class="p">)</span>
+        <span class="n">call_args</span><span class="p">,</span> <span class="n">call_kwargs</span> <span class="o">=</span> <span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">call_args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">call_args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">AdvancedQuery</span><span class="p">,</span>
+                              <span class="s2">&quot;An AdvancedQuery is passed to the search index&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="s2">&quot;Response should be OK.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestSearchController.test_invalid_data"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestSearchController.test_invalid_data">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.advanced.index&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_invalid_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Form data are invalid.&quot;&quot;&quot;</span>
+        <span class="n">request_data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;advanced&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;date-past_12&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;date-specific_year&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;date-year&#39;</span><span class="p">:</span> <span class="s1">&#39;2012&#39;</span>
+        <span class="p">})</span>
+        <span class="n">response_data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">request_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="s2">&quot;Response should be OK.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;form&#39;</span><span class="p">,</span> <span class="n">response_data</span><span class="p">,</span> <span class="s2">&quot;Response should include form.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">call_count</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+                         <span class="s2">&quot;No search should be attempted&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestSearchController.test_index_raises_connection_exception"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestSearchController.test_index_raises_connection_exception">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.advanced.index&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_index_raises_connection_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Index service raises a IndexConnectionError.&quot;&quot;&quot;</span>
+        <span class="c1"># We need to explicit assign the exception to the mock, otherwise the</span>
+        <span class="c1">#  exception raised in the side-effect will just be a mock object (not</span>
+        <span class="c1">#  inheriting from BaseException).</span>
+        <span class="n">mock_index</span><span class="o">.</span><span class="n">IndexConnectionError</span> <span class="o">=</span> <span class="n">IndexConnectionError</span>
+
+        <span class="k">def</span> <span class="nf">_raiseIndexConnectionError</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">IndexConnectionError</span><span class="p">(</span><span class="s1">&#39;What now&#39;</span><span class="p">)</span>
+
+        <span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="n">_raiseIndexConnectionError</span>
+
+        <span class="n">request_data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;advanced&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span>
+        <span class="p">})</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">InternalServerError</span><span class="p">):</span>
+            <span class="n">response_data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">request_data</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">call_count</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>
+                         <span class="s2">&quot;A search should be attempted&quot;</span><span class="p">)</span>
+        <span class="n">call_args</span><span class="p">,</span> <span class="n">call_kwargs</span> <span class="o">=</span> <span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">call_args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">call_args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">AdvancedQuery</span><span class="p">,</span>
+                              <span class="s2">&quot;An AdvancedQuery is passed to the search index&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestSearchController.test_index_raises_query_error"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestSearchController.test_index_raises_query_error">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.advanced.index&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_index_raises_query_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Index service raises a QueryError.&quot;&quot;&quot;</span>
+        <span class="c1"># We need to explicit assign the exception to the mock, otherwise the</span>
+        <span class="c1">#  exception raised in the side-effect will just be a mock object (not</span>
+        <span class="c1">#  inheriting from BaseException).</span>
+        <span class="n">mock_index</span><span class="o">.</span><span class="n">QueryError</span> <span class="o">=</span> <span class="n">QueryError</span>
+        <span class="n">mock_index</span><span class="o">.</span><span class="n">IndexConnectionError</span> <span class="o">=</span> <span class="n">IndexConnectionError</span>
+
+        <span class="k">def</span> <span class="nf">_raiseQueryError</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">QueryError</span><span class="p">(</span><span class="s1">&#39;What now&#39;</span><span class="p">)</span>
+
+        <span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="n">_raiseQueryError</span>
+
+        <span class="n">request_data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;advanced&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span>
+        <span class="p">})</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">InternalServerError</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">response_data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">request_data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">QueryError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">&quot;QueryError should be handled (caught </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">call_count</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>
+                         <span class="s2">&quot;A search should be attempted&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestAdvancedSearchForm"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestAdvancedSearchForm">[docs]</a><span class="k">class</span> <span class="nc">TestAdvancedSearchForm</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests for :class:`.AdvancedSearchForm`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestAdvancedSearchForm.test_single_field_term"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestAdvancedSearchForm.test_single_field_term">[docs]</a>    <span class="k">def</span> <span class="nf">test_single_field_term</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;User has entered a single term for a field-based search.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span>
+        <span class="p">})</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="TestAdvancedSearchForm.test_term_starts_with_wildcard"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestAdvancedSearchForm.test_term_starts_with_wildcard">[docs]</a>    <span class="k">def</span> <span class="nf">test_term_starts_with_wildcard</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;User has entered a string that starts with a wildcard.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;*foo&#39;</span>
+        <span class="p">})</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">(),</span> <span class="s2">&quot;Form should be invalid&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestAdvancedSearchForm.test_specific_year_must_be_specified"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestAdvancedSearchForm.test_specific_year_must_be_specified">[docs]</a>    <span class="k">def</span> <span class="nf">test_specific_year_must_be_specified</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If the user selects specific year, they must indicate a year.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-filter_by&#39;</span><span class="p">:</span> <span class="s1">&#39;specific_year&#39;</span><span class="p">,</span>
+        <span class="p">})</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">errors</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-filter_by&#39;</span><span class="p">:</span> <span class="s1">&#39;specific_year&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-year&#39;</span><span class="p">:</span> <span class="s1">&#39;2012&#39;</span>
+        <span class="p">})</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span></div>
+
+    <span class="c1"># ARXIVNG-382</span>
+<div class="viewcode-block" id="TestAdvancedSearchForm.test_date_range_supports_variable_precision"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestAdvancedSearchForm.test_date_range_supports_variable_precision">[docs]</a>    <span class="k">def</span> <span class="nf">test_date_range_supports_variable_precision</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Date range in advanced search should support variable precision.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-filter_by&#39;</span><span class="p">:</span> <span class="s1">&#39;date_range&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-to_date&#39;</span><span class="p">:</span> <span class="s1">&#39;2012-02-05&#39;</span>
+        <span class="p">})</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-filter_by&#39;</span><span class="p">:</span> <span class="s1">&#39;date_range&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-to_date&#39;</span><span class="p">:</span> <span class="s1">&#39;2012-02&#39;</span>
+        <span class="p">})</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-filter_by&#39;</span><span class="p">:</span> <span class="s1">&#39;date_range&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-to_date&#39;</span><span class="p">:</span> <span class="s1">&#39;2013&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-from_date&#39;</span><span class="p">:</span> <span class="s1">&#39;2012-03&#39;</span>
+        <span class="p">})</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="TestAdvancedSearchForm.test_date_range_must_be_specified"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestAdvancedSearchForm.test_date_range_must_be_specified">[docs]</a>    <span class="k">def</span> <span class="nf">test_date_range_must_be_specified</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If the user selects date range, they must indicate start or end.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-filter_by&#39;</span><span class="p">:</span> <span class="s1">&#39;date_range&#39;</span><span class="p">,</span>
+        <span class="p">})</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">errors</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-filter_by&#39;</span><span class="p">:</span> <span class="s1">&#39;date_range&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-from_date&#39;</span><span class="p">:</span> <span class="s1">&#39;2012-02-05&#39;</span>
+        <span class="p">})</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-filter_by&#39;</span><span class="p">:</span> <span class="s1">&#39;date_range&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-to_date&#39;</span><span class="p">:</span> <span class="s1">&#39;2012-02-05&#39;</span>
+        <span class="p">})</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span></div>
+
+    <span class="c1"># ARXIVNG-997</span>
+<div class="viewcode-block" id="TestAdvancedSearchForm.test_end_date_bounding"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestAdvancedSearchForm.test_end_date_bounding">[docs]</a>    <span class="k">def</span> <span class="nf">test_end_date_bounding</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If a user selects an end date, it must be bounded correctly.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-filter_by&#39;</span><span class="p">:</span> <span class="s1">&#39;date_range&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-to_date&#39;</span><span class="p">:</span> <span class="s1">&#39;2012&#39;</span>
+        <span class="p">})</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">to_date</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                         <span class="n">date</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2012</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">31</span><span class="p">))</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;date-to_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;2012-02&#39;</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">to_date</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                         <span class="n">date</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2012</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">29</span><span class="p">))</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;date-to_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;2016-06&#39;</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">to_date</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                         <span class="n">date</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2016</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">30</span><span class="p">))</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;date-to_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;2016-06-30&#39;</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">to_date</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                         <span class="n">date</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2016</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">30</span><span class="p">))</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;date-to_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;2100-02&#39;</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="TestAdvancedSearchForm.test_year_must_be_after_1990"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestAdvancedSearchForm.test_year_must_be_after_1990">[docs]</a>    <span class="k">def</span> <span class="nf">test_year_must_be_after_1990</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If the user selects a specific year, it must be after 1990.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-filter_by&#39;</span><span class="p">:</span> <span class="s1">&#39;specific_year&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-year&#39;</span><span class="p">:</span> <span class="s1">&#39;1990&#39;</span>
+        <span class="p">})</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-filter_by&#39;</span><span class="p">:</span> <span class="s1">&#39;specific_year&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date-year&#39;</span><span class="p">:</span> <span class="s1">&#39;1991&#39;</span>
+        <span class="p">})</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="TestAdvancedSearchForm.test_input_whitespace_is_stripped"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestAdvancedSearchForm.test_input_whitespace_is_stripped">[docs]</a>    <span class="k">def</span> <span class="nf">test_input_whitespace_is_stripped</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If query has padding whitespace, it should be removed.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39; foo &#39;</span>
+        <span class="p">})</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">(),</span> <span class="s2">&quot;Form should be valid.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">term</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+                         <span class="s2">&quot;Whitespace should be stripped.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestAdvancedSearchForm.test_querystring_has_unbalanced_quotes"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestAdvancedSearchForm.test_querystring_has_unbalanced_quotes">[docs]</a>    <span class="k">def</span> <span class="nf">test_querystring_has_unbalanced_quotes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Querystring has an odd number of quote characters.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;&quot;rhubarb&#39;</span>
+        <span class="p">})</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">(),</span> <span class="s2">&quot;Form should be invalid&quot;</span><span class="p">)</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;terms-0-term&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&quot;rhubarb&quot;&#39;</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">(),</span> <span class="s2">&quot;Form should be valid&quot;</span><span class="p">)</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;terms-0-term&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&quot;rhubarb&quot; &quot;pie&#39;</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">(),</span> <span class="s2">&quot;Form should be invalid&quot;</span><span class="p">)</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;terms-0-term&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&quot;rhubarb&quot; &quot;pie&quot;&#39;</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">AdvancedSearchForm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">(),</span> <span class="s2">&quot;Form should be valid&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestUpdatequeryWithClassification"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestUpdatequeryWithClassification">[docs]</a><span class="k">class</span> <span class="nc">TestUpdatequeryWithClassification</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;:func:`.advanced._update_query_with_classification` adds classfnxn.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestUpdatequeryWithClassification.test_classification_is_selected"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestUpdatequeryWithClassification.test_classification_is_selected">[docs]</a>    <span class="k">def</span> <span class="nf">test_classification_is_selected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Selected classifications are added to the query.&quot;&quot;&quot;</span>
+        <span class="n">class_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;computer_science&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">_update_query_with_classification</span><span class="p">(</span><span class="n">Query</span><span class="p">(),</span> <span class="n">class_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">Query</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Classification</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">archive</span><span class="p">,</span> <span class="s1">&#39;cs&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestUpdatequeryWithClassification.test_multiple_classifications_are_selected"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestUpdatequeryWithClassification.test_multiple_classifications_are_selected">[docs]</a>    <span class="k">def</span> <span class="nf">test_multiple_classifications_are_selected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Selected classifications are added to the query.&quot;&quot;&quot;</span>
+        <span class="n">class_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;computer_science&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;eess&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">_update_query_with_classification</span><span class="p">(</span><span class="n">Query</span><span class="p">(),</span> <span class="n">class_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">Query</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Classification</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Classification</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestUpdatequeryWithClassification.test_physics_is_selected_all_archives"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestUpdatequeryWithClassification.test_physics_is_selected_all_archives">[docs]</a>    <span class="k">def</span> <span class="nf">test_physics_is_selected_all_archives</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The physics group is added to the query.&quot;&quot;&quot;</span>
+        <span class="n">class_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;physics&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;physics_archives&#39;</span><span class="p">:</span> <span class="s1">&#39;all&#39;</span><span class="p">}</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">_update_query_with_classification</span><span class="p">(</span><span class="n">Query</span><span class="p">(),</span> <span class="n">class_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">Query</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Classification</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNone</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">archive</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">group</span><span class="p">,</span> <span class="s1">&#39;grp_physics&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestUpdatequeryWithClassification.test_physics_is_selected_specific_archive"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestUpdatequeryWithClassification.test_physics_is_selected_specific_archive">[docs]</a>    <span class="k">def</span> <span class="nf">test_physics_is_selected_specific_archive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The physic group and specified archive are added to the query.&quot;&quot;&quot;</span>
+        <span class="n">class_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;physics&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;physics_archives&#39;</span><span class="p">:</span> <span class="s1">&#39;hep-ex&#39;</span><span class="p">}</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">_update_query_with_classification</span><span class="p">(</span><span class="n">Query</span><span class="p">(),</span> <span class="n">class_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">Query</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Classification</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">archive</span><span class="p">,</span> <span class="s1">&#39;hep-ex&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">group</span><span class="p">,</span> <span class="s1">&#39;grp_physics&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestUpdatequeryWithClassification.test_physics_is_selected_specific_archive_plus_other_groups"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestUpdatequeryWithClassification.test_physics_is_selected_specific_archive_plus_other_groups">[docs]</a>    <span class="k">def</span> <span class="nf">test_physics_is_selected_specific_archive_plus_other_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The physics group and specified archive are added to the query.&quot;&quot;&quot;</span>
+        <span class="n">class_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;mathematics&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;physics&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;physics_archives&#39;</span><span class="p">:</span> <span class="s1">&#39;hep-ex&#39;</span>
+        <span class="p">}</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">_update_query_with_classification</span><span class="p">(</span><span class="n">Query</span><span class="p">(),</span> <span class="n">class_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">Query</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Classification</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Classification</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestUpdateQueryWithFieldedTerms"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestUpdateQueryWithFieldedTerms">[docs]</a><span class="k">class</span> <span class="nc">TestUpdateQueryWithFieldedTerms</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;:func:`.advanced._update_query_with_terms` adds primary search terms.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestUpdateQueryWithFieldedTerms.test_terms_are_provided"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestUpdateQueryWithFieldedTerms.test_terms_are_provided">[docs]</a>    <span class="k">def</span> <span class="nf">test_terms_are_provided</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Selected terms are added to the query.&quot;&quot;&quot;</span>
+        <span class="n">terms_data</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;term&#39;</span><span class="p">:</span> <span class="s1">&#39;muon&#39;</span><span class="p">,</span> <span class="s1">&#39;operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">}]</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">_update_query_with_terms</span><span class="p">(</span><span class="n">Query</span><span class="p">(),</span> <span class="n">terms_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">Query</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">FieldedSearchTerm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">term</span><span class="p">,</span> <span class="s1">&#39;muon&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">operator</span><span class="p">,</span> <span class="s1">&#39;AND&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestUpdateQueryWithFieldedTerms.test_multiple_terms_are_provided"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestUpdateQueryWithFieldedTerms.test_multiple_terms_are_provided">[docs]</a>    <span class="k">def</span> <span class="nf">test_multiple_terms_are_provided</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Selected terms are added to the query.&quot;&quot;&quot;</span>
+        <span class="n">terms_data</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;term&#39;</span><span class="p">:</span> <span class="s1">&#39;muon&#39;</span><span class="p">,</span> <span class="s1">&#39;operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;term&#39;</span><span class="p">:</span> <span class="s1">&#39;boson&#39;</span><span class="p">,</span> <span class="s1">&#39;operator&#39;</span><span class="p">:</span> <span class="s1">&#39;OR&#39;</span><span class="p">,</span> <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">}</span>
+        <span class="p">]</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">_update_query_with_terms</span><span class="p">(</span><span class="n">Query</span><span class="p">(),</span> <span class="n">terms_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">Query</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">FieldedSearchTerm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">term</span><span class="p">,</span> <span class="s1">&#39;boson&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">operator</span><span class="p">,</span> <span class="s1">&#39;OR&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestUpdateQueryWithFieldedTerms.test_multiple_terms_are_provided_with_all_field"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestUpdateQueryWithFieldedTerms.test_multiple_terms_are_provided_with_all_field">[docs]</a>    <span class="k">def</span> <span class="nf">test_multiple_terms_are_provided_with_all_field</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Selected terms are added to the query.&quot;&quot;&quot;</span>
+        <span class="n">terms_data</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;term&#39;</span><span class="p">:</span> <span class="s1">&#39;switch&#39;</span><span class="p">,</span> <span class="s1">&#39;operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="s1">&#39;all&#39;</span><span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;term&#39;</span><span class="p">:</span> <span class="s1">&#39;disk&#39;</span><span class="p">,</span> <span class="s1">&#39;operator&#39;</span><span class="p">:</span> <span class="s1">&#39;OR&#39;</span><span class="p">,</span> <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="s1">&#39;all&#39;</span><span class="p">}</span>
+        <span class="p">]</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">_update_query_with_terms</span><span class="p">(</span><span class="n">Query</span><span class="p">(),</span> <span class="n">terms_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">Query</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">FieldedSearchTerm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">term</span><span class="p">,</span> <span class="s1">&#39;disk&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">operator</span><span class="p">,</span> <span class="s1">&#39;OR&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestUpdateQueryWithDates"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestUpdateQueryWithDates">[docs]</a><span class="k">class</span> <span class="nc">TestUpdateQueryWithDates</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;:func:`.advanced._update_query_with_dates` applies date selections.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestUpdateQueryWithDates.test_past_12_is_selected"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestUpdateQueryWithDates.test_past_12_is_selected">[docs]</a>    <span class="k">def</span> <span class="nf">test_past_12_is_selected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Query selects the past twelve months.&quot;&quot;&quot;</span>
+        <span class="n">date_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;filter_by&#39;</span><span class="p">:</span> <span class="s1">&#39;past_12&#39;</span><span class="p">,</span> <span class="s1">&#39;date_type&#39;</span><span class="p">:</span> <span class="s1">&#39;submitted_date&#39;</span><span class="p">}</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">_update_query_with_dates</span><span class="p">(</span><span class="n">Query</span><span class="p">(),</span> <span class="n">date_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">Query</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">date_range</span><span class="p">,</span> <span class="n">DateRange</span><span class="p">)</span>
+        <span class="n">twelve_months</span> <span class="o">=</span> <span class="n">relativedelta</span><span class="p">(</span><span class="n">months</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">days</span><span class="o">=</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span><span class="o">.</span><span class="n">day</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="n">q</span><span class="o">.</span><span class="n">date_range</span><span class="o">.</span><span class="n">start_date</span><span class="o">.</span><span class="n">date</span><span class="p">(),</span>
+            <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span> <span class="o">-</span> <span class="n">twelve_months</span><span class="p">,</span>
+            <span class="s2">&quot;Start date is the first day of the month twelve prior to today.&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestUpdateQueryWithDates.test_all_dates_is_selected"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestUpdateQueryWithDates.test_all_dates_is_selected">[docs]</a>    <span class="k">def</span> <span class="nf">test_all_dates_is_selected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Query does not select on date.&quot;&quot;&quot;</span>
+        <span class="n">date_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;filter_by&#39;</span><span class="p">:</span> <span class="s1">&#39;all_dates&#39;</span><span class="p">,</span> <span class="s1">&#39;date_type&#39;</span><span class="p">:</span> <span class="s1">&#39;submitted_date&#39;</span><span class="p">}</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">_update_query_with_dates</span><span class="p">(</span><span class="n">AdvancedQuery</span><span class="p">(),</span> <span class="n">date_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">AdvancedQuery</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNone</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">date_range</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestUpdateQueryWithDates.test_specific_year_is_selected"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestUpdateQueryWithDates.test_specific_year_is_selected">[docs]</a>    <span class="k">def</span> <span class="nf">test_specific_year_is_selected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Start and end dates are set, one year apart.&quot;&quot;&quot;</span>
+        <span class="n">date_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;filter_by&#39;</span><span class="p">:</span> <span class="s1">&#39;specific_year&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;year&#39;</span><span class="p">:</span> <span class="n">date</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">1999</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="s1">&#39;date_type&#39;</span><span class="p">:</span> <span class="s1">&#39;submitted_date&#39;</span>
+        <span class="p">}</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">_update_query_with_dates</span><span class="p">(</span><span class="n">AdvancedQuery</span><span class="p">(),</span> <span class="n">date_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">AdvancedQuery</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">date_range</span><span class="o">.</span><span class="n">end_date</span><span class="o">.</span><span class="n">date</span><span class="p">(),</span>
+                         <span class="n">date</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">date_range</span><span class="o">.</span><span class="n">start_date</span><span class="o">.</span><span class="n">date</span><span class="p">(),</span>
+                         <span class="n">date</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">1999</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TestUpdateQueryWithDates.test_date_range_is_selected"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestUpdateQueryWithDates.test_date_range_is_selected">[docs]</a>    <span class="k">def</span> <span class="nf">test_date_range_is_selected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Start and end dates are set based on selection.&quot;&quot;&quot;</span>
+        <span class="n">from_date</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">1999</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">to_date</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">1999</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        <span class="n">date_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;filter_by&#39;</span><span class="p">:</span> <span class="s1">&#39;date_range&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;from_date&#39;</span><span class="p">:</span> <span class="n">from_date</span><span class="p">,</span>
+            <span class="s1">&#39;to_date&#39;</span><span class="p">:</span> <span class="n">to_date</span><span class="p">,</span>
+            <span class="s1">&#39;date_type&#39;</span><span class="p">:</span> <span class="s1">&#39;submitted_date&#39;</span>
+        <span class="p">}</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">_update_query_with_dates</span><span class="p">(</span><span class="n">AdvancedQuery</span><span class="p">(),</span> <span class="n">date_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">AdvancedQuery</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">date_range</span><span class="o">.</span><span class="n">end_date</span><span class="o">.</span><span class="n">date</span><span class="p">(),</span> <span class="n">to_date</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">date_range</span><span class="o">.</span><span class="n">start_date</span><span class="o">.</span><span class="n">date</span><span class="p">(),</span> <span class="n">from_date</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestPaginationParametersAreFunky"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestPaginationParametersAreFunky">[docs]</a><span class="k">class</span> <span class="nc">TestPaginationParametersAreFunky</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The user may have monkeyed with the order or sort parameters.</span>
+
+<span class="sd">    Since these are limited to specific values, there is no other reason for</span>
+<span class="sd">    them to be invalid. Given that they are passed around among</span>
+<span class="sd">    views (to persist users&#39; selection), it&#39;s important to break the chain.</span>
+<span class="sd">    To do this, we return a 400 Bad Request, with a clean link back to the</span>
+<span class="sd">    search form.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestPaginationParametersAreFunky.test_order_is_invalid"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestPaginationParametersAreFunky.test_order_is_invalid">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.advanced.url_for&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_order_is_invalid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_url_for</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The order parameter on the request is invalid.&quot;&quot;&quot;</span>
+        <span class="n">request_data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;advanced&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>     <span class="c1"># Valid.</span>
+            <span class="s1">&#39;order&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span>  <span class="c1"># Invalid</span>
+        <span class="p">})</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">BadRequest</span><span class="p">):</span>
+            <span class="n">advanced</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">request_data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestPaginationParametersAreFunky.test_size_is_invalid"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestPaginationParametersAreFunky.test_size_is_invalid">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.advanced.url_for&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_size_is_invalid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_url_for</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The order parameter on the request is invalid.&quot;&quot;&quot;</span>
+        <span class="n">request_data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;advanced&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">51</span><span class="p">,</span>     <span class="c1"># Invalid</span>
+            <span class="s1">&#39;order&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span>  <span class="c1"># Valid</span>
+        <span class="p">})</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">BadRequest</span><span class="p">):</span>
+            <span class="n">advanced</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">request_data</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestClassicAuthorSyntaxIsIntercepted"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestClassicAuthorSyntaxIsIntercepted">[docs]</a><span class="k">class</span> <span class="nc">TestClassicAuthorSyntaxIsIntercepted</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The user may have entered an author query using `surname_f` syntax.</span>
+
+<span class="sd">    This is an artefact of the classic search system, and not intended to be</span>
+<span class="sd">    supported. Nevertheless, users have become accustomed to this syntax. We</span>
+<span class="sd">    therefore rewrite the query using a comma, and show the user a warning</span>
+<span class="sd">    about the syntax change.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestClassicAuthorSyntaxIsIntercepted.test_all_fields_search_contains_classic_syntax"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestClassicAuthorSyntaxIsIntercepted.test_all_fields_search_contains_classic_syntax">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.advanced.index&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_all_fields_search_contains_classic_syntax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;User has entered a `surname_f` query in an all-fields term.&quot;&quot;&quot;</span>
+        <span class="n">request_data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;advanced&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;franklin_r&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+            <span class="s1">&#39;order&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span>
+        <span class="p">})</span>
+        <span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">DocumentSet</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="p">{},</span> <span class="n">results</span><span class="o">=</span><span class="p">[])</span>
+
+        <span class="n">data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">request_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;query&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">term</span><span class="p">,</span> <span class="s2">&quot;franklin, r&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;The query should be rewritten.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;has_classic_format&#39;</span><span class="p">],</span>
+                        <span class="s2">&quot;A flag denoting the syntax interception should be set&quot;</span>
+                        <span class="s2">&quot; in the response context, so that a message may be&quot;</span>
+                        <span class="s2">&quot; rendered in the template.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestClassicAuthorSyntaxIsIntercepted.test_author_search_contains_classic_syntax"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestClassicAuthorSyntaxIsIntercepted.test_author_search_contains_classic_syntax">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.advanced.index&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_author_search_contains_classic_syntax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;User has entered a `surname_f` query in an author search.&quot;&quot;&quot;</span>
+        <span class="n">request_data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;advanced&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;author&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;franklin_r&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+            <span class="s1">&#39;order&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span>
+        <span class="p">})</span>
+        <span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">DocumentSet</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="p">{},</span> <span class="n">results</span><span class="o">=</span><span class="p">[])</span>
+
+        <span class="n">data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">request_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;query&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">term</span><span class="p">,</span> <span class="s2">&quot;franklin, r&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;The query should be rewritten.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;has_classic_format&#39;</span><span class="p">],</span>
+                        <span class="s2">&quot;A flag denoting the syntax interception should be set&quot;</span>
+                        <span class="s2">&quot; in the response context, so that a message may be&quot;</span>
+                        <span class="s2">&quot; rendered in the template.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestClassicAuthorSyntaxIsIntercepted.test_all_fields_search_multiple_classic_syntax"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestClassicAuthorSyntaxIsIntercepted.test_all_fields_search_multiple_classic_syntax">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.advanced.index&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_all_fields_search_multiple_classic_syntax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;User has entered a classic query with multiple authors.&quot;&quot;&quot;</span>
+        <span class="n">request_data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;advanced&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;j franklin_r hawking_s&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+            <span class="s1">&#39;order&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span>
+        <span class="p">})</span>
+        <span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">DocumentSet</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="p">{},</span> <span class="n">results</span><span class="o">=</span><span class="p">[])</span>
+
+        <span class="n">data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">request_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;query&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">term</span><span class="p">,</span>
+                         <span class="s2">&quot;j franklin, r; hawking, s&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;The query should be rewritten.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;has_classic_format&#39;</span><span class="p">],</span>
+                        <span class="s2">&quot;A flag denoting the syntax interception should be set&quot;</span>
+                        <span class="s2">&quot; in the response context, so that a message may be&quot;</span>
+                        <span class="s2">&quot; rendered in the template.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestClassicAuthorSyntaxIsIntercepted.test_title_search_contains_classic_syntax"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestClassicAuthorSyntaxIsIntercepted.test_title_search_contains_classic_syntax">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.advanced.index&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_title_search_contains_classic_syntax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;User has entered a `surname_f` query in a title search.&quot;&quot;&quot;</span>
+        <span class="n">request_data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span>
+            <span class="s1">&#39;advanced&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-operator&#39;</span><span class="p">:</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-field&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;terms-0-term&#39;</span><span class="p">:</span> <span class="s1">&#39;franklin_r&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+            <span class="s1">&#39;order&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span>
+        <span class="p">})</span>
+        <span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">DocumentSet</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="p">{},</span> <span class="n">results</span><span class="o">=</span><span class="p">[])</span>
+
+        <span class="n">data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">request_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;query&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">term</span><span class="p">,</span> <span class="s2">&quot;franklin_r&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;The query should not be rewritten.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;has_classic_format&#39;</span><span class="p">],</span>
+                         <span class="s2">&quot;Flag should not be set, as no rewrite has occurred.&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">search</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  <li><a href="../../controllers.html">search.controllers</a><ul>
+  <li><a href="../advanced.html">search.controllers.advanced</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

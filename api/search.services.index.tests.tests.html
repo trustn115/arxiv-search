@@ -1,0 +1,209 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.services.index.tests.tests module &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="search.services.index.advanced module" href="search.services.index.advanced.html" />
+    <link rel="prev" title="search.services.index.tests.test_util module" href="search.services.index.tests.test_util.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-search.services.index.tests.tests">
+<span id="search-services-index-tests-tests-module"></span><h1>search.services.index.tests.tests module<a class="headerlink" href="#module-search.services.index.tests.tests" title="Permalink to this headline">¶</a></h1>
+<p>Tests for <a class="reference internal" href="search.services.index.html#module-search.services.index" title="search.services.index"><code class="xref py py-mod docutils literal notranslate"><span class="pre">search.services.index</span></code></a>.</p>
+<dl class="class">
+<dt id="search.services.index.tests.tests.TestPrepare">
+<em class="property">class </em><code class="descclassname">search.services.index.tests.tests.</code><code class="descname">TestPrepare</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/tests/tests.html#TestPrepare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.tests.tests.TestPrepare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Tests for <a class="reference internal" href="search.services.index.prepare.html#module-search.services.index.prepare" title="search.services.index.prepare"><code class="xref py py-mod docutils literal notranslate"><span class="pre">index.prepare</span></code></a>.</p>
+<dl class="method">
+<dt id="search.services.index.tests.tests.TestPrepare.test_group_terms">
+<code class="descname">test_group_terms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/tests/tests.html#TestPrepare.test_group_terms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.tests.tests.TestPrepare.test_group_terms" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">_group_terms()</span></code> groups terms using logical precedence.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.services.index.tests.tests.TestPrepare.test_group_terms_all_and">
+<code class="descname">test_group_terms_all_and</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/tests/tests.html#TestPrepare.test_group_terms_all_and"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.tests.tests.TestPrepare.test_group_terms_all_and" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">_group_terms()</span></code> groups terms using logical precedence.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.services.index.tests.tests.TestSearch">
+<em class="property">class </em><code class="descclassname">search.services.index.tests.tests.</code><code class="descname">TestSearch</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/tests/tests.html#TestSearch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.tests.tests.TestSearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Tests for <a class="reference internal" href="search.services.index.html#search.services.index.search" title="search.services.index.search"><code class="xref py py-func docutils literal notranslate"><span class="pre">index.search()</span></code></a>.</p>
+<dl class="method">
+<dt id="search.services.index.tests.tests.TestSearch.test_advanced_query">
+<code class="descname">test_advanced_query</code><span class="sig-paren">(</span><em>mock_Elasticsearch</em>, <em>mock_Search</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/tests/tests.html#TestSearch.test_advanced_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.tests.tests.TestSearch.test_advanced_query" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">index.search</span></code> supports <code class="xref py py-class docutils literal notranslate"><span class="pre">AdvancedQuery</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.services.index.tests.tests.TestSearch.test_simple_query">
+<code class="descname">test_simple_query</code><span class="sig-paren">(</span><em>mock_Elasticsearch</em>, <em>mock_Search</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/tests/tests.html#TestSearch.test_simple_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.tests.tests.TestSearch.test_simple_query" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">index.search</span></code> supports <code class="xref py py-class docutils literal notranslate"><span class="pre">SimpleQuery</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.services.index.tests.tests.TestWildcardSearch">
+<em class="property">class </em><code class="descclassname">search.services.index.tests.tests.</code><code class="descname">TestWildcardSearch</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/tests/tests.html#TestWildcardSearch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.tests.tests.TestWildcardSearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>A wildcard [<a href="#id1"><span class="problematic" id="id2">*</span></a>?] character is present in a querystring.</p>
+<dl class="method">
+<dt id="search.services.index.tests.tests.TestWildcardSearch.test_match_any_wildcard_in_literal">
+<code class="descname">test_match_any_wildcard_in_literal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/tests/tests.html#TestWildcardSearch.test_match_any_wildcard_in_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.tests.tests.TestWildcardSearch.test_match_any_wildcard_in_literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>A * wildcard is present in a string literal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.services.index.tests.tests.TestWildcardSearch.test_match_any_wildcard_is_present">
+<code class="descname">test_match_any_wildcard_is_present</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/tests/tests.html#TestWildcardSearch.test_match_any_wildcard_is_present"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.tests.tests.TestWildcardSearch.test_match_any_wildcard_is_present" title="Permalink to this definition">¶</a></dt>
+<dd><p>A * wildcard is present in the query.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.services.index.tests.tests.TestWildcardSearch.test_mixed_wildcards_in_literal">
+<code class="descname">test_mixed_wildcards_in_literal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/tests/tests.html#TestWildcardSearch.test_mixed_wildcards_in_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.tests.tests.TestWildcardSearch.test_mixed_wildcards_in_literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Both * and ? characters are present in a string literal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.services.index.tests.tests.TestWildcardSearch.test_multiple_match_any_wildcard_in_literal">
+<code class="descname">test_multiple_match_any_wildcard_in_literal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/tests/tests.html#TestWildcardSearch.test_multiple_match_any_wildcard_in_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.tests.tests.TestWildcardSearch.test_multiple_match_any_wildcard_in_literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiple * wildcards are present in a string literal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.services.index.tests.tests.TestWildcardSearch.test_wildcard_at_opening_of_string">
+<code class="descname">test_wildcard_at_opening_of_string</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/tests/tests.html#TestWildcardSearch.test_wildcard_at_opening_of_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.tests.tests.TestWildcardSearch.test_wildcard_at_opening_of_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wildcard character is the first character in the querystring.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.services.index.tests.tests.TestWildcardSearch.test_wildcards_both_inside_and_outside_literal">
+<code class="descname">test_wildcards_both_inside_and_outside_literal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/tests/tests.html#TestWildcardSearch.test_wildcards_both_inside_and_outside_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.tests.tests.TestWildcardSearch.test_wildcards_both_inside_and_outside_literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wildcard characters are present both inside and outside literal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.services.index.tests.tests.TestWildcardSearch.test_wildcards_inside_outside_multiple_literals">
+<code class="descname">test_wildcards_inside_outside_multiple_literals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/tests/tests.html#TestWildcardSearch.test_wildcards_inside_outside_multiple_literals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.tests.tests.TestWildcardSearch.test_wildcards_inside_outside_multiple_literals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wildcard chars are everywhere, and there are multiple literals.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">search</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="search.html">search package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">search</a><ul>
+  <li><a href="search.html">search package</a><ul>
+  <li><a href="search.services.html">search.services package</a><ul>
+  <li><a href="search.services.index.html">search.services.index package</a><ul>
+  <li><a href="search.services.index.tests.html">search.services.index.tests package</a><ul>
+      <li>Previous: <a href="search.services.index.tests.test_util.html" title="previous chapter">search.services.index.tests.test_util module</a></li>
+      <li>Next: <a href="search.services.index.advanced.html" title="next chapter">search.services.index.advanced module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/api/search.services.index.tests.tests.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

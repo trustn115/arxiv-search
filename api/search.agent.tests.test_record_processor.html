@@ -1,0 +1,263 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.agent.tests.test_record_processor module &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="search.agent.consumer module" href="search.agent.consumer.html" />
+    <link rel="prev" title="search.agent.tests.test_integration module" href="search.agent.tests.test_integration.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-search.agent.tests.test_record_processor">
+<span id="search-agent-tests-test-record-processor-module"></span><h1>search.agent.tests.test_record_processor module<a class="headerlink" href="#module-search.agent.tests.test_record_processor" title="Permalink to this headline">¶</a></h1>
+<p>Unit tests for <a class="reference internal" href="search.agent.html#module-search.agent" title="search.agent"><code class="xref py py-mod docutils literal notranslate"><span class="pre">search.agent</span></code></a>.</p>
+<dl class="class">
+<dt id="search.agent.tests.test_record_processor.TestAddToIndex">
+<em class="property">class </em><code class="descclassname">search.agent.tests.test_record_processor.</code><code class="descname">TestAddToIndex</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestAddToIndex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestAddToIndex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Add a search document to the index.</p>
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestAddToIndex.setUp">
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestAddToIndex.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestAddToIndex.setUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="search.agent.consumer.html#search.agent.consumer.MetadataRecordProcessor" title="search.agent.consumer.MetadataRecordProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetadataRecordProcessor</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestAddToIndex.test_add_document_succeeds">
+<code class="descname">test_add_document_succeeds</code><span class="sig-paren">(</span><em>mock_index</em>, <em>mock_client_factory</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestAddToIndex.test_add_document_succeeds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestAddToIndex.test_add_document_succeeds" title="Permalink to this definition">¶</a></dt>
+<dd><p>The search document is added successfully.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestAddToIndex.test_index_raises_index_connection_error">
+<code class="descname">test_index_raises_index_connection_error</code><span class="sig-paren">(</span><em>mock_index</em>, <em>mock_client_factory</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestAddToIndex.test_index_raises_index_connection_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestAddToIndex.test_index_raises_index_connection_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>The index raises <code class="xref py py-class docutils literal notranslate"><span class="pre">index.IndexConnectionError</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestAddToIndex.test_index_raises_unhandled_error">
+<code class="descname">test_index_raises_unhandled_error</code><span class="sig-paren">(</span><em>mock_index</em>, <em>mock_client_factory</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestAddToIndex.test_index_raises_unhandled_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestAddToIndex.test_index_raises_unhandled_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>The index raises an unhandled exception.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.agent.tests.test_record_processor.TestBulkAddToIndex">
+<em class="property">class </em><code class="descclassname">search.agent.tests.test_record_processor.</code><code class="descname">TestBulkAddToIndex</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestBulkAddToIndex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestBulkAddToIndex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Add multiple search documents to the index in bulk.</p>
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestBulkAddToIndex.setUp">
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestBulkAddToIndex.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestBulkAddToIndex.setUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="search.agent.consumer.html#search.agent.consumer.MetadataRecordProcessor" title="search.agent.consumer.MetadataRecordProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetadataRecordProcessor</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestBulkAddToIndex.test_bulk_add_documents_succeeds">
+<code class="descname">test_bulk_add_documents_succeeds</code><span class="sig-paren">(</span><em>mock_index</em>, <em>mock_client_factory</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestBulkAddToIndex.test_bulk_add_documents_succeeds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestBulkAddToIndex.test_bulk_add_documents_succeeds" title="Permalink to this definition">¶</a></dt>
+<dd><p>The search document is added successfully.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestBulkAddToIndex.test_index_raises_index_connection_error">
+<code class="descname">test_index_raises_index_connection_error</code><span class="sig-paren">(</span><em>mock_index</em>, <em>mock_client_factory</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestBulkAddToIndex.test_index_raises_index_connection_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestBulkAddToIndex.test_index_raises_index_connection_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>The index raises <code class="xref py py-class docutils literal notranslate"><span class="pre">index.IndexConnectionError</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestBulkAddToIndex.test_index_raises_unhandled_error">
+<code class="descname">test_index_raises_unhandled_error</code><span class="sig-paren">(</span><em>mock_index</em>, <em>mock_client_factory</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestBulkAddToIndex.test_index_raises_unhandled_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestBulkAddToIndex.test_index_raises_unhandled_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>The index raises an unhandled exception.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.agent.tests.test_record_processor.TestGetMetadata">
+<em class="property">class </em><code class="descclassname">search.agent.tests.test_record_processor.</code><code class="descname">TestGetMetadata</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestGetMetadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestGetMetadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Retrieve metadata for an arXiv e-print.</p>
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestGetMetadata.setUp">
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestGetMetadata.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestGetMetadata.setUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="search.agent.consumer.html#search.agent.consumer.MetadataRecordProcessor" title="search.agent.consumer.MetadataRecordProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetadataRecordProcessor</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestGetMetadata.test_metadata_service_raises_bad_response">
+<code class="descname">test_metadata_service_raises_bad_response</code><span class="sig-paren">(</span><em>mock_metadata</em>, <em>mock_client_factory</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestGetMetadata.test_metadata_service_raises_bad_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestGetMetadata.test_metadata_service_raises_bad_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>The metadata service raises <a class="reference internal" href="search.services.metadata.html#search.services.metadata.BadResponse" title="search.services.metadata.BadResponse"><code class="xref py py-class docutils literal notranslate"><span class="pre">metadata.BadResponse</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestGetMetadata.test_metadata_service_raises_connection_error">
+<code class="descname">test_metadata_service_raises_connection_error</code><span class="sig-paren">(</span><em>mock_metadata</em>, <em>mock_client_factory</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestGetMetadata.test_metadata_service_raises_connection_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestGetMetadata.test_metadata_service_raises_connection_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>The metadata service raises <a class="reference internal" href="search.services.metadata.html#search.services.metadata.ConnectionFailed" title="search.services.metadata.ConnectionFailed"><code class="xref py py-class docutils literal notranslate"><span class="pre">metadata.ConnectionFailed</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestGetMetadata.test_metadata_service_raises_request_error">
+<code class="descname">test_metadata_service_raises_request_error</code><span class="sig-paren">(</span><em>mock_metadata</em>, <em>mock_client_factory</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestGetMetadata.test_metadata_service_raises_request_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestGetMetadata.test_metadata_service_raises_request_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>The metadata service raises <a class="reference internal" href="search.services.metadata.html#search.services.metadata.RequestFailed" title="search.services.metadata.RequestFailed"><code class="xref py py-class docutils literal notranslate"><span class="pre">metadata.RequestFailed</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestGetMetadata.test_metadata_service_returns_metadata">
+<code class="descname">test_metadata_service_returns_metadata</code><span class="sig-paren">(</span><em>mock_metadata</em>, <em>mock_client_factory</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestGetMetadata.test_metadata_service_returns_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestGetMetadata.test_metadata_service_returns_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>The metadata service returns valid metadata.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.agent.tests.test_record_processor.TestIndexPaper">
+<em class="property">class </em><code class="descclassname">search.agent.tests.test_record_processor.</code><code class="descname">TestIndexPaper</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestIndexPaper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestIndexPaper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Re-index all versions of an arXiv paper.</p>
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestIndexPaper.setUp">
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestIndexPaper.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestIndexPaper.setUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="search.agent.consumer.html#search.agent.consumer.MetadataRecordProcessor" title="search.agent.consumer.MetadataRecordProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetadataRecordProcessor</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestIndexPaper.test_paper_has_one_version">
+<code class="descname">test_paper_has_one_version</code><span class="sig-paren">(</span><em>mock_meta</em>, <em>mock_tx</em>, <em>mock_idx</em>, <em>mock_client_factory</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestIndexPaper.test_paper_has_one_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestIndexPaper.test_paper_has_one_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>The arXiv paper has only one version.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestIndexPaper.test_paper_has_three_versions">
+<code class="descname">test_paper_has_three_versions</code><span class="sig-paren">(</span><em>mock_meta</em>, <em>mock_tx</em>, <em>mock_idx</em>, <em>mock_client_factory</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestIndexPaper.test_paper_has_three_versions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestIndexPaper.test_paper_has_three_versions" title="Permalink to this definition">¶</a></dt>
+<dd><p>The arXiv paper has three versions.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.agent.tests.test_record_processor.TestTransformToDocument">
+<em class="property">class </em><code class="descclassname">search.agent.tests.test_record_processor.</code><code class="descname">TestTransformToDocument</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestTransformToDocument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestTransformToDocument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Transform metadata into a search document.</p>
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestTransformToDocument.setUp">
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestTransformToDocument.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestTransformToDocument.setUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="search.agent.consumer.html#search.agent.consumer.MetadataRecordProcessor" title="search.agent.consumer.MetadataRecordProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetadataRecordProcessor</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.agent.tests.test_record_processor.TestTransformToDocument.test_transform_raises_exception">
+<code class="descname">test_transform_raises_exception</code><span class="sig-paren">(</span><em>mock_transform</em>, <em>mock_client_factory</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/agent/tests/test_record_processor.html#TestTransformToDocument.test_transform_raises_exception"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.tests.test_record_processor.TestTransformToDocument.test_transform_raises_exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>The transform module raises an exception.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">search</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="search.html">search package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">search</a><ul>
+  <li><a href="search.html">search package</a><ul>
+  <li><a href="search.agent.html">search.agent package</a><ul>
+  <li><a href="search.agent.tests.html">search.agent.tests package</a><ul>
+      <li>Previous: <a href="search.agent.tests.test_integration.html" title="previous chapter">search.agent.tests.test_integration module</a></li>
+      <li>Next: <a href="search.agent.consumer.html" title="next chapter">search.agent.consumer module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/api/search.agent.tests.test_record_processor.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

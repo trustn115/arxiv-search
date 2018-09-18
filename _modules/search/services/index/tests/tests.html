@@ -1,0 +1,378 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.services.index.tests.tests &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for search.services.index.tests.tests</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Tests for :mod:`search.services.index`.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="k">import</span> <span class="n">TestCase</span><span class="p">,</span> <span class="n">mock</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">date</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">pytz</span> <span class="k">import</span> <span class="n">timezone</span>
+<span class="kn">from</span> <span class="nn">elasticsearch_dsl</span> <span class="k">import</span> <span class="n">Search</span><span class="p">,</span> <span class="n">Q</span>
+<span class="kn">from</span> <span class="nn">elasticsearch_dsl.query</span> <span class="k">import</span> <span class="n">Range</span><span class="p">,</span> <span class="n">Match</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Nested</span>
+
+<span class="kn">from</span> <span class="nn">search.services</span> <span class="k">import</span> <span class="n">index</span>
+<span class="kn">from</span> <span class="nn">search.services.index</span> <span class="k">import</span> <span class="n">advanced</span>
+<span class="kn">from</span> <span class="nn">search.services.index.util</span> <span class="k">import</span> <span class="n">wildcard_escape</span><span class="p">,</span> <span class="n">Q_</span>
+<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">Query</span><span class="p">,</span> <span class="n">FieldedSearchTerm</span><span class="p">,</span> <span class="n">DateRange</span><span class="p">,</span> <span class="n">Classification</span><span class="p">,</span>\
+    <span class="n">AdvancedQuery</span><span class="p">,</span> <span class="n">FieldedSearchList</span><span class="p">,</span> <span class="n">ClassificationList</span><span class="p">,</span> <span class="n">SimpleQuery</span><span class="p">,</span> \
+    <span class="n">DocumentSet</span>
+
+<span class="n">EASTERN</span> <span class="o">=</span> <span class="n">timezone</span><span class="p">(</span><span class="s1">&#39;US/Eastern&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="TestSearch"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.tests.html#search.services.index.tests.tests.TestSearch">[docs]</a><span class="k">class</span> <span class="nc">TestSearch</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests for :func:`.index.search`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestSearch.test_advanced_query"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.tests.html#search.services.index.tests.tests.TestSearch.test_advanced_query">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.services.index.Search&#39;</span><span class="p">)</span>
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.services.index.Elasticsearch&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_advanced_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_Elasticsearch</span><span class="p">,</span> <span class="n">mock_Search</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;:class:`.index.search` supports :class:`AdvancedQuery`.&quot;&quot;&quot;</span>
+        <span class="n">mock_results</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">mock_results</span><span class="o">.</span><span class="fm">__getitem__</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;total&#39;</span><span class="p">:</span> <span class="mi">53</span><span class="p">}</span>
+        <span class="n">mock_result</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">(</span>
+            <span class="n">authors</span><span class="o">=</span><span class="p">[{</span><span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;N. Ame&#39;</span><span class="p">}],</span>
+            <span class="n">owners</span><span class="o">=</span><span class="p">[{</span><span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;N. Ame&#39;</span><span class="p">}],</span>
+            <span class="n">submitter</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;N. Ame&#39;</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">mock_result</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">mock_results</span><span class="o">.</span><span class="fm">__iter__</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="p">[</span><span class="n">mock_result</span><span class="p">]</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="n">execute</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_results</span>
+
+        <span class="c1"># Support the chaining API for py-ES.</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_Search</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="n">filter</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_Search</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="n">highlight</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_Search</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="n">highlight_options</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_Search</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_Search</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="n">sort</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_Search</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="fm">__getitem__</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_Search</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="n">AdvancedQuery</span><span class="p">(</span>
+            <span class="n">order</span><span class="o">=</span><span class="s1">&#39;relevance&#39;</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+            <span class="n">date_range</span><span class="o">=</span><span class="n">DateRange</span><span class="p">(</span>
+                <span class="n">start_date</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span>
+                <span class="n">end_date</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+            <span class="p">),</span>
+            <span class="n">primary_classification</span><span class="o">=</span><span class="n">ClassificationList</span><span class="p">([</span>
+                <span class="n">Classification</span><span class="p">(</span>
+                    <span class="n">group</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;physics&#39;</span><span class="p">},</span>
+                    <span class="n">archive</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;physics&#39;</span><span class="p">},</span>
+                    <span class="n">category</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;hep-th&#39;</span><span class="p">}</span>
+                <span class="p">)</span>
+            <span class="p">]),</span>
+            <span class="n">terms</span><span class="o">=</span><span class="n">FieldedSearchList</span><span class="p">([</span>
+                <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">),</span>
+                <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;author&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;joe&#39;</span><span class="p">),</span>
+                <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;OR&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;abstract&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;hmm&#39;</span><span class="p">),</span>
+                <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;NOT&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;comments&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;eh&#39;</span><span class="p">),</span>
+                <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;journal_ref&#39;</span><span class="p">,</span>
+                                  <span class="n">term</span><span class="o">=</span><span class="s1">&#39;jref (1999) 1:2-3&#39;</span><span class="p">),</span>
+                <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;acm_class&#39;</span><span class="p">,</span>
+                                  <span class="n">term</span><span class="o">=</span><span class="s1">&#39;abc123&#39;</span><span class="p">),</span>
+                <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;msc_class&#39;</span><span class="p">,</span>
+                                  <span class="n">term</span><span class="o">=</span><span class="s1">&#39;abc123&#39;</span><span class="p">),</span>
+                <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;OR&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;report_num&#39;</span><span class="p">,</span>
+                                  <span class="n">term</span><span class="o">=</span><span class="s1">&#39;abc123&#39;</span><span class="p">),</span>
+                <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;OR&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;doi&#39;</span><span class="p">,</span>
+                                  <span class="n">term</span><span class="o">=</span><span class="s1">&#39;10.01234/56789&#39;</span><span class="p">),</span>
+                <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;OR&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;orcid&#39;</span><span class="p">,</span>
+                                  <span class="n">term</span><span class="o">=</span><span class="s1">&#39;0000-0000-0000-0000&#39;</span><span class="p">),</span>
+                <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;OR&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;author_id&#39;</span><span class="p">,</span>
+                                  <span class="n">term</span><span class="o">=</span><span class="s1">&#39;Bloggs_J&#39;</span><span class="p">),</span>
+            <span class="p">])</span>
+        <span class="p">)</span>
+        <span class="n">document_set</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">document_set</span><span class="p">,</span> <span class="n">DocumentSet</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">document_set</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">document_set</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">],</span> <span class="mi">53</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">document_set</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;current_page&#39;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">document_set</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;total_pages&#39;</span><span class="p">],</span> <span class="mi">6</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">document_set</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">],</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">document_set</span><span class="o">.</span><span class="n">results</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestSearch.test_simple_query"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.tests.html#search.services.index.tests.tests.TestSearch.test_simple_query">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.services.index.Search&#39;</span><span class="p">)</span>
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.services.index.Elasticsearch&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_simple_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_Elasticsearch</span><span class="p">,</span> <span class="n">mock_Search</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;:class:`.index.search` supports :class:`SimpleQuery`.&quot;&quot;&quot;</span>
+        <span class="n">mock_results</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">mock_results</span><span class="o">.</span><span class="fm">__getitem__</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;total&#39;</span><span class="p">:</span> <span class="mi">53</span><span class="p">}</span>
+        <span class="n">mock_result</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">(</span>
+            <span class="n">authors</span><span class="o">=</span><span class="p">[{</span><span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;N. Ame&#39;</span><span class="p">}],</span>
+            <span class="n">owners</span><span class="o">=</span><span class="p">[{</span><span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;N. Ame&#39;</span><span class="p">}],</span>
+            <span class="n">submitter</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;N. Ame&#39;</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">mock_result</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">mock_results</span><span class="o">.</span><span class="fm">__iter__</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="p">[</span><span class="n">mock_result</span><span class="p">]</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="n">execute</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_results</span>
+
+        <span class="c1"># Support the chaining API for py-ES.</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_Search</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="n">filter</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_Search</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="n">highlight</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_Search</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="n">highlight_options</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_Search</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_Search</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="n">sort</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_Search</span>
+        <span class="n">mock_Search</span><span class="o">.</span><span class="fm">__getitem__</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_Search</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="n">SimpleQuery</span><span class="p">(</span>
+            <span class="n">order</span><span class="o">=</span><span class="s1">&#39;relevance&#39;</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+            <span class="n">search_field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="s1">&#39;foo title&#39;</span>
+        <span class="p">)</span>
+        <span class="n">document_set</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">document_set</span><span class="p">,</span> <span class="n">DocumentSet</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">document_set</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">document_set</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">],</span> <span class="mi">53</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">document_set</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;current_page&#39;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">document_set</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;total_pages&#39;</span><span class="p">],</span> <span class="mi">6</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">document_set</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">],</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">document_set</span><span class="o">.</span><span class="n">results</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestWildcardSearch"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.tests.html#search.services.index.tests.tests.TestWildcardSearch">[docs]</a><span class="k">class</span> <span class="nc">TestWildcardSearch</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A wildcard [*?] character is present in a querystring.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestWildcardSearch.test_match_any_wildcard_is_present"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.tests.html#search.services.index.tests.tests.TestWildcardSearch.test_match_any_wildcard_is_present">[docs]</a>    <span class="k">def</span> <span class="nf">test_match_any_wildcard_is_present</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A * wildcard is present in the query.&quot;&quot;&quot;</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="s2">&quot;Foo t*&quot;</span>
+        <span class="n">qs_escaped</span><span class="p">,</span> <span class="n">wildcard</span> <span class="o">=</span> <span class="n">wildcard_escape</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">wildcard</span><span class="p">,</span> <span class="s2">&quot;Wildcard should be detected&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">qs</span><span class="p">,</span> <span class="n">qs_escaped</span><span class="p">,</span> <span class="s2">&quot;The querystring should be unchanged&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span>
+            <span class="n">Q_</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">qs</span><span class="p">),</span>
+            <span class="nb">type</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="s1">&#39;wildcard&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">qs</span><span class="p">)),</span>
+            <span class="s2">&quot;Wildcard Q object should be generated&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestWildcardSearch.test_match_any_wildcard_in_literal"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.tests.html#search.services.index.tests.tests.TestWildcardSearch.test_match_any_wildcard_in_literal">[docs]</a>    <span class="k">def</span> <span class="nf">test_match_any_wildcard_in_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A * wildcard is present in a string literal.&quot;&quot;&quot;</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="s1">&#39;&quot;Foo t*&quot;&#39;</span>
+        <span class="n">qs_escaped</span><span class="p">,</span> <span class="n">wildcard</span> <span class="o">=</span> <span class="n">wildcard_escape</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">qs_escaped</span><span class="p">,</span> <span class="s1">&#39;&quot;Foo t\*&quot;&#39;</span><span class="p">,</span> <span class="s2">&quot;Wildcard should be escaped&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">wildcard</span><span class="p">,</span> <span class="s2">&quot;Wildcard should not be detected&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span>
+            <span class="n">Q_</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">qs</span><span class="p">),</span>
+            <span class="nb">type</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&quot;Foo t\*&quot;&#39;</span><span class="p">)),</span>
+            <span class="s2">&quot;Wildcard Q object should not be generated&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestWildcardSearch.test_multiple_match_any_wildcard_in_literal"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.tests.html#search.services.index.tests.tests.TestWildcardSearch.test_multiple_match_any_wildcard_in_literal">[docs]</a>    <span class="k">def</span> <span class="nf">test_multiple_match_any_wildcard_in_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Multiple * wildcards are present in a string literal.&quot;&quot;&quot;</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="s1">&#39;&quot;Fo*o t*&quot;&#39;</span>
+        <span class="n">qs_escaped</span><span class="p">,</span> <span class="n">wildcard</span> <span class="o">=</span> <span class="n">wildcard_escape</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">qs_escaped</span><span class="p">,</span> <span class="s1">&#39;&quot;Fo\*o t\*&quot;&#39;</span><span class="p">,</span>
+                         <span class="s2">&quot;Both wildcards should be escaped&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">wildcard</span><span class="p">,</span> <span class="s2">&quot;Wildcard should not be detected&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span>
+            <span class="n">Q_</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">qs</span><span class="p">),</span>
+            <span class="nb">type</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&quot;Fo\*o t\*&quot;&#39;</span><span class="p">)),</span>
+            <span class="s2">&quot;Wildcard Q object should not be generated&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestWildcardSearch.test_mixed_wildcards_in_literal"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.tests.html#search.services.index.tests.tests.TestWildcardSearch.test_mixed_wildcards_in_literal">[docs]</a>    <span class="k">def</span> <span class="nf">test_mixed_wildcards_in_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Both * and ? characters are present in a string literal.&quot;&quot;&quot;</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="s1">&#39;&quot;Fo? t*&quot;&#39;</span>
+        <span class="n">qs_escaped</span><span class="p">,</span> <span class="n">wildcard</span> <span class="o">=</span> <span class="n">wildcard_escape</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">qs_escaped</span><span class="p">,</span> <span class="s1">&#39;&quot;Fo\? t\*&quot;&#39;</span><span class="p">,</span>
+                         <span class="s2">&quot;Both wildcards should be escaped&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">wildcard</span><span class="p">,</span> <span class="s2">&quot;Wildcard should not be detected&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span>
+            <span class="n">Q_</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">qs</span><span class="p">),</span>
+            <span class="nb">type</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&quot;Fo\? t\*&quot;&#39;</span><span class="p">)),</span>
+            <span class="s2">&quot;Wildcard Q object should not be generated&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestWildcardSearch.test_wildcards_both_inside_and_outside_literal"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.tests.html#search.services.index.tests.tests.TestWildcardSearch.test_wildcards_both_inside_and_outside_literal">[docs]</a>    <span class="k">def</span> <span class="nf">test_wildcards_both_inside_and_outside_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Wildcard characters are present both inside and outside literal.&quot;&quot;&quot;</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="s1">&#39;&quot;Fo? t*&quot; said the *&#39;</span>
+        <span class="n">qs_escaped</span><span class="p">,</span> <span class="n">wildcard</span> <span class="o">=</span> <span class="n">wildcard_escape</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">qs_escaped</span><span class="p">,</span> <span class="s1">&#39;&quot;Fo\? t\*&quot; said the *&#39;</span><span class="p">,</span>
+                         <span class="s2">&quot;Wildcards in literal should be escaped&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">wildcard</span><span class="p">,</span> <span class="s2">&quot;Wildcard should be detected&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span>
+            <span class="n">Q_</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">qs</span><span class="p">),</span>
+            <span class="nb">type</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="s1">&#39;wildcard&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&quot;Fo\? t\*&quot; said the *&#39;</span><span class="p">)),</span>
+            <span class="s2">&quot;Wildcard Q object should be generated&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestWildcardSearch.test_wildcards_inside_outside_multiple_literals"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.tests.html#search.services.index.tests.tests.TestWildcardSearch.test_wildcards_inside_outside_multiple_literals">[docs]</a>    <span class="k">def</span> <span class="nf">test_wildcards_inside_outside_multiple_literals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Wildcard chars are everywhere, and there are multiple literals.&quot;&quot;&quot;</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="s1">&#39;&quot;Fo?&quot; s* &quot;yes*&quot; o?&#39;</span>
+        <span class="n">qs_escaped</span><span class="p">,</span> <span class="n">wildcard</span> <span class="o">=</span> <span class="n">wildcard_escape</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">qs_escaped</span><span class="p">,</span> <span class="s1">&#39;&quot;Fo\?&quot; s* &quot;yes\*&quot; o?&#39;</span><span class="p">,</span>
+                         <span class="s2">&quot;Wildcards in literal should be escaped&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">wildcard</span><span class="p">,</span> <span class="s2">&quot;Wildcard should be detected&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span>
+            <span class="n">Q_</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">qs</span><span class="p">),</span>
+            <span class="nb">type</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="s1">&#39;wildcard&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&quot;Fo\?&quot; s* &quot;yes\*&quot; o?&#39;</span><span class="p">)),</span>
+            <span class="s2">&quot;Wildcard Q object should be generated&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestWildcardSearch.test_wildcard_at_opening_of_string"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.tests.html#search.services.index.tests.tests.TestWildcardSearch.test_wildcard_at_opening_of_string">[docs]</a>    <span class="k">def</span> <span class="nf">test_wildcard_at_opening_of_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A wildcard character is the first character in the querystring.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">QueryError</span><span class="p">):</span>
+            <span class="n">wildcard_escape</span><span class="p">(</span><span class="s2">&quot;*nope&quot;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">QueryError</span><span class="p">):</span>
+            <span class="n">Q_</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;*nope&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestPrepare"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.tests.html#search.services.index.tests.tests.TestPrepare">[docs]</a><span class="k">class</span> <span class="nc">TestPrepare</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests for :mod:`.index.prepare`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestPrepare.test_group_terms"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.tests.html#search.services.index.tests.tests.TestPrepare.test_group_terms">[docs]</a>    <span class="k">def</span> <span class="nf">test_group_terms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;:meth:`._group_terms` groups terms using logical precedence.&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">AdvancedQuery</span><span class="p">(</span><span class="n">terms</span><span class="o">=</span><span class="n">FieldedSearchList</span><span class="p">([</span>
+            <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;muon&#39;</span><span class="p">),</span>
+            <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;OR&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;gluon&#39;</span><span class="p">),</span>
+            <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;NOT&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">),</span>
+            <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;boson&#39;</span><span class="p">),</span>
+        <span class="p">]))</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;muon&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;OR&#39;</span><span class="p">,</span>
+            <span class="p">(</span>
+              <span class="p">(</span>
+                <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;OR&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;gluon&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;NOT&#39;</span><span class="p">,</span>
+                <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;NOT&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+              <span class="p">),</span>
+              <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+              <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;boson&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">terms</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">_group_terms</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s1">&#39;Should result in a single group&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">terms</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestPrepare.test_group_terms_all_and"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.tests.html#search.services.index.tests.tests.TestPrepare.test_group_terms_all_and">[docs]</a>    <span class="k">def</span> <span class="nf">test_group_terms_all_and</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;:meth:`._group_terms` groups terms using logical precedence.&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">AdvancedQuery</span><span class="p">(</span><span class="n">terms</span><span class="o">=</span><span class="n">FieldedSearchList</span><span class="p">([</span>
+            <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;muon&#39;</span><span class="p">),</span>
+            <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;gluon&#39;</span><span class="p">),</span>
+            <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">),</span>
+        <span class="p">]))</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span>
+              <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;muon&#39;</span><span class="p">),</span>
+              <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+              <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;gluon&#39;</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+            <span class="n">FieldedSearchTerm</span><span class="p">(</span><span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">terms</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">_group_terms</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s1">&#39;Should result in a single group&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">terms</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/modules.html">search</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  <li><a href="../../index.html">search.services.index</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

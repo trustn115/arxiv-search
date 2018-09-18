@@ -1,0 +1,464 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.process.tests &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for search.process.tests</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Tests for :mod:`search.transform`.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="k">import</span> <span class="n">TestCase</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">jsonschema</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">date</span>
+<span class="kn">from</span> <span class="nn">search.process</span> <span class="k">import</span> <span class="n">transform</span>
+<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">DocMeta</span>
+
+
+<div class="viewcode-block" id="TestTransformMetdata"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata">[docs]</a><span class="k">class</span> <span class="nc">TestTransformMetdata</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test transformations for each of the metadata fields.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_id"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_id">[docs]</a>    <span class="k">def</span> <span class="nf">test_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``id`` is populated from ``paper_id``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s1">&#39;1234.56789v1&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_abstract"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_abstract">[docs]</a>    <span class="k">def</span> <span class="nf">test_abstract</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``abstract`` is populated from ``abstract_utf8``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;abstract_utf8&#39;</span><span class="p">:</span> <span class="s1">&#39;abstract!&#39;</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">abstract</span><span class="p">,</span> <span class="s1">&#39;abstract!&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_authors"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_authors">[docs]</a>    <span class="k">def</span> <span class="nf">test_authors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``authors`` is populated from ``authors_parsed``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;authors_parsed&#39;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s1">&#39;first_name&#39;</span><span class="p">:</span> <span class="s1">&#39;B. Ivan&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;last_name&#39;</span><span class="p">:</span> <span class="s1">&#39;Dole&#39;</span>
+                <span class="p">}</span>
+            <span class="p">]</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">authors</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;first_name&#39;</span><span class="p">],</span> <span class="s1">&#39;B. Ivan&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">authors</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;last_name&#39;</span><span class="p">],</span> <span class="s1">&#39;Dole&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">authors</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;full_name&#39;</span><span class="p">],</span> <span class="s1">&#39;B. Ivan Dole&#39;</span><span class="p">,</span>
+                         <span class="s2">&quot;full_name should be generated from first_name and&quot;</span>
+                         <span class="s2">&quot; last_name&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">authors</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;initials&#39;</span><span class="p">],</span> <span class="s2">&quot;B I&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;initials should be generated from first name&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_authors_freeform"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_authors_freeform">[docs]</a>    <span class="k">def</span> <span class="nf">test_authors_freeform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``authors_freeform`` is populated from ``authors_utf8``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;authors_utf8&#39;</span><span class="p">:</span> <span class="s1">&#39;authors!&#39;</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">authors_freeform</span><span class="p">,</span> <span class="s1">&#39;authors!&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_owners"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_owners">[docs]</a>    <span class="k">def</span> <span class="nf">test_owners</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``owners`` is populated from ``author_owners``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;author_owners&#39;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s1">&#39;first_name&#39;</span><span class="p">:</span> <span class="s1">&#39;B. Ivan&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;last_name&#39;</span><span class="p">:</span> <span class="s1">&#39;Dole&#39;</span>
+                <span class="p">}</span>
+            <span class="p">]</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">owners</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;first_name&#39;</span><span class="p">],</span> <span class="s1">&#39;B. Ivan&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">owners</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;last_name&#39;</span><span class="p">],</span> <span class="s1">&#39;Dole&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">owners</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;full_name&#39;</span><span class="p">],</span> <span class="s1">&#39;B. Ivan Dole&#39;</span><span class="p">,</span>
+                         <span class="s2">&quot;full_name should be generated from first_name and&quot;</span>
+                         <span class="s2">&quot; last_name&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">owners</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;initials&#39;</span><span class="p">],</span> <span class="s2">&quot;B I&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;initials should be generated from first name&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_submitted_date"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_submitted_date">[docs]</a>    <span class="k">def</span> <span class="nf">test_submitted_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``submitted_date`` is populated from ``submitted_date``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;submitted_date&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-04-25T16:06:50-0400&#39;</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">submitted_date</span><span class="p">,</span> <span class="s1">&#39;2007-04-25T16:06:50-0400&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_submitted_date_all"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_submitted_date_all">[docs]</a>    <span class="k">def</span> <span class="nf">test_submitted_date_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;``submitted_date_all`` is populated from ``submitted_date_all``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s2">&quot;submitted_date_all&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;2007-04-25T15:58:28-0400&quot;</span><span class="p">,</span> <span class="s2">&quot;2007-04-25T16:06:50-0400&quot;</span>
+            <span class="p">],</span>
+            <span class="s1">&#39;is_current&#39;</span><span class="p">:</span> <span class="kc">True</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">submitted_date_all</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;2007-04-25T15:58:28-0400&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">submitted_date_all</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;2007-04-25T16:06:50-0400&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">submitted_date_first</span><span class="p">,</span> <span class="s1">&#39;2007-04-25T15:58:28-0400&#39;</span><span class="p">,</span>
+                         <span class="s2">&quot;Should be populated from submitted_date_all&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">submitted_date_latest</span><span class="p">,</span> <span class="s2">&quot;2007-04-25T16:06:50-0400&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;Should be populated from submitted_date_all&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_modified_date"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_modified_date">[docs]</a>    <span class="k">def</span> <span class="nf">test_modified_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``modified_date`` is populated from ``modified_date``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;modified_date&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-04-25T16:06:50-0400&#39;</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">modified_date</span><span class="p">,</span> <span class="s1">&#39;2007-04-25T16:06:50-0400&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_updated_date"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_updated_date">[docs]</a>    <span class="k">def</span> <span class="nf">test_updated_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``updated_date`` is populated from ``updated_date``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;updated_date&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-04-25T16:06:50-0400&#39;</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">updated_date</span><span class="p">,</span> <span class="s1">&#39;2007-04-25T16:06:50-0400&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_announced_date_first"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_announced_date_first">[docs]</a>    <span class="k">def</span> <span class="nf">test_announced_date_first</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;``announced_date_first`` populated from ``announced_date_first``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;announced_date_first&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-04&#39;</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">announced_date_first</span><span class="p">,</span> <span class="s1">&#39;2007-04&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_is_withdrawn"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_is_withdrawn">[docs]</a>    <span class="k">def</span> <span class="nf">test_is_withdrawn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``is_withdrawn`` is populated from ``is_withdrawn``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;is_withdrawn&#39;</span><span class="p">:</span> <span class="kc">False</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">is_withdrawn</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_license"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_license">[docs]</a>    <span class="k">def</span> <span class="nf">test_license</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``license`` is populated from ``license``.&quot;&quot;&quot;</span>
+        <span class="n">_license</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;arXiv.org perpetual, non-exclusive license to&quot;</span>
+                     <span class="s2">&quot; distribute this article&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;http://arxiv.org/licenses/nonexclusive-distrib/1.0/&quot;</span>
+        <span class="p">}</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;license&#39;</span><span class="p">:</span> <span class="n">_license</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">license</span><span class="p">[</span><span class="s1">&#39;uri&#39;</span><span class="p">],</span> <span class="n">_license</span><span class="p">[</span><span class="s1">&#39;uri&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">license</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">],</span> <span class="n">_license</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">])</span>
+
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;license&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;uri&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">license</span><span class="p">[</span><span class="s1">&#39;uri&#39;</span><span class="p">],</span> <span class="n">transform</span><span class="o">.</span><span class="n">DEFAULT_LICENSE</span><span class="p">[</span><span class="s1">&#39;uri&#39;</span><span class="p">],</span>
+                         <span class="s2">&quot;The default license should be used&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">license</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">],</span>
+                         <span class="n">transform</span><span class="o">.</span><span class="n">DEFAULT_LICENSE</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">],</span>
+                         <span class="s2">&quot;The default license should be used&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_paper_version"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_paper_version">[docs]</a>    <span class="k">def</span> <span class="nf">test_paper_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``paper_id_v`` is populated from ``paper_id``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span> <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">paper_id_v</span><span class="p">,</span> <span class="s1">&#39;1234.56789v4&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_primary_classification"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_primary_classification">[docs]</a>    <span class="k">def</span> <span class="nf">test_primary_classification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;``primary_classification`` set from ``primary_classification``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;primary_classification&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Physics&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;physics&quot;</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;archive&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Astrophysics&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;astro-ph&quot;</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;category&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Astrophysics&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;astro-ph&quot;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">,</span>
+                         <span class="n">meta</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_secondary_classification"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_secondary_classification">[docs]</a>    <span class="k">def</span> <span class="nf">test_secondary_classification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;``secondary_classification`` from ``secondary_classification``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;secondary_classification&#39;</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Physics&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;physics&quot;</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;archive&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Astrophysics&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;astro-ph&quot;</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;category&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Astrophysics&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;astro-ph&quot;</span>
+                <span class="p">}</span>
+            <span class="p">}]</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">secondary_classification</span><span class="p">,</span>
+                         <span class="n">meta</span><span class="o">.</span><span class="n">secondary_classification</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_title"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_title">[docs]</a>    <span class="k">def</span> <span class="nf">test_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``title`` is populated from ``title_utf8``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;title_utf8&#39;</span><span class="p">:</span> <span class="s1">&#39;foo title&#39;</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="s1">&#39;foo title&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_title_utf8"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_title_utf8">[docs]</a>    <span class="k">def</span> <span class="nf">test_title_utf8</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``title`` is populated from ``title_utf8``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;title_utf8&#39;</span><span class="p">:</span> <span class="s1">&#39;foö title&#39;</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="s1">&#39;foö title&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_source"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_source">[docs]</a>    <span class="k">def</span> <span class="nf">test_source</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``source`` is populated from ``source``.&quot;&quot;&quot;</span>
+        <span class="n">_source</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;flags&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;pdf&quot;</span><span class="p">,</span> <span class="s2">&quot;size_bytes&quot;</span><span class="p">:</span> <span class="mi">1230119</span><span class="p">}</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="n">_source</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">_source</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_version"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_version">[docs]</a>    <span class="k">def</span> <span class="nf">test_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``version`` is populated from ``version``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mi">25</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_submitter"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_submitter">[docs]</a>    <span class="k">def</span> <span class="nf">test_submitter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``submitter`` is populated from ``submitter``.&quot;&quot;&quot;</span>
+        <span class="n">_submitter</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;s.mitter@cornell.edu&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Sub Mitter&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name_utf8&quot;</span><span class="p">:</span> <span class="s2">&quot;Süb Mitter&quot;</span>
+        <span class="p">}</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;submitter&#39;</span><span class="p">:</span> <span class="n">_submitter</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">submitter</span><span class="p">,</span> <span class="n">_submitter</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_report_num"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_report_num">[docs]</a>    <span class="k">def</span> <span class="nf">test_report_num</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``report_num`` is populated from ``report_num``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;report_num&#39;</span><span class="p">:</span> <span class="s2">&quot;Physica A, 245 (1997) 181&quot;</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">report_num</span><span class="p">,</span> <span class="s2">&quot;Physica A, 245 (1997) 181&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_proxy"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">test_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``proxy`` is populated from ``proxy``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;proxy&#39;</span><span class="p">:</span> <span class="kc">True</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">proxy</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">test_metadata_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``metadata_id`` is populated from ``metadata_id``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;metadata_id&#39;</span><span class="p">:</span> <span class="s1">&#39;690776&#39;</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">metadata_id</span><span class="p">,</span> <span class="s1">&#39;690776&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_msc_class"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_msc_class">[docs]</a>    <span class="k">def</span> <span class="nf">test_msc_class</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``msc_class`` is populated from ``msc_class``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;msc_class&#39;</span><span class="p">:</span> <span class="s2">&quot;03B70,68Q60&quot;</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">msc_class</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;03B70&quot;</span><span class="p">,</span> <span class="s2">&quot;68Q60&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_acm_class"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_acm_class">[docs]</a>    <span class="k">def</span> <span class="nf">test_acm_class</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``acm_class`` is populated from ``acm_class``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;acm_class&#39;</span><span class="p">:</span> <span class="s2">&quot;F.4.1; D.2.4&quot;</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">acm_class</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;F.4.1&quot;</span><span class="p">,</span> <span class="s2">&quot;D.2.4&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_doi"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_doi">[docs]</a>    <span class="k">def</span> <span class="nf">test_doi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``doi`` is populated from ``doi``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;doi&#39;</span><span class="p">:</span> <span class="s1">&#39;10.1103/PhysRevD.76.104043&#39;</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">doi</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;10.1103/PhysRevD.76.104043&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="TestTransformMetdata.test_metadata_id"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformMetdata.test_metadata_id">[docs]</a>    <span class="k">def</span> <span class="nf">test_metadata_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Field ``comments`` is populated from ``comments_utf8``.&quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="s1">&#39;1234.56789&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;comments_utf8&#39;</span><span class="p">:</span> <span class="s1">&#39;comments!&#39;</span>
+        <span class="p">})</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">comments</span><span class="p">,</span> <span class="s1">&#39;comments!&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestTransformBulkDocmeta"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformBulkDocmeta">[docs]</a><span class="k">class</span> <span class="nc">TestTransformBulkDocmeta</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test transformation of docmeta retrieved from bulk endpoint.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestTransformBulkDocmeta.test_transform"><a class="viewcode-back" href="../../../api/search.process.tests.html#search.process.tests.TestTransformBulkDocmeta.test_transform">[docs]</a>    <span class="k">def</span> <span class="nf">test_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;All of the paper ID and version fields should be set correctly.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;tests/data/docmeta_bulk.json&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="n">docmeta</span> <span class="o">=</span> <span class="p">[</span><span class="n">DocMeta</span><span class="p">(</span><span class="o">**</span><span class="n">datum</span><span class="p">)</span> <span class="k">for</span> <span class="n">datum</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+
+        <span class="n">documents</span> <span class="o">=</span> <span class="p">[</span><span class="n">transform</span><span class="o">.</span><span class="n">to_search_document</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span> <span class="k">for</span> <span class="n">meta</span> <span class="ow">in</span> <span class="n">docmeta</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertGreater</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">id</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">paper_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertGreater</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">paper_id</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">paper_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">paper_id_v</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertGreater</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">paper_id_v</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">paper_id_v</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertGreater</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">doc</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">latest</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{doc.paper_id}</span><span class="s2">v2&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">is_current</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">paper_id_v</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">is_current</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">paper_id_v</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">latest_version</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">search</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

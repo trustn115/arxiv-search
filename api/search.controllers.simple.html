@@ -4,20 +4,21 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>search.controllers.simple package &#8212; arXiv search 0.2 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="search.domain package" href="search.domain.html" />
-    <link rel="prev" title="search.controllers.authors package" href="search.controllers.authors.html" />
+    <link rel="next" title="search.controllers.simple.forms module" href="search.controllers.simple.forms.html" />
+    <link rel="prev" title="search.controllers.api package" href="search.controllers.api.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -30,13 +31,15 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="module-search.controllers.simple">
 <span id="search-controllers-simple-package"></span><h1>search.controllers.simple package<a class="headerlink" href="#module-search.controllers.simple" title="Permalink to this headline">¶</a></h1>
 <p>Handle requests to support the simple search feature.</p>
 <p>The primary entrypoint to this module is <a class="reference internal" href="#search.controllers.simple.search" title="search.controllers.simple.search"><code class="xref py py-func docutils literal notranslate"><span class="pre">search()</span></code></a>, which handles
-GET requests to the base search endpoint. It uses <a class="reference internal" href="#search.controllers.simple.forms.SimpleSearchForm" title="search.controllers.simple.forms.SimpleSearchForm"><code class="xref py py-class docutils literal notranslate"><span class="pre">SimpleSearchForm</span></code></a>
+GET requests to the base search endpoint. It uses <a class="reference internal" href="search.controllers.simple.forms.html#search.controllers.simple.forms.SimpleSearchForm" title="search.controllers.simple.forms.SimpleSearchForm"><code class="xref py py-class docutils literal notranslate"><span class="pre">SimpleSearchForm</span></code></a>
 to generate form HTML, validate request parameters, and produce informative
 error messages for the user.</p>
 <dl class="function">
@@ -47,7 +50,7 @@ error messages for the user.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>document_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – arXiv identifier for the paper.</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>document_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – arXiv identifier for the paper.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul class="simple">
@@ -64,7 +67,7 @@ error messages for the user.</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]</p>
 </td>
 </tr>
 </tbody>
@@ -73,7 +76,7 @@ error messages for the user.</p>
 
 <dl class="function">
 <dt id="search.controllers.simple.search">
-<code class="descclassname">search.controllers.simple.</code><code class="descname">search</code><span class="sig-paren">(</span><em>request_params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/simple.html#search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.simple.search" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">search.controllers.simple.</code><code class="descname">search</code><span class="sig-paren">(</span><em>request_params</em>, <em>archives=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/simple.html#search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.simple.search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform a simple search.</p>
 <p>This supports requests from both the form-based view (provided here) AND
 from the mini search widget displayed on all arXiv.org pages.</p>
@@ -83,19 +86,26 @@ be a match value for a search query, or an arXiv ID.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>request_params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request_params</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">MultiDict</span></code>) – </li>
+<li><strong>archives</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – A list of archives within which the search should be performed.</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul class="simple">
 <li><em>dict</em> – Search result response data.</li>
 <li><em>int</em> – HTTP status code.</li>
 <li><em>dict</em> – Headers to add to the response.</li>
 </ul>
+</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">InternalServerError</span></code> – Raised when there is a problem communicating with ES, or there was an
-unexpected problem executing the query.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">InternalServerError</span></code> – Raised when there is a problem communicating with ES, or there was an
+unexpected problem executing the query.</p>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -103,56 +113,18 @@ unexpected problem executing the query.</td>
 
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="search.controllers.simple.forms.html">search.controllers.simple.forms module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="search.controllers.simple.tests.html">search.controllers.simple.tests module</a></li>
+</ul>
 </div>
-<div class="section" id="module-search.controllers.simple.forms">
-<span id="search-controllers-simple-forms-module"></span><h2>search.controllers.simple.forms module<a class="headerlink" href="#module-search.controllers.simple.forms" title="Permalink to this headline">¶</a></h2>
-<p>Provides form rendering and validation for the simple search feature.</p>
-<dl class="class">
-<dt id="search.controllers.simple.forms.SimpleSearchForm">
-<em class="property">class </em><code class="descclassname">search.controllers.simple.forms.</code><code class="descname">SimpleSearchForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/simple/forms.html#SimpleSearchForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.simple.forms.SimpleSearchForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">wtforms.form.Form</span></code></p>
-<p>Provides a simple field-query search form.</p>
-<dl class="attribute">
-<dt id="search.controllers.simple.forms.SimpleSearchForm.order">
-<code class="descname">order</code><em class="property"> = &lt;UnboundField(SelectField, ('Sort results by',), {'choices': [('', 'Relevance'), ('submitted_date', 'Submission date (ascending)'), ('-submitted_date', 'Submission date (descending)')], 'validators': [&lt;wtforms.validators.Optional object&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.simple.forms.SimpleSearchForm.order" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="search.controllers.simple.forms.SimpleSearchForm.query">
-<code class="descname">query</code><em class="property"> = &lt;UnboundField(StringField, ('Search or Article ID',), {'filters': [&lt;function stripWhiteSpace&gt;], 'validators': [&lt;function doesNotStartWithWildcard&gt;]})&gt;</em><a class="headerlink" href="#search.controllers.simple.forms.SimpleSearchForm.query" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="search.controllers.simple.forms.SimpleSearchForm.searchtype">
-<code class="descname">searchtype</code><em class="property"> = &lt;UnboundField(SelectField, ('Field',), {'choices': [('all', 'All fields'), ('title', 'Title'), ('author', 'Author(s)'), ('abstract', 'Abstract'), ('comments', 'Comments'), ('journal_ref', 'Journal ref'), ('acm_class', 'ACM classification'), ('msc_class', 'MSC classification'), ('report_num', 'Report number'), ('paper_id', 'Identifier'), ('doi', 'DOI'), ('orcid', 'ORCID'), ('author_id', 'Author ID')]})&gt;</em><a class="headerlink" href="#search.controllers.simple.forms.SimpleSearchForm.searchtype" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="search.controllers.simple.forms.SimpleSearchForm.size">
-<code class="descname">size</code><em class="property"> = &lt;UnboundField(SelectField, ('results per page',), {'default': 25, 'choices': [('25', '25'), ('50', '50'), ('100', '100')]})&gt;</em><a class="headerlink" href="#search.controllers.simple.forms.SimpleSearchForm.size" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="search.controllers.simple.forms.SimpleSearchForm.validate_query">
-<code class="descname">validate_query</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/simple/forms.html#SimpleSearchForm.validate_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.simple.forms.SimpleSearchForm.validate_query" title="Permalink to this definition">¶</a></dt>
-<dd><p>Validate the length of the querystring, if searchtype is set.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
 </div>
 </div>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -169,7 +141,9 @@ unexpected problem executing the query.</td>
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../architecture.html">arXiv Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../search_api.html">Search API (Alpha)</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">search</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="search.html">search package</a></li>
 </ul>
@@ -183,8 +157,8 @@ unexpected problem executing the query.</td>
   <li><a href="modules.html">search</a><ul>
   <li><a href="search.html">search package</a><ul>
   <li><a href="search.controllers.html">search.controllers package</a><ul>
-      <li>Previous: <a href="search.controllers.authors.html" title="previous chapter">search.controllers.authors package</a></li>
-      <li>Next: <a href="search.domain.html" title="next chapter">search.domain package</a></li>
+      <li>Previous: <a href="search.controllers.api.html" title="previous chapter">search.controllers.api package</a></li>
+      <li>Next: <a href="search.controllers.simple.forms.html" title="next chapter">search.controllers.simple.forms module</a></li>
   </ul></li>
   </ul></li>
   </ul></li>
@@ -211,8 +185,8 @@ unexpected problem executing the query.</td>
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="../_sources/api/search.controllers.simple.rst.txt"

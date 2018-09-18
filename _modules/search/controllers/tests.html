@@ -1,0 +1,178 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.controllers.tests &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for search.controllers.tests</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Tests for :mod:`search.controllers`.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="k">import</span> <span class="n">TestCase</span><span class="p">,</span> <span class="n">mock</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">date</span>
+
+<span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">status</span>
+<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">DocumentSet</span><span class="p">,</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">search.controllers</span> <span class="k">import</span> <span class="n">health_check</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="k">import</span> <span class="n">catch_underscore_syntax</span>
+
+
+<div class="viewcode-block" id="TestHealthCheck"><a class="viewcode-back" href="../../../api/search.controllers.tests.html#search.controllers.tests.TestHealthCheck">[docs]</a><span class="k">class</span> <span class="nc">TestHealthCheck</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests for :func:`.health_check`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestHealthCheck.test_index_is_down"><a class="viewcode-back" href="../../../api/search.controllers.tests.html#search.controllers.tests.TestHealthCheck.test_index_is_down">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.index&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_index_is_down</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test returns &#39;DOWN&#39; + status 500 when index raises an exception.&quot;&quot;&quot;</span>
+        <span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="ne">RuntimeError</span>
+        <span class="n">response</span><span class="p">,</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">health_check</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s1">&#39;DOWN&#39;</span><span class="p">,</span> <span class="s2">&quot;Response content should be DOWN&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_500_INTERNAL_SERVER_ERROR</span><span class="p">,</span>
+                         <span class="s2">&quot;Should return 500 status code.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestHealthCheck.test_index_returns_no_result"><a class="viewcode-back" href="../../../api/search.controllers.tests.html#search.controllers.tests.TestHealthCheck.test_index_returns_no_result">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.index&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_index_returns_no_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test returns &#39;DOWN&#39; + status 500 when index returns no results.&quot;&quot;&quot;</span>
+        <span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">DocumentSet</span><span class="p">({},</span> <span class="p">[])</span>
+        <span class="n">response</span><span class="p">,</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">health_check</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s1">&#39;DOWN&#39;</span><span class="p">,</span> <span class="s2">&quot;Response content should be DOWN&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_500_INTERNAL_SERVER_ERROR</span><span class="p">,</span>
+                         <span class="s2">&quot;Should return 500 status code.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestHealthCheck.test_index_returns_result"><a class="viewcode-back" href="../../../api/search.controllers.tests.html#search.controllers.tests.TestHealthCheck.test_index_returns_result">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.index&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_index_returns_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test returns &#39;OK&#39; + status 200 when index returns results.&quot;&quot;&quot;</span>
+        <span class="n">mock_index</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">DocumentSet</span><span class="p">({},</span> <span class="p">[</span><span class="n">Document</span><span class="p">()])</span>
+        <span class="n">response</span><span class="p">,</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">health_check</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s1">&#39;OK&#39;</span><span class="p">,</span> <span class="s2">&quot;Response content should be OK&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span>
+                         <span class="s2">&quot;Should return 200 status code.&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestUnderscoreHandling"><a class="viewcode-back" href="../../../api/search.controllers.tests.html#search.controllers.tests.TestUnderscoreHandling">[docs]</a><span class="k">class</span> <span class="nc">TestUnderscoreHandling</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test :func:`.catch_underscore_syntax`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestUnderscoreHandling.test_underscore_is_rewritten"><a class="viewcode-back" href="../../../api/search.controllers.tests.html#search.controllers.tests.TestUnderscoreHandling.test_underscore_is_rewritten">[docs]</a>    <span class="k">def</span> <span class="nf">test_underscore_is_rewritten</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;User searches for an author name with `surname_f` format.&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;franklin_r&quot;</span>
+        <span class="n">after</span><span class="p">,</span> <span class="n">classic_name</span> <span class="o">=</span> <span class="n">catch_underscore_syntax</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">after</span><span class="p">,</span> <span class="s2">&quot;franklin, r&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;The underscore should be replaced with `, `.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">classic_name</span><span class="p">,</span> <span class="s2">&quot;Should be identified as classic&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestUnderscoreHandling.test_false_positive"><a class="viewcode-back" href="../../../api/search.controllers.tests.html#search.controllers.tests.TestUnderscoreHandling.test_false_positive">[docs]</a>    <span class="k">def</span> <span class="nf">test_false_positive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The underscore is followed by more than one character.&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;not_aname&quot;</span>
+        <span class="n">after</span><span class="p">,</span> <span class="n">classic_name</span> <span class="o">=</span> <span class="n">catch_underscore_syntax</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">after</span><span class="p">,</span> <span class="s2">&quot;The query should not be rewritten&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">classic_name</span><span class="p">,</span> <span class="s2">&quot;Should not be identified as classic&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestUnderscoreHandling.test_multiple_authors"><a class="viewcode-back" href="../../../api/search.controllers.tests.html#search.controllers.tests.TestUnderscoreHandling.test_multiple_authors">[docs]</a>    <span class="k">def</span> <span class="nf">test_multiple_authors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The user passes more than one name in classic format.&quot;&quot;&quot;</span>
+        <span class="c1"># E-gads.</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;franklin_r dole_b&quot;</span>
+        <span class="n">after</span><span class="p">,</span> <span class="n">classic_name</span> <span class="o">=</span> <span class="n">catch_underscore_syntax</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">after</span><span class="p">,</span> <span class="s2">&quot;franklin, r; dole, b&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;The underscore should be replaced with `, `.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">classic_name</span><span class="p">,</span> <span class="s2">&quot;Should be identified as classic&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestUnderscoreHandling.test_nonsense_input"><a class="viewcode-back" href="../../../api/search.controllers.tests.html#search.controllers.tests.TestUnderscoreHandling.test_nonsense_input">[docs]</a>    <span class="k">def</span> <span class="nf">test_nonsense_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Garbage input is passed.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">catch_underscore_syntax</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">search</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../controllers.html">search.controllers</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

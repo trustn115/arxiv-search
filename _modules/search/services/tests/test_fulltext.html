@@ -1,0 +1,191 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.services.tests.test_fulltext &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for search.services.tests.test_fulltext</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Tests for :mod:`search.services.fulltext`.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="k">import</span> <span class="n">mock</span>
+<span class="kn">from</span> <span class="nn">search.services</span> <span class="k">import</span> <span class="n">fulltext</span>
+
+
+<div class="viewcode-block" id="TestRetrieveExistantContent"><a class="viewcode-back" href="../../../../api/search.services.tests.test_fulltext.html#search.services.tests.test_fulltext.TestRetrieveExistantContent">[docs]</a><span class="k">class</span> <span class="nc">TestRetrieveExistantContent</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Fulltext content is available for a paper.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestRetrieveExistantContent.test_calls_fulltext_endpoint"><a class="viewcode-back" href="../../../../api/search.services.tests.test_fulltext.html#search.services.tests.test_fulltext.TestRetrieveExistantContent.test_calls_fulltext_endpoint">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.services.fulltext.requests.get&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_calls_fulltext_endpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_get</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;:func:`.fulltext.retrieve` calls passed endpoint with GET.&quot;&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="s1">&#39;https://asdf.com/&#39;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+        <span class="nb">type</span><span class="p">(</span><span class="n">response</span><span class="p">)</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">(</span><span class="n">return_value</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;content&#39;</span><span class="p">:</span> <span class="s1">&#39;The whole story&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+            <span class="s1">&#39;created&#39;</span><span class="p">:</span> <span class="s1">&#39;2017-08-30T08:24:58.525923&#39;</span>
+        <span class="p">})</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="mi">200</span>
+        <span class="n">mock_get</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">response</span>
+
+        <span class="n">fulltext_session</span> <span class="o">=</span> <span class="n">fulltext</span><span class="o">.</span><span class="n">current_session</span><span class="p">()</span>
+        <span class="n">fulltext_session</span><span class="o">.</span><span class="n">endpoint</span> <span class="o">=</span> <span class="n">base</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fulltext_session</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span><span class="s1">&#39;1234.5678v3&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s1">&#39;Choked on valid response: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+        <span class="n">args</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">mock_get</span><span class="o">.</span><span class="n">call_args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">base</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="TestRetrieveNonexistantRecord"><a class="viewcode-back" href="../../../../api/search.services.tests.test_fulltext.html#search.services.tests.test_fulltext.TestRetrieveNonexistantRecord">[docs]</a><span class="k">class</span> <span class="nc">TestRetrieveNonexistantRecord</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Fulltext content is not available for a paper.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestRetrieveNonexistantRecord.test_raise_ioerror_on_404"><a class="viewcode-back" href="../../../../api/search.services.tests.test_fulltext.html#search.services.tests.test_fulltext.TestRetrieveNonexistantRecord.test_raise_ioerror_on_404">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.services.fulltext.requests.get&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_raise_ioerror_on_404</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_get</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;:func:`.fulltext.retrieve` raises IOError when text unvailable.&quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+        <span class="nb">type</span><span class="p">(</span><span class="n">response</span><span class="p">)</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">(</span><span class="n">return_value</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="mi">404</span>
+        <span class="n">mock_get</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">response</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">IOError</span><span class="p">):</span>
+            <span class="n">fulltext</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span><span class="s1">&#39;1234.5678v3&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestRetrieveNonexistantRecord.test_raise_ioerror_on_503"><a class="viewcode-back" href="../../../../api/search.services.tests.test_fulltext.html#search.services.tests.test_fulltext.TestRetrieveNonexistantRecord.test_raise_ioerror_on_503">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.services.fulltext.requests.get&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_raise_ioerror_on_503</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_get</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;:func:`.fulltext.retrieve` raises IOError when text unvailable.&quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+        <span class="nb">type</span><span class="p">(</span><span class="n">response</span><span class="p">)</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">(</span><span class="n">return_value</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="mi">503</span>
+        <span class="n">mock_get</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">response</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">IOError</span><span class="p">):</span>
+            <span class="n">fulltext</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span><span class="s1">&#39;1234.5678v3&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestRetrieveNonexistantRecord.test_raise_ioerror_on_sslerror"><a class="viewcode-back" href="../../../../api/search.services.tests.test_fulltext.html#search.services.tests.test_fulltext.TestRetrieveNonexistantRecord.test_raise_ioerror_on_sslerror">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.services.fulltext.requests.get&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_raise_ioerror_on_sslerror</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_get</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;:func:`.fulltext.retrieve` raises IOError when SSL fails.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">requests.exceptions</span> <span class="k">import</span> <span class="n">SSLError</span>
+        <span class="n">mock_get</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="n">SSLError</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">IOError</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">fulltext</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span><span class="s1">&#39;1234.5678v3&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="ow">is</span> <span class="n">SSLError</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s1">&#39;Should not return dependency exception&#39;</span><span class="p">)</span>
+                <span class="k">raise</span></div></div>
+
+
+<div class="viewcode-block" id="TestRetrieveMalformedRecord"><a class="viewcode-back" href="../../../../api/search.services.tests.test_fulltext.html#search.services.tests.test_fulltext.TestRetrieveMalformedRecord">[docs]</a><span class="k">class</span> <span class="nc">TestRetrieveMalformedRecord</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Fulltext endpoint returns non-JSON response.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestRetrieveMalformedRecord.test_response_is_not_json"><a class="viewcode-back" href="../../../../api/search.services.tests.test_fulltext.html#search.services.tests.test_fulltext.TestRetrieveMalformedRecord.test_response_is_not_json">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.services.fulltext.requests.get&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_response_is_not_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_get</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;:func:`.fulltext.retrieve` raises IOError when not valid JSON.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">json.decoder</span> <span class="k">import</span> <span class="n">JSONDecodeError</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+
+        <span class="c1"># Ideally we would pass the exception itself as a side_effect, but it</span>
+        <span class="c1">#  doesn&#39;t have the expected signature.</span>
+        <span class="k">def</span> <span class="nf">raise_decodeerror</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">JSONDecodeError</span><span class="p">(</span><span class="s1">&#39;Nope&#39;</span><span class="p">,</span> <span class="s1">&#39;Nope&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="nb">type</span><span class="p">(</span><span class="n">response</span><span class="p">)</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">(</span><span class="n">side_effect</span><span class="o">=</span><span class="n">raise_decodeerror</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="mi">200</span>
+        <span class="n">mock_get</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">response</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">IOError</span><span class="p">):</span>
+            <span class="n">fulltext</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span><span class="s1">&#39;1234.5678v3&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">search</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

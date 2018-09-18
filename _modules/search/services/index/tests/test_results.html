@@ -1,0 +1,202 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.services.index.tests.test_results &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for search.services.index.tests.test_results</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Tests for :mod:`search.services.index`.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="k">import</span> <span class="n">TestCase</span><span class="p">,</span> <span class="n">mock</span>
+<span class="kn">from</span> <span class="nn">search.services.index</span> <span class="k">import</span> <span class="n">highlighting</span>
+
+
+<div class="viewcode-block" id="TestResultsHighlightAbstract"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_results.html#search.services.index.tests.test_results.TestResultsHighlightAbstract">[docs]</a><span class="k">class</span> <span class="nc">TestResultsHighlightAbstract</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Given a highlighted abstract, generate a safe preview.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestResultsHighlightAbstract.setUp"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_results.html#search.services.index.tests.test_results.TestResultsHighlightAbstract.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set a sample abstract for use in test cases.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;A search for the standard model (SM) Higgs boson ($</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{H}</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;$) decaying to $</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{b}</span><span class="se">\\</span><span class="s2">overline{</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{b}</span><span class="s2">}$ when produced&quot;</span>
+            <span class="s2">&quot; in association with an electroweak vector boson is reported for&quot;</span>
+            <span class="s2">&quot; the following processes: &lt;em&gt;$</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{b}</span><span class="se">\\</span><span class="s2">overline{</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{b}</span><span class="s2">}&quot;</span>
+            <span class="s2">&quot;(</span><span class="se">\\</span><span class="s2">nu</span><span class="se">\\</span><span class="s2">nu)</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{H}</span><span class="s2">$&lt;/em&gt;, $</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{W}</span><span class="s2">(</span><span class="se">\\</span><span class="s2">mu</span><span class="se">\\</span><span class="s2">nu)</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{H}</span><span class="s2">$,&quot;</span>
+            <span class="s2">&quot; $</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{W}</span><span class="s2">(</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{e}</span><span class="s2"> </span><span class="se">\\</span><span class="s2">nu)</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{H}</span><span class="s2">$,&quot;</span>
+            <span class="s2">&quot; $</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{Z}</span><span class="s2">(</span><span class="se">\\</span><span class="s2">mu</span><span class="se">\\</span><span class="s2">mu)</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{H}</span><span class="s2">$, and&quot;</span>
+            <span class="s2">&quot; $</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{Z}</span><span class="s2">(</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{e}</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{e}</span><span class="s2">)</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{H}</span><span class="s2">$.&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_tag</span> <span class="o">=</span> <span class="s1">&#39;&lt;em&gt;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_tag</span> <span class="o">=</span> <span class="s1">&#39;&lt;/em&gt;&#39;</span></div>
+
+<div class="viewcode-block" id="TestResultsHighlightAbstract.test_preview"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_results.html#search.services.index.tests.test_results.TestResultsHighlightAbstract.test_preview">[docs]</a>    <span class="k">def</span> <span class="nf">test_preview</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a preview that is smaller than/equal to fragment size.&quot;&quot;&quot;</span>
+        <span class="n">preview</span> <span class="o">=</span> <span class="n">highlighting</span><span class="o">.</span><span class="n">preview</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">fragment_size</span><span class="o">=</span><span class="mi">350</span><span class="p">,</span>
+                                       <span class="n">start_tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start_tag</span><span class="p">,</span>
+                                       <span class="n">end_tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_tag</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertGreaterEqual</span><span class="p">(</span><span class="mi">338</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">preview</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TestResultsHighlightAbstract.test_preview_with_close_highlights"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_results.html#search.services.index.tests.test_results.TestResultsHighlightAbstract.test_preview_with_close_highlights">[docs]</a>    <span class="k">def</span> <span class="nf">test_preview_with_close_highlights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Two highlights in the abstract are close together.&quot;&quot;&quot;</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;We investigate self-averaging properties in the transport of&quot;</span>
+            <span class="s2">&quot; particles through &lt;span class=</span><span class="se">\&quot;</span><span class="s2">has-text-success&quot;</span>
+            <span class="s2">&quot; has-text-weight-bold mathjax</span><span class="se">\&quot;</span><span class="s2">&gt;random&lt;/span&gt; media. We show&quot;</span>
+            <span class="s2">&quot; rigorously that in the subdiffusive anomalous regime transport&quot;</span>
+            <span class="s2">&quot; coefficients are not self--averaging quantities. These&quot;</span>
+            <span class="s2">&quot; quantities are exactly calculated in the case of directed&quot;</span>
+            <span class="s2">&quot; &lt;span class=</span><span class="se">\&quot;</span><span class="s2">has-text-success has-text-weight-bold mathjax</span><span class="se">\&quot;</span><span class="s2">&gt;&quot;</span>
+            <span class="s2">&quot;random&lt;/span&gt; walks. In the case of general symmetric &lt;span&quot;</span>
+            <span class="s2">&quot; class=</span><span class="se">\&quot;</span><span class="s2">has-text-success has-text-weight-bold mathjax</span><span class="se">\&quot;</span><span class="s2">&gt;random&quot;</span>
+            <span class="s2">&quot;&lt;/span&gt; walks a perturbative analysis around the Effective Medium&quot;</span>
+            <span class="s2">&quot; Approximation (EMA) is performed.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">start_tag</span> <span class="o">=</span> <span class="s2">&quot;&lt;span class=</span><span class="se">\&quot;</span><span class="s2">has-text-success has-text-weight-bold mathjax</span><span class="se">\&quot;</span><span class="s2">&gt;&quot;</span>
+        <span class="n">end_tag</span> <span class="o">=</span> <span class="s2">&quot;&lt;/span&gt;&quot;</span>
+        <span class="n">preview</span> <span class="o">=</span> <span class="n">highlighting</span><span class="o">.</span><span class="n">preview</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">start_tag</span><span class="o">=</span><span class="n">start_tag</span><span class="p">,</span>
+                                       <span class="n">end_tag</span><span class="o">=</span><span class="n">end_tag</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestResultsEndSafely"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_results.html#search.services.index.tests.test_results.TestResultsEndSafely">[docs]</a><span class="k">class</span> <span class="nc">TestResultsEndSafely</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Given a highlighted abstract, find a safe end index for the preview.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestResultsEndSafely.setUp"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_results.html#search.services.index.tests.test_results.TestResultsEndSafely.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set a sample abstract for use in test cases.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;A search for the standard model (SM) Higgs boson ($</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{H}</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;$) decaying to $</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{b}</span><span class="se">\\</span><span class="s2">overline{</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{b}</span><span class="s2">}$ when produced&quot;</span>
+            <span class="s2">&quot; in association with an electroweak vector boson is reported for&quot;</span>
+            <span class="s2">&quot; the following processes: &lt;em&gt;$</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{b}</span><span class="se">\\</span><span class="s2">overline{</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{b}</span><span class="s2">}&quot;</span>
+            <span class="s2">&quot;(</span><span class="se">\\</span><span class="s2">nu</span><span class="se">\\</span><span class="s2">nu)</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{H}</span><span class="s2">$&lt;/em&gt;, $</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{W}</span><span class="s2">(</span><span class="se">\\</span><span class="s2">mu</span><span class="se">\\</span><span class="s2">nu)</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{H}</span><span class="s2">$,&quot;</span>
+            <span class="s2">&quot; $</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{W}</span><span class="s2">(</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{e}</span><span class="s2"> </span><span class="se">\\</span><span class="s2">nu)</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{H}</span><span class="s2">$,&quot;</span>
+            <span class="s2">&quot; $</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{Z}</span><span class="s2">(</span><span class="se">\\</span><span class="s2">mu</span><span class="se">\\</span><span class="s2">mu)</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{H}</span><span class="s2">$, and&quot;</span>
+            <span class="s2">&quot; $</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{Z}</span><span class="s2">(</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{e}</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{e}</span><span class="s2">)</span><span class="se">\\</span><span class="s2">mathrm</span><span class="si">{H}</span><span class="s2">$.&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_tag</span> <span class="o">=</span> <span class="s1">&#39;&lt;em&gt;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_tag</span> <span class="o">=</span> <span class="s1">&#39;&lt;/em&gt;&#39;</span></div>
+
+<div class="viewcode-block" id="TestResultsEndSafely.test_end_safely_from_start"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_results.html#search.services.index.tests.test_results.TestResultsEndSafely.test_end_safely_from_start">[docs]</a>    <span class="k">def</span> <span class="nf">test_end_safely_from_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;No TeXisms/HTML are found within the desired fragment size.&quot;&quot;&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">highlighting</span><span class="o">.</span><span class="n">_end_safely</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span>
+                                       <span class="n">start_tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start_tag</span><span class="p">,</span>
+                                       <span class="n">end_tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_tag</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="s2">&quot;Should end at the desired fragment length.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestResultsEndSafely.test_end_safely_before_texism"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_results.html#search.services.index.tests.test_results.TestResultsEndSafely.test_end_safely_before_texism">[docs]</a>    <span class="k">def</span> <span class="nf">test_end_safely_before_texism</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;End before TeXism when desired fragment size would truncate.&quot;&quot;&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">highlighting</span><span class="o">.</span><span class="n">_end_safely</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="mi">55</span><span class="p">,</span>
+                                       <span class="n">start_tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start_tag</span><span class="p">,</span>
+                                       <span class="n">end_tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_tag</span><span class="p">)</span>
+        <span class="c1"># print(self.value[:end])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="s2">&quot;Should end before the start of the TeXism.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestResultsEndSafely.test_end_safely_before_html"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_results.html#search.services.index.tests.test_results.TestResultsEndSafely.test_end_safely_before_html">[docs]</a>    <span class="k">def</span> <span class="nf">test_end_safely_before_html</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;End before HTML when desired fragment size would truncate.&quot;&quot;&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">highlighting</span><span class="o">.</span><span class="n">_end_safely</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="mi">215</span><span class="p">,</span>
+                                       <span class="n">start_tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start_tag</span><span class="p">,</span>
+                                       <span class="n">end_tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_tag</span><span class="p">)</span>
+        <span class="c1"># print(self.value[:end])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="mi">213</span><span class="p">,</span> <span class="s2">&quot;Should end before the start of the tag.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestResultsEndSafely.test_end_safely_after_html_with_tolerance"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_results.html#search.services.index.tests.test_results.TestResultsEndSafely.test_end_safely_after_html_with_tolerance">[docs]</a>    <span class="k">def</span> <span class="nf">test_end_safely_after_html_with_tolerance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;End before HTML when desired fragment size would truncate.&quot;&quot;&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">highlighting</span><span class="o">.</span><span class="n">_end_safely</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="mi">275</span><span class="p">,</span>
+                                       <span class="n">start_tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start_tag</span><span class="p">,</span>
+                                       <span class="n">end_tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_tag</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="mi">275</span><span class="p">,</span> <span class="s2">&quot;Should end after the closing tag.&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/modules.html">search</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  <li><a href="../../index.html">search.services.index</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

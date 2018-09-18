@@ -1,0 +1,467 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.services.index.prepare &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for search.services.index.prepare</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functions for preparing a :class:`.Search` (prior to execution).</span>
+
+<span class="sd">The primary public object is ``SEARCH_FIELDS``, which maps :class:`.Query`</span>
+<span class="sd">fields to query-building functions in the module.</span>
+
+<span class="sd">See :func:`._query_all_fields` for information on how results are scored.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">reduce</span><span class="p">,</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">ior</span><span class="p">,</span> <span class="n">iand</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">string</span> <span class="k">import</span> <span class="n">punctuation</span>
+
+<span class="kn">from</span> <span class="nn">elasticsearch_dsl</span> <span class="k">import</span> <span class="n">Search</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">SF</span>
+
+<span class="kn">from</span> <span class="nn">arxiv.base</span> <span class="k">import</span> <span class="n">logging</span>
+
+<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">SimpleQuery</span><span class="p">,</span> <span class="n">Query</span><span class="p">,</span> <span class="n">AdvancedQuery</span><span class="p">,</span> <span class="n">Classification</span><span class="p">,</span> \
+    <span class="n">ClassificationList</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="k">import</span> <span class="n">strip_tex</span><span class="p">,</span> <span class="n">Q_</span><span class="p">,</span> <span class="n">is_tex_query</span><span class="p">,</span> <span class="n">is_literal_query</span><span class="p">,</span> <span class="n">escape</span><span class="p">,</span> \
+    <span class="n">wildcard_escape</span><span class="p">,</span> <span class="n">remove_single_characters</span><span class="p">,</span> <span class="n">has_wildcard</span><span class="p">,</span> <span class="n">is_old_papernum</span><span class="p">,</span> \
+    <span class="n">parse_date</span><span class="p">,</span> <span class="n">parse_date_partial</span>
+
+<span class="kn">from</span> <span class="nn">.highlighting</span> <span class="k">import</span> <span class="n">HIGHLIGHT_TAG_OPEN</span><span class="p">,</span> <span class="n">HIGHLIGHT_TAG_CLOSE</span>
+<span class="kn">from</span> <span class="nn">.authors</span> <span class="k">import</span> <span class="n">author_query</span><span class="p">,</span> <span class="n">author_id_query</span><span class="p">,</span> <span class="n">orcid_query</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">START_YEAR</span> <span class="o">=</span> <span class="mi">1991</span>
+<span class="n">END_YEAR</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">year</span>
+
+
+<span class="k">def</span> <span class="nf">_query_title</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default_operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;AND&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">is_tex_query</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">f</span><span class="s1">&#39;title.tex&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="n">term</span><span class="p">}})</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;title.english&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">is_literal_query</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+        <span class="n">fields</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;query_string&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">fields</span><span class="p">,</span> <span class="n">default_operator</span><span class="o">=</span><span class="n">default_operator</span><span class="p">,</span>
+             <span class="n">allow_leading_wildcard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">escape</span><span class="p">(</span><span class="n">term</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_query_abstract</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default_operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;AND&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;abstract.english&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">is_literal_query</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+        <span class="n">fields</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;abstract&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;query_string&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">fields</span><span class="p">,</span> <span class="n">default_operator</span><span class="o">=</span><span class="n">default_operator</span><span class="p">,</span>
+             <span class="n">allow_leading_wildcard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">escape</span><span class="p">(</span><span class="n">term</span><span class="p">),</span>
+             <span class="n">_name</span><span class="o">=</span><span class="s2">&quot;abstract&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_query_comments</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default_operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;AND&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;query_string&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;comments&quot;</span><span class="p">],</span>
+             <span class="n">default_operator</span><span class="o">=</span><span class="n">default_operator</span><span class="p">,</span>
+             <span class="n">allow_leading_wildcard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">escape</span><span class="p">(</span><span class="n">term</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_tex_query</span><span class="p">(</span><span class="n">field</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;and&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span>
+             <span class="o">**</span><span class="p">{</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{field}</span><span class="s1">.tex&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="n">term</span><span class="p">,</span> <span class="s1">&#39;operator&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="p">}})</span>
+
+
+<span class="k">def</span> <span class="nf">_query_journal_ref</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">boost</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;and&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;query_string&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;journal_ref&quot;</span><span class="p">],</span> <span class="n">default_operator</span><span class="o">=</span><span class="n">operator</span><span class="p">,</span>
+             <span class="n">allow_leading_wildcard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">escape</span><span class="p">(</span><span class="n">term</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_query_report_num</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">boost</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;and&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;query_string&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;report_num&quot;</span><span class="p">],</span> <span class="n">default_operator</span><span class="o">=</span><span class="n">operator</span><span class="p">,</span>
+             <span class="n">allow_leading_wildcard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">escape</span><span class="p">(</span><span class="n">term</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_query_acm_class</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;and&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">has_wildcard</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;wildcard&quot;</span><span class="p">,</span> <span class="n">acm_class</span><span class="o">=</span><span class="n">term</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="n">acm_class</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">term</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="p">})</span>
+
+
+<span class="k">def</span> <span class="nf">_query_msc_class</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;and&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">has_wildcard</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;wildcard&quot;</span><span class="p">,</span> <span class="n">msc_class</span><span class="o">=</span><span class="n">term</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="n">msc_class</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">term</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="p">})</span>
+
+
+<span class="k">def</span> <span class="nf">_query_doi</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;and&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="n">value</span><span class="p">,</span> <span class="n">wildcard</span> <span class="o">=</span> <span class="n">wildcard_escape</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">wildcard</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;wildcard&#39;</span><span class="p">,</span> <span class="n">doi</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">term</span><span class="o">.</span><span class="n">lower</span><span class="p">()})</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="n">doi</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="n">term</span><span class="p">,</span> <span class="s1">&#39;operator&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="p">})</span>
+
+
+<span class="k">def</span> <span class="nf">_query_announcement_date</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Q</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Query against the original announcement date.</span>
+
+<span class="sd">    If ``term`` looks like a year, will use a range search for all months in</span>
+<span class="sd">    that year. If it looks like a year-month combo, will match.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">year_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^([0-9]</span><span class="si">{4}</span><span class="s1">)$&#39;</span><span class="p">,</span> <span class="n">term</span><span class="p">)</span>    <span class="c1"># Looks like a year.</span>
+    <span class="k">if</span> <span class="n">year_match</span> <span class="ow">and</span> <span class="n">END_YEAR</span> <span class="o">&gt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">year_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="n">START_YEAR</span><span class="p">:</span>
+        <span class="n">_range</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;gte&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{term}</span><span class="s1">-01&#39;</span><span class="p">,</span> <span class="s1">&#39;lte&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{term}</span><span class="s1">-12&#39;</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;range&#39;</span><span class="p">,</span> <span class="n">announced_date_first</span><span class="o">=</span><span class="n">_range</span><span class="p">)</span>
+
+    <span class="n">month_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^([0-9]</span><span class="si">{4}</span><span class="s1">)-([0-9]</span><span class="si">{2}</span><span class="s1">)$&#39;</span><span class="p">,</span> <span class="n">term</span><span class="p">)</span>    <span class="c1"># yyyy-MM.</span>
+    <span class="k">if</span> <span class="n">month_match</span> <span class="ow">and</span> <span class="n">END_YEAR</span> <span class="o">&gt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">month_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="n">START_YEAR</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="n">announced_date_first</span><span class="o">=</span><span class="n">term</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span> <span class="nf">_query_primary</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;and&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="c1"># In the &#39;or&#39; case, we&#39;re basically just looking for hit highlighting</span>
+    <span class="c1"># after a match on the combined field. Since primary classification fields</span>
+    <span class="c1"># are keyword fields, they won&#39;t match the same way as the combined field</span>
+    <span class="c1"># (text). So we have to be a bit fuzzy here to get the highlight.</span>
+    <span class="c1"># TODO: in a future version, we should consider changes to the mappings</span>
+    <span class="c1"># to make this more straightforward.</span>
+    <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="s1">&#39;or&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">ior</span><span class="p">,</span> <span class="p">[(</span>
+            <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__category__id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">part</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="p">}})</span>
+            <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;wildcard&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification.category.name&quot;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;*</span><span class="si">{part}</span><span class="s2">*&quot;</span><span class="p">})</span>
+            <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__archive__id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">part</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="p">}})</span>
+            <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;wildcard&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification.archive.name&quot;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;*</span><span class="si">{part}</span><span class="s2">*&quot;</span><span class="p">})</span>
+        <span class="p">)</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">term</span><span class="o">.</span><span class="n">split</span><span class="p">()])</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__category__id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">term</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="p">}})</span>
+        <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__category__name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">term</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="p">}})</span>
+        <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__archive__id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">term</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="p">}})</span>
+        <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__archive__name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">term</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="p">}})</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_query_paper_id</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;and&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="n">operator</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;query paper ID with: </span><span class="si">{term}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="p">(</span><span class="n">Q_</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="s1">&#39;paper_id&#39;</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="n">term</span><span class="p">),</span> <span class="n">operator</span><span class="o">=</span><span class="n">operator</span><span class="p">)</span>
+         <span class="o">|</span> <span class="n">Q_</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="s1">&#39;paper_id_v&#39;</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="n">term</span><span class="p">),</span> <span class="n">operator</span><span class="o">=</span><span class="n">operator</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">is_old_papernum</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+        <span class="n">q</span> <span class="o">|=</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;wildcard&#39;</span><span class="p">,</span> <span class="n">paper_id</span><span class="o">=</span><span class="n">f</span><span class="s1">&#39;*/</span><span class="si">{term}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">q</span>
+
+
+<span class="k">def</span> <span class="nf">_query_combined</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="c1"># Only wildcards in literals should be escaped.</span>
+    <span class="n">wildcard_escaped</span><span class="p">,</span> <span class="n">has_wildcard</span> <span class="o">=</span> <span class="n">wildcard_escape</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+    <span class="n">query_term</span> <span class="o">=</span> <span class="p">(</span><span class="n">wildcard_escaped</span> <span class="k">if</span> <span class="n">has_wildcard</span> <span class="k">else</span> <span class="n">escape</span><span class="p">(</span><span class="n">term</span><span class="p">))</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="c1"># All terms must match in the combined field.</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;query_string&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;combined&#39;</span><span class="p">],</span> <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span>
+             <span class="n">allow_leading_wildcard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query_term</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_query_all_fields</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Construct a query against all fields.</span>
+
+<span class="sd">    The heart of the query is a `query_string` search against a &quot;combined&quot;</span>
+<span class="sd">    field, which contains tokens from all of the searchable metadata fields on</span>
+<span class="sd">    each paper. All tokens in the query must match in that combined field.</span>
+
+<span class="sd">    The reason that we do it this way, instead of combining queries across</span>
+<span class="sd">    multiple fields, is that:</span>
+
+<span class="sd">    - To query in a term-centric way across fields (e.g. the `cross_fields`</span>
+<span class="sd">      query type for `query_string` or `multi_match` searches), all of those</span>
+<span class="sd">      fields must have the same analyzer. It&#39;s a drag to constrain analyzer</span>
+<span class="sd">      choice on individual fields, so this way we can do what we want with</span>
+<span class="sd">      individual fields but also support a consistent all-fields search that</span>
+<span class="sd">      behaves the way that users expect.</span>
+<span class="sd">    - Performing a disjunct search across all fields can&#39;t guarantee that all</span>
+<span class="sd">      terms match (if we use the disjunct operator within each field), and</span>
+<span class="sd">      can&#39;t handle queries that span fieds (if we use the conjunect operator</span>
+<span class="sd">      within each field).</span>
+
+<span class="sd">    In addition to the combined query, we also perform dijunct queries across</span>
+<span class="sd">    individual fields to generate field-specific hits, and to provide control</span>
+<span class="sd">    over scoring.</span>
+
+<span class="sd">    Weights are applied using :class:`.SF` (score functions). In the current</span>
+<span class="sd">    implementation, fields are given monotonically decreasing weights in the</span>
+<span class="sd">    order applied below. More complex score functions may be introduced, and</span>
+<span class="sd">    that should happen here.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    term : str</span>
+<span class="sd">        A query string.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :class:`.Q`</span>
+<span class="sd">        A search-ready query part, including score functions.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># We only perform TeX queries on title and abstract.</span>
+    <span class="k">if</span> <span class="n">is_tex_query</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_tex_query</span><span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">term</span><span class="p">)</span> <span class="o">|</span> <span class="n">_tex_query</span><span class="p">(</span><span class="s1">&#39;abstract&#39;</span><span class="p">,</span> <span class="n">term</span><span class="p">)</span>
+
+    <span class="n">match_all_fields</span> <span class="o">=</span> <span class="n">_query_combined</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+
+    <span class="c1"># We include matches of any term in any field, so that we can highlight</span>
+    <span class="c1"># and score appropriately.</span>
+    <span class="n">queries</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">_query_paper_id</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
+        <span class="n">author_query</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
+        <span class="n">_query_title</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
+        <span class="n">_query_abstract</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
+        <span class="n">_query_comments</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
+        <span class="n">orcid_query</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
+        <span class="n">author_id_query</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
+        <span class="n">_query_doi</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
+        <span class="n">_query_journal_ref</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
+        <span class="n">_query_report_num</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
+        <span class="n">_query_acm_class</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
+        <span class="n">_query_msc_class</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
+        <span class="n">_query_primary</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="c1"># If the whole query matches on a specific field, we should consider that</span>
+    <span class="c1"># responsive even if the query on the combined field does not respond.</span>
+    <span class="n">match_individual_field</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">ior</span><span class="p">,</span> <span class="p">[</span>
+        <span class="n">_query_paper_id</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">),</span>
+        <span class="n">author_query</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">),</span>
+        <span class="n">_query_title</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+        <span class="n">_query_abstract</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+        <span class="n">_query_comments</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+        <span class="n">orcid_query</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+        <span class="n">author_id_query</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+        <span class="n">_query_doi</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+        <span class="n">_query_journal_ref</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+        <span class="n">_query_report_num</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+        <span class="n">_query_acm_class</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+        <span class="n">_query_msc_class</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+        <span class="n">_query_primary</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">)</span>
+    <span class="p">])</span>
+
+
+    <span class="c1"># It is possible that the query includes a date-related term, which we</span>
+    <span class="c1"># interpret as an announcement date of v1 of the paper. We currently</span>
+    <span class="c1"># support both &quot;standard&quot; `yyyy` or `yyyy-MM`` formats as well as a</span>
+    <span class="c1"># legacy format ``yyMM``.</span>
+    <span class="c1">#</span>
+    <span class="c1"># The general strategy here is to first attempt to match a date fragment</span>
+    <span class="c1"># using one the formats above, and split the query so that we can handle</span>
+    <span class="c1"># the date fragment and the remainder of the query separately. If we find</span>
+    <span class="c1"># something that looks like a date fragment, we perform the all-fields</span>
+    <span class="c1"># search on the remainder and use the fragment to build queries against the</span>
+    <span class="c1"># announcement-date of the original paper version.</span>
+    <span class="n">date_fragment</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">remainder</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">date_fragment</span><span class="p">,</span> <span class="n">remainder</span> <span class="o">=</span> <span class="n">parse_date</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="n">date_fragment</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;date: </span><span class="si">%s</span><span class="s1">; remainder: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">date_fragment</span><span class="p">,</span> <span class="n">remainder</span><span class="p">)</span>
+        <span class="n">match_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Q</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">match_date_partial</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Q</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">match_date_announced</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Q</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">match_dates</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Q</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;date_fragment: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">date_fragment</span><span class="p">)</span>
+
+        <span class="c1"># Try to query using legacy yyMM date partial format.</span>
+        <span class="n">date_partial</span> <span class="o">=</span> <span class="n">parse_date_partial</span><span class="p">(</span><span class="n">date_fragment</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;date_partial: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">date_partial</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">date_partial</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">match_date_partial</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;term&quot;</span><span class="p">,</span> <span class="n">announced_date_first</span><span class="o">=</span><span class="n">date_partial</span><span class="p">)</span>
+            <span class="n">match_dates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">match_date_partial</span><span class="p">)</span>
+
+        <span class="c1"># Also try using yyyy-MM and yyyy formats.</span>
+        <span class="n">match_date_announced</span> <span class="o">=</span> <span class="n">_query_announcement_date</span><span class="p">(</span><span class="n">date_fragment</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match_date_announced</span><span class="p">:</span>
+            <span class="n">match_dates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">match_date_announced</span><span class="p">)</span>
+
+        <span class="c1"># Build the composite announcement date query here, using the</span>
+        <span class="c1"># sub-queries based on &quot;standard&quot; and legay date formats.</span>
+        <span class="k">if</span> <span class="n">match_dates</span><span class="p">:</span>
+            <span class="c1"># The only way to know in the end whether the query matched on</span>
+            <span class="c1"># the announcement date is to wrap this in a top-level query and</span>
+            <span class="c1"># give it a ``_name``. This causes the ``_name`` to show up</span>
+            <span class="c1"># in the ``.meta.matched_queries`` property on the search result.</span>
+            <span class="n">match_date</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;bool&quot;</span><span class="p">,</span> <span class="n">should</span><span class="o">=</span><span class="n">match_dates</span><span class="p">,</span> <span class="n">minimum_should_match</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                           <span class="n">_name</span><span class="o">=</span><span class="s2">&quot;announced_date_first&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;match date: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">match_date</span><span class="p">)</span>
+            <span class="n">queries</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">match_date</span><span class="p">)</span>
+
+        <span class="c1"># Now join the announcement date query with the all-fields queries.</span>
+        <span class="k">if</span> <span class="n">match_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">remainder</span><span class="p">:</span>
+                <span class="n">match_remainder</span> <span class="o">=</span> <span class="n">_query_combined</span><span class="p">(</span><span class="n">remainder</span><span class="p">)</span>
+                <span class="n">match_all_fields</span> <span class="o">|=</span> <span class="p">(</span><span class="n">match_remainder</span> <span class="o">&amp;</span> <span class="n">match_date</span><span class="p">)</span>
+
+                <span class="n">match_individual_sans_date</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">ior</span><span class="p">,</span> <span class="p">[</span>
+                    <span class="n">_query_paper_id</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">),</span>
+                    <span class="n">author_query</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">),</span>
+                    <span class="n">_query_title</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+                    <span class="n">_query_abstract</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+                    <span class="n">_query_comments</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+                    <span class="n">orcid_query</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+                    <span class="n">author_id_query</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+                    <span class="n">_query_doi</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+                    <span class="n">_query_journal_ref</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+                    <span class="n">_query_report_num</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+                    <span class="n">_query_acm_class</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+                    <span class="n">_query_msc_class</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+                    <span class="n">_query_primary</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">)</span>
+                <span class="p">])</span>
+                <span class="n">match_individual_field</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;bool&#39;</span><span class="p">,</span> <span class="n">should</span><span class="o">=</span><span class="p">[</span>
+                        <span class="n">match_individual_field</span><span class="p">,</span>
+                        <span class="n">match_individual_sans_date</span> <span class="o">&amp;</span> <span class="n">match_date</span>
+                    <span class="p">],</span> <span class="n">minimum_should_match</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">match_all_fields</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;bool&#39;</span><span class="p">,</span>
+                                     <span class="n">should</span><span class="o">=</span><span class="p">[</span><span class="n">match_all_fields</span><span class="p">,</span> <span class="n">match_date</span><span class="p">],</span>
+                                     <span class="n">minimum_should_match</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="p">(</span><span class="n">match_all_fields</span> <span class="o">|</span> <span class="n">match_individual_field</span><span class="p">)</span>
+    <span class="n">query</span> <span class="o">&amp;=</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;bool&quot;</span><span class="p">,</span> <span class="n">should</span><span class="o">=</span><span class="n">queries</span><span class="p">)</span>  <span class="c1"># Partial matches across fields.</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">SF</span><span class="p">({</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;filter&#39;</span><span class="p">:</span> <span class="n">q</span><span class="p">})</span>
+              <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">queries</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])]</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;function_score&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">score_mode</span><span class="o">=</span><span class="s2">&quot;sum&quot;</span><span class="p">,</span> <span class="n">functions</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
+             <span class="n">boost_mode</span><span class="o">=</span><span class="s1">&#39;multiply&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="limit_by_classification"><a class="viewcode-back" href="../../../../api/search.services.index.prepare.html#search.services.index.prepare.limit_by_classification">[docs]</a><span class="k">def</span> <span class="nf">limit_by_classification</span><span class="p">(</span><span class="n">classifications</span><span class="p">:</span> <span class="n">ClassificationList</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Generate a :class:`Q` to limit a query by by classification.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_to_q</span><span class="p">(</span><span class="n">classification</span><span class="p">:</span> <span class="n">Classification</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+        <span class="n">_qs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">classification</span><span class="o">.</span><span class="n">group</span><span class="p">:</span>
+            <span class="n">_qs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__group__id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">classification</span><span class="o">.</span><span class="n">group</span><span class="p">}})</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">classification</span><span class="o">.</span><span class="n">archive</span><span class="p">:</span>
+            <span class="n">_qs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__archive__id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">classification</span><span class="o">.</span><span class="n">archive</span><span class="p">}})</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">classification</span><span class="o">.</span><span class="n">category</span><span class="p">:</span>
+            <span class="n">_qs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__category__id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">classification</span><span class="o">.</span><span class="n">category</span><span class="p">}})</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">iand</span><span class="p">,</span> <span class="n">_qs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">ior</span><span class="p">,</span> <span class="p">[</span><span class="n">_to_q</span><span class="p">(</span><span class="n">clsn</span><span class="p">)</span> <span class="k">for</span> <span class="n">clsn</span> <span class="ow">in</span> <span class="n">classifications</span><span class="p">])</span></div>
+
+
+
+<span class="n">SEARCH_FIELDS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Q</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([</span>
+    <span class="p">(</span><span class="s1">&#39;author&#39;</span><span class="p">,</span> <span class="n">author_query</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">_query_title</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;abstract&#39;</span><span class="p">,</span> <span class="n">_query_abstract</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;comments&#39;</span><span class="p">,</span> <span class="n">_query_comments</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;journal_ref&#39;</span><span class="p">,</span> <span class="n">_query_journal_ref</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;report_num&#39;</span><span class="p">,</span> <span class="n">_query_report_num</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;acm_class&#39;</span><span class="p">,</span> <span class="n">_query_acm_class</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;msc_class&#39;</span><span class="p">,</span> <span class="n">_query_msc_class</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;doi&#39;</span><span class="p">,</span> <span class="n">_query_doi</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;paper_id&#39;</span><span class="p">,</span> <span class="n">_query_paper_id</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;orcid&#39;</span><span class="p">,</span> <span class="n">orcid_query</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;author_id&#39;</span><span class="p">,</span> <span class="n">author_id_query</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">_query_all_fields</span><span class="p">)</span>
+<span class="p">])</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">search</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  <li><a href="../index.html">search.services.index</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

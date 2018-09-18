@@ -1,0 +1,156 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.services.index.tests.test_util &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for search.services.index.tests.test_util</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Tests for :mod:`search.services.index.util`.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="k">import</span> <span class="n">TestCase</span>
+
+<span class="kn">from</span> <span class="nn">search.services.index</span> <span class="k">import</span> <span class="n">util</span>
+
+
+<div class="viewcode-block" id="TestMatchDatePartial"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_util.html#search.services.index.tests.test_util.TestMatchDatePartial">[docs]</a><span class="k">class</span> <span class="nc">TestMatchDatePartial</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests for :func:`.index.util.parse_date_partial`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestMatchDatePartial.test_date_partial_only"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_util.html#search.services.index.tests.test_util.TestMatchDatePartial.test_date_partial_only">[docs]</a>    <span class="k">def</span> <span class="nf">test_date_partial_only</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Term includes only a four-digit date partial.&quot;&quot;&quot;</span>
+        <span class="n">term</span><span class="p">,</span> <span class="n">rmd</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">parse_date</span><span class="p">(</span><span class="s1">&#39;1902&#39;</span><span class="p">)</span>
+        <span class="n">ym</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">parse_date_partial</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">ym</span><span class="p">,</span> <span class="s1">&#39;2019-02&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">rmd</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s2">&quot;Should have no remainder&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestMatchDatePartial.test_in_word"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_util.html#search.services.index.tests.test_util.TestMatchDatePartial.test_in_word">[docs]</a>    <span class="k">def</span> <span class="nf">test_in_word</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A false positive in a word.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+            <span class="n">term</span><span class="p">,</span> <span class="n">rmd</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">parse_date</span><span class="p">(</span><span class="s1">&#39;notasearch1902foradatepartial&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestMatchDatePartial.test_near_words"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_util.html#search.services.index.tests.test_util.TestMatchDatePartial.test_near_words">[docs]</a>    <span class="k">def</span> <span class="nf">test_near_words</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Term includes date partial plus other terms.&quot;&quot;&quot;</span>
+        <span class="n">term</span><span class="p">,</span> <span class="n">rmd</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">parse_date</span><span class="p">(</span><span class="s1">&#39;foo 1902 bar&#39;</span><span class="p">)</span>
+        <span class="n">ym</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">parse_date_partial</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">ym</span><span class="p">,</span> <span class="s1">&#39;2019-02&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">rmd</span><span class="p">,</span> <span class="s2">&quot;foo bar&quot;</span><span class="p">,</span> <span class="s2">&quot;Should have remainder&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestMatchDatePartial.test_out_of_range"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_util.html#search.services.index.tests.test_util.TestMatchDatePartial.test_out_of_range">[docs]</a>    <span class="k">def</span> <span class="nf">test_out_of_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Term looks like a date partial, but is not a valid date.&quot;&quot;&quot;</span>
+        <span class="n">term</span><span class="p">,</span> <span class="n">rmd</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">parse_date</span><span class="p">(</span><span class="s1">&#39;0699&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNone</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">parse_date_partial</span><span class="p">(</span><span class="n">term</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TestMatchDatePartial.test_last_millenium"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_util.html#search.services.index.tests.test_util.TestMatchDatePartial.test_last_millenium">[docs]</a>    <span class="k">def</span> <span class="nf">test_last_millenium</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Term is for a pre-2000 paper.&quot;&quot;&quot;</span>
+        <span class="n">term</span><span class="p">,</span> <span class="n">rmd</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">parse_date</span><span class="p">(</span><span class="s1">&#39;old paper 9505&#39;</span><span class="p">)</span>
+        <span class="n">ym</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">parse_date_partial</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">ym</span><span class="p">,</span> <span class="s1">&#39;1995-05&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">rmd</span><span class="p">,</span> <span class="s1">&#39;old paper&#39;</span><span class="p">,</span> <span class="s1">&#39;Should have a remainder&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestOldPapernumDetection"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_util.html#search.services.index.tests.test_util.TestOldPapernumDetection">[docs]</a><span class="k">class</span> <span class="nc">TestOldPapernumDetection</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test :func:`.index.util.is_old_papernum`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestOldPapernumDetection.test_is_old_papernum"><a class="viewcode-back" href="../../../../../api/search.services.index.tests.test_util.html#search.services.index.tests.test_util.TestOldPapernumDetection.test_is_old_papernum">[docs]</a>    <span class="k">def</span> <span class="nf">test_is_old_papernum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;User enters a 7-digit number that looks like an old papernum.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_old_papernum</span><span class="p">(</span><span class="s1">&#39;9106001&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_old_papernum</span><span class="p">(</span><span class="s1">&#39;9107001&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_old_papernum</span><span class="p">(</span><span class="s1">&#39;9200001&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_old_papernum</span><span class="p">(</span><span class="s1">&#39;9201001&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_old_papernum</span><span class="p">(</span><span class="s1">&#39;0703999&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_old_papernum</span><span class="p">(</span><span class="s1">&#39;0704001&#39;</span><span class="p">))</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/modules.html">search</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  <li><a href="../../index.html">search.services.index</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

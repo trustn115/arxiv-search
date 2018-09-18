@@ -1,0 +1,395 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>search.controllers.advanced.tests module &#8212; arXiv search 0.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="search.controllers.api package" href="search.controllers.api.html" />
+    <link rel="prev" title="search.controllers.advanced.forms module" href="search.controllers.advanced.forms.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-search.controllers.advanced.tests">
+<span id="search-controllers-advanced-tests-module"></span><h1>search.controllers.advanced.tests module<a class="headerlink" href="#module-search.controllers.advanced.tests" title="Permalink to this headline">¶</a></h1>
+<p>Tests for advanced search controller, <a class="reference internal" href="search.controllers.advanced.html#module-search.controllers.advanced" title="search.controllers.advanced"><code class="xref py py-mod docutils literal notranslate"><span class="pre">search.controllers.advanced</span></code></a>.</p>
+<dl class="class">
+<dt id="search.controllers.advanced.tests.TestAdvancedSearchForm">
+<em class="property">class </em><code class="descclassname">search.controllers.advanced.tests.</code><code class="descname">TestAdvancedSearchForm</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestAdvancedSearchForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestAdvancedSearchForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Tests for <a class="reference internal" href="search.controllers.advanced.forms.html#search.controllers.advanced.forms.AdvancedSearchForm" title="search.controllers.advanced.forms.AdvancedSearchForm"><code class="xref py py-class docutils literal notranslate"><span class="pre">AdvancedSearchForm</span></code></a>.</p>
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestAdvancedSearchForm.test_date_range_must_be_specified">
+<code class="descname">test_date_range_must_be_specified</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestAdvancedSearchForm.test_date_range_must_be_specified"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestAdvancedSearchForm.test_date_range_must_be_specified" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the user selects date range, they must indicate start or end.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestAdvancedSearchForm.test_date_range_supports_variable_precision">
+<code class="descname">test_date_range_supports_variable_precision</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestAdvancedSearchForm.test_date_range_supports_variable_precision"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestAdvancedSearchForm.test_date_range_supports_variable_precision" title="Permalink to this definition">¶</a></dt>
+<dd><p>Date range in advanced search should support variable precision.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestAdvancedSearchForm.test_end_date_bounding">
+<code class="descname">test_end_date_bounding</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestAdvancedSearchForm.test_end_date_bounding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestAdvancedSearchForm.test_end_date_bounding" title="Permalink to this definition">¶</a></dt>
+<dd><p>If a user selects an end date, it must be bounded correctly.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestAdvancedSearchForm.test_input_whitespace_is_stripped">
+<code class="descname">test_input_whitespace_is_stripped</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestAdvancedSearchForm.test_input_whitespace_is_stripped"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestAdvancedSearchForm.test_input_whitespace_is_stripped" title="Permalink to this definition">¶</a></dt>
+<dd><p>If query has padding whitespace, it should be removed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestAdvancedSearchForm.test_querystring_has_unbalanced_quotes">
+<code class="descname">test_querystring_has_unbalanced_quotes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestAdvancedSearchForm.test_querystring_has_unbalanced_quotes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestAdvancedSearchForm.test_querystring_has_unbalanced_quotes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Querystring has an odd number of quote characters.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestAdvancedSearchForm.test_single_field_term">
+<code class="descname">test_single_field_term</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestAdvancedSearchForm.test_single_field_term"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestAdvancedSearchForm.test_single_field_term" title="Permalink to this definition">¶</a></dt>
+<dd><p>User has entered a single term for a field-based search.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestAdvancedSearchForm.test_specific_year_must_be_specified">
+<code class="descname">test_specific_year_must_be_specified</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestAdvancedSearchForm.test_specific_year_must_be_specified"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestAdvancedSearchForm.test_specific_year_must_be_specified" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the user selects specific year, they must indicate a year.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestAdvancedSearchForm.test_term_starts_with_wildcard">
+<code class="descname">test_term_starts_with_wildcard</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestAdvancedSearchForm.test_term_starts_with_wildcard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestAdvancedSearchForm.test_term_starts_with_wildcard" title="Permalink to this definition">¶</a></dt>
+<dd><p>User has entered a string that starts with a wildcard.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestAdvancedSearchForm.test_year_must_be_after_1990">
+<code class="descname">test_year_must_be_after_1990</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestAdvancedSearchForm.test_year_must_be_after_1990"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestAdvancedSearchForm.test_year_must_be_after_1990" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the user selects a specific year, it must be after 1990.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.controllers.advanced.tests.TestClassicAuthorSyntaxIsIntercepted">
+<em class="property">class </em><code class="descclassname">search.controllers.advanced.tests.</code><code class="descname">TestClassicAuthorSyntaxIsIntercepted</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestClassicAuthorSyntaxIsIntercepted"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestClassicAuthorSyntaxIsIntercepted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>The user may have entered an author query using <cite>surname_f</cite> syntax.</p>
+<p>This is an artefact of the classic search system, and not intended to be
+supported. Nevertheless, users have become accustomed to this syntax. We
+therefore rewrite the query using a comma, and show the user a warning
+about the syntax change.</p>
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestClassicAuthorSyntaxIsIntercepted.test_all_fields_search_contains_classic_syntax">
+<code class="descname">test_all_fields_search_contains_classic_syntax</code><span class="sig-paren">(</span><em>mock_index</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestClassicAuthorSyntaxIsIntercepted.test_all_fields_search_contains_classic_syntax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestClassicAuthorSyntaxIsIntercepted.test_all_fields_search_contains_classic_syntax" title="Permalink to this definition">¶</a></dt>
+<dd><p>User has entered a <cite>surname_f</cite> query in an all-fields term.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestClassicAuthorSyntaxIsIntercepted.test_all_fields_search_multiple_classic_syntax">
+<code class="descname">test_all_fields_search_multiple_classic_syntax</code><span class="sig-paren">(</span><em>mock_index</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestClassicAuthorSyntaxIsIntercepted.test_all_fields_search_multiple_classic_syntax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestClassicAuthorSyntaxIsIntercepted.test_all_fields_search_multiple_classic_syntax" title="Permalink to this definition">¶</a></dt>
+<dd><p>User has entered a classic query with multiple authors.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestClassicAuthorSyntaxIsIntercepted.test_author_search_contains_classic_syntax">
+<code class="descname">test_author_search_contains_classic_syntax</code><span class="sig-paren">(</span><em>mock_index</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestClassicAuthorSyntaxIsIntercepted.test_author_search_contains_classic_syntax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestClassicAuthorSyntaxIsIntercepted.test_author_search_contains_classic_syntax" title="Permalink to this definition">¶</a></dt>
+<dd><p>User has entered a <cite>surname_f</cite> query in an author search.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestClassicAuthorSyntaxIsIntercepted.test_title_search_contains_classic_syntax">
+<code class="descname">test_title_search_contains_classic_syntax</code><span class="sig-paren">(</span><em>mock_index</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestClassicAuthorSyntaxIsIntercepted.test_title_search_contains_classic_syntax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestClassicAuthorSyntaxIsIntercepted.test_title_search_contains_classic_syntax" title="Permalink to this definition">¶</a></dt>
+<dd><p>User has entered a <cite>surname_f</cite> query in a title search.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.controllers.advanced.tests.TestMultiFormatDateField">
+<em class="property">class </em><code class="descclassname">search.controllers.advanced.tests.</code><code class="descname">TestMultiFormatDateField</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestMultiFormatDateField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestMultiFormatDateField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Tests the <a class="reference internal" href="search.controllers.advanced.forms.html#search.controllers.advanced.forms.MultiFormatDateField" title="search.controllers.advanced.forms.MultiFormatDateField"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiFormatDateField</span></code></a>.</p>
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestMultiFormatDateField.test_process_with_one_format">
+<code class="descname">test_process_with_one_format</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestMultiFormatDateField.test_process_with_one_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestMultiFormatDateField.test_process_with_one_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>One date format is specified.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestMultiFormatDateField.test_process_with_several_formats">
+<code class="descname">test_process_with_several_formats</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestMultiFormatDateField.test_process_with_several_formats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestMultiFormatDateField.test_process_with_several_formats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Several date formats are specified.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestMultiFormatDateField.test_value_with_one_format">
+<code class="descname">test_value_with_one_format</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestMultiFormatDateField.test_value_with_one_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestMultiFormatDateField.test_value_with_one_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>One date format is specified.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.controllers.advanced.tests.TestPaginationParametersAreFunky">
+<em class="property">class </em><code class="descclassname">search.controllers.advanced.tests.</code><code class="descname">TestPaginationParametersAreFunky</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestPaginationParametersAreFunky"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestPaginationParametersAreFunky" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>The user may have monkeyed with the order or sort parameters.</p>
+<p>Since these are limited to specific values, there is no other reason for
+them to be invalid. Given that they are passed around among
+views (to persist users’ selection), it’s important to break the chain.
+To do this, we return a 400 Bad Request, with a clean link back to the
+search form.</p>
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestPaginationParametersAreFunky.test_order_is_invalid">
+<code class="descname">test_order_is_invalid</code><span class="sig-paren">(</span><em>mock_url_for</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestPaginationParametersAreFunky.test_order_is_invalid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestPaginationParametersAreFunky.test_order_is_invalid" title="Permalink to this definition">¶</a></dt>
+<dd><p>The order parameter on the request is invalid.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestPaginationParametersAreFunky.test_size_is_invalid">
+<code class="descname">test_size_is_invalid</code><span class="sig-paren">(</span><em>mock_url_for</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestPaginationParametersAreFunky.test_size_is_invalid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestPaginationParametersAreFunky.test_size_is_invalid" title="Permalink to this definition">¶</a></dt>
+<dd><p>The order parameter on the request is invalid.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.controllers.advanced.tests.TestSearchController">
+<em class="property">class </em><code class="descclassname">search.controllers.advanced.tests.</code><code class="descname">TestSearchController</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestSearchController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestSearchController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Tests for <a class="reference internal" href="search.controllers.advanced.html#search.controllers.advanced.search" title="search.controllers.advanced.search"><code class="xref py py-func docutils literal notranslate"><span class="pre">advanced.search()</span></code></a>.</p>
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestSearchController.test_index_raises_connection_exception">
+<code class="descname">test_index_raises_connection_exception</code><span class="sig-paren">(</span><em>mock_index</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestSearchController.test_index_raises_connection_exception"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestSearchController.test_index_raises_connection_exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>Index service raises a IndexConnectionError.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestSearchController.test_index_raises_query_error">
+<code class="descname">test_index_raises_query_error</code><span class="sig-paren">(</span><em>mock_index</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestSearchController.test_index_raises_query_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestSearchController.test_index_raises_query_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Index service raises a QueryError.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestSearchController.test_invalid_data">
+<code class="descname">test_invalid_data</code><span class="sig-paren">(</span><em>mock_index</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestSearchController.test_invalid_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestSearchController.test_invalid_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Form data are invalid.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestSearchController.test_no_form_data">
+<code class="descname">test_no_form_data</code><span class="sig-paren">(</span><em>mock_index</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestSearchController.test_no_form_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestSearchController.test_no_form_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>No form data has been submitted.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestSearchController.test_single_field_term">
+<code class="descname">test_single_field_term</code><span class="sig-paren">(</span><em>mock_index</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestSearchController.test_single_field_term"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestSearchController.test_single_field_term" title="Permalink to this definition">¶</a></dt>
+<dd><p>Form data and <code class="docutils literal notranslate"><span class="pre">advanced</span></code> param are present.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.controllers.advanced.tests.TestUpdateQueryWithDates">
+<em class="property">class </em><code class="descclassname">search.controllers.advanced.tests.</code><code class="descname">TestUpdateQueryWithDates</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestUpdateQueryWithDates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestUpdateQueryWithDates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p><code class="xref py py-func docutils literal notranslate"><span class="pre">advanced._update_query_with_dates()</span></code> applies date selections.</p>
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestUpdateQueryWithDates.test_all_dates_is_selected">
+<code class="descname">test_all_dates_is_selected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestUpdateQueryWithDates.test_all_dates_is_selected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestUpdateQueryWithDates.test_all_dates_is_selected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Query does not select on date.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestUpdateQueryWithDates.test_date_range_is_selected">
+<code class="descname">test_date_range_is_selected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestUpdateQueryWithDates.test_date_range_is_selected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestUpdateQueryWithDates.test_date_range_is_selected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start and end dates are set based on selection.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestUpdateQueryWithDates.test_past_12_is_selected">
+<code class="descname">test_past_12_is_selected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestUpdateQueryWithDates.test_past_12_is_selected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestUpdateQueryWithDates.test_past_12_is_selected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Query selects the past twelve months.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestUpdateQueryWithDates.test_specific_year_is_selected">
+<code class="descname">test_specific_year_is_selected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestUpdateQueryWithDates.test_specific_year_is_selected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestUpdateQueryWithDates.test_specific_year_is_selected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start and end dates are set, one year apart.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.controllers.advanced.tests.TestUpdateQueryWithFieldedTerms">
+<em class="property">class </em><code class="descclassname">search.controllers.advanced.tests.</code><code class="descname">TestUpdateQueryWithFieldedTerms</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestUpdateQueryWithFieldedTerms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestUpdateQueryWithFieldedTerms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p><code class="xref py py-func docutils literal notranslate"><span class="pre">advanced._update_query_with_terms()</span></code> adds primary search terms.</p>
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestUpdateQueryWithFieldedTerms.test_multiple_terms_are_provided">
+<code class="descname">test_multiple_terms_are_provided</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestUpdateQueryWithFieldedTerms.test_multiple_terms_are_provided"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestUpdateQueryWithFieldedTerms.test_multiple_terms_are_provided" title="Permalink to this definition">¶</a></dt>
+<dd><p>Selected terms are added to the query.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestUpdateQueryWithFieldedTerms.test_multiple_terms_are_provided_with_all_field">
+<code class="descname">test_multiple_terms_are_provided_with_all_field</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestUpdateQueryWithFieldedTerms.test_multiple_terms_are_provided_with_all_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestUpdateQueryWithFieldedTerms.test_multiple_terms_are_provided_with_all_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Selected terms are added to the query.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestUpdateQueryWithFieldedTerms.test_terms_are_provided">
+<code class="descname">test_terms_are_provided</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestUpdateQueryWithFieldedTerms.test_terms_are_provided"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestUpdateQueryWithFieldedTerms.test_terms_are_provided" title="Permalink to this definition">¶</a></dt>
+<dd><p>Selected terms are added to the query.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="search.controllers.advanced.tests.TestUpdatequeryWithClassification">
+<em class="property">class </em><code class="descclassname">search.controllers.advanced.tests.</code><code class="descname">TestUpdatequeryWithClassification</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestUpdatequeryWithClassification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestUpdatequeryWithClassification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p><code class="xref py py-func docutils literal notranslate"><span class="pre">advanced._update_query_with_classification()</span></code> adds classfnxn.</p>
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestUpdatequeryWithClassification.test_classification_is_selected">
+<code class="descname">test_classification_is_selected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestUpdatequeryWithClassification.test_classification_is_selected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestUpdatequeryWithClassification.test_classification_is_selected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Selected classifications are added to the query.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestUpdatequeryWithClassification.test_multiple_classifications_are_selected">
+<code class="descname">test_multiple_classifications_are_selected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestUpdatequeryWithClassification.test_multiple_classifications_are_selected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestUpdatequeryWithClassification.test_multiple_classifications_are_selected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Selected classifications are added to the query.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestUpdatequeryWithClassification.test_physics_is_selected_all_archives">
+<code class="descname">test_physics_is_selected_all_archives</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestUpdatequeryWithClassification.test_physics_is_selected_all_archives"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestUpdatequeryWithClassification.test_physics_is_selected_all_archives" title="Permalink to this definition">¶</a></dt>
+<dd><p>The physics group is added to the query.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestUpdatequeryWithClassification.test_physics_is_selected_specific_archive">
+<code class="descname">test_physics_is_selected_specific_archive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestUpdatequeryWithClassification.test_physics_is_selected_specific_archive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestUpdatequeryWithClassification.test_physics_is_selected_specific_archive" title="Permalink to this definition">¶</a></dt>
+<dd><p>The physic group and specified archive are added to the query.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.controllers.advanced.tests.TestUpdatequeryWithClassification.test_physics_is_selected_specific_archive_plus_other_groups">
+<code class="descname">test_physics_is_selected_specific_archive_plus_other_groups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/controllers/advanced/tests.html#TestUpdatequeryWithClassification.test_physics_is_selected_specific_archive_plus_other_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.controllers.advanced.tests.TestUpdatequeryWithClassification.test_physics_is_selected_specific_archive_plus_other_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>The physics group and specified archive are added to the query.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv search</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architectural overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../search_ui.html">Search Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../search_api.html">Search API (Alpha)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">search</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="search.html">search package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">search</a><ul>
+  <li><a href="search.html">search package</a><ul>
+  <li><a href="search.controllers.html">search.controllers package</a><ul>
+  <li><a href="search.controllers.advanced.html">search.controllers.advanced package</a><ul>
+      <li>Previous: <a href="search.controllers.advanced.forms.html" title="previous chapter">search.controllers.advanced.forms module</a></li>
+      <li>Next: <a href="search.controllers.api.html" title="next chapter">search.controllers.api package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/api/search.controllers.advanced.tests.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
