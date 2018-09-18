@@ -39,15 +39,15 @@
 <h1>Architectural overview<a class="headerlink" href="#architectural-overview" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="context">
 <h2>Context<a class="headerlink" href="#context" title="Permalink to this headline">¶</a></h2>
-<div class="figure" id="id1">
-<span id="figure-ng-search-context"></span><a class="reference external image-reference" href="_static/diagrams/ng-search-context.png"><img alt="_images/ng-search-context.png" src="_images/ng-search-context.png" /></a>
-<p class="caption"><span class="caption-text">System context for arXiv search.</span></p>
-</div>
 <p>The arXiv search system supports queries about arXiv papers both from human
 users and from API clients (via the arXiv API gateway). Most readers arrive
 at the search interface via a small search bar in the running header of
 arxiv.org pages, or by clicking on the name of an author on the abstract page
 or other listings.</p>
+<div class="figure" id="id1">
+<span id="figure-ng-search-context"></span><a class="reference external image-reference" href="_static/diagrams/ng-search-context.png"><img alt="_images/ng-search-context.png" src="_images/ng-search-context.png" /></a>
+<p class="caption"><span class="caption-text">System context for arXiv search.</span></p>
+</div>
 <p>The search system draws content from the core metadata repository (currently
 the classic arXiv application, via the <code class="docutils literal notranslate"><span class="pre">docmeta</span></code> endpoint), and (future)
 from the fulltext extraction service.</p>
