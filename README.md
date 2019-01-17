@@ -2,7 +2,7 @@
 
 ## Development quickstart
 
-### Running Elasticsearch + Kibana with docker-compose
+### Running Elasticsearch & Kibana with docker-compose
 
 The easiest way to spin up ES and Kibana is using the included
 ``docker-compose.yml`` file. This will start ES and Kibana on a custom network.
@@ -276,5 +276,5 @@ make [format]
 where [format] can be ``html``, ``latexpdf``. See the ``Sphinx documentation
 <http://www.sphinx-doc.org/en/master/>`_.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTQwOTc0MTc3OV19
+eyJoaXN0b3J5IjpbLTE5NDk4ODE4ODBdfQ==
 -->
