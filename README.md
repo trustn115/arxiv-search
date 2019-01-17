@@ -275,3 +275,6 @@ make [format]
 
 where [format] can be ``html``, ``latexpdf``. See the ``Sphinx documentation
 <http://www.sphinx-doc.org/en/master/>`_.
+<!--stackedit_data:
+eyJoaXN0b3J5IjpbLTQwOTc0MTc3OV19
+-->
