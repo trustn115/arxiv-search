@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
    
@@ -38,17 +37,19 @@
 
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span>
 
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">reduce</span><span class="p">,</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">ior</span><span class="p">,</span> <span class="n">iand</span>
+
 <span class="kn">from</span> <span class="nn">elasticsearch_dsl</span> <span class="k">import</span> <span class="n">Search</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">SF</span>
 <span class="kn">from</span> <span class="nn">elasticsearch_dsl.query</span> <span class="k">import</span> <span class="n">Range</span><span class="p">,</span> <span class="n">Match</span><span class="p">,</span> <span class="n">Bool</span>
 
-<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">AdvancedQuery</span><span class="p">,</span> <span class="n">Classification</span><span class="p">,</span> <span class="n">APIQuery</span>
+<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">AdvancedQuery</span><span class="p">,</span> <span class="n">Classification</span>
 
-<span class="kn">from</span> <span class="nn">.prepare</span> <span class="k">import</span> <span class="n">SEARCH_FIELDS</span>
+<span class="kn">from</span> <span class="nn">.prepare</span> <span class="k">import</span> <span class="n">SEARCH_FIELDS</span><span class="p">,</span> <span class="n">limit_by_classification</span>
 <span class="kn">from</span> <span class="nn">.util</span> <span class="k">import</span> <span class="n">sort</span>
 
 
-<div class="viewcode-block" id="advanced_search"><a class="viewcode-back" href="../../../../api/search.services.index.advanced.html#search.services.index.advanced.advanced_search">[docs]</a><span class="k">def</span> <span class="nf">advanced_search</span><span class="p">(</span><span class="n">search</span><span class="p">:</span> <span class="n">Search</span><span class="p">,</span>
-                    <span class="n">query</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AdvancedQuery</span><span class="p">,</span> <span class="n">APIQuery</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Search</span><span class="p">:</span>
+<div class="viewcode-block" id="advanced_search"><a class="viewcode-back" href="../../../../api/search.services.index.advanced.html#search.services.index.advanced.advanced_search">[docs]</a><span class="k">def</span> <span class="nf">advanced_search</span><span class="p">(</span><span class="n">search</span><span class="p">:</span> <span class="n">Search</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="n">AdvancedQuery</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Search</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Prepare a :class:`.Search` from a :class:`.AdvancedQuery`.</span>
 
@@ -56,9 +57,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    search : :class:`.Search`</span>
 <span class="sd">        An Elasticsearch search in preparation.</span>
-<span class="sd">    query : :class:`.AdvancedQuery` or :class:`APIQuery`</span>
-<span class="sd">        An advanced query, originating from the advanced search controller or</span>
-<span class="sd">        the API, respectively.</span>
+<span class="sd">    query : :class:`.AdvancedQuery`</span>
+<span class="sd">        A query originating from the advanced search UI.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -71,10 +71,14 @@
     <span class="c1"># behavior of faceted search.</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">query</span><span class="o">.</span><span class="n">include_older_versions</span><span class="p">:</span>
         <span class="n">search</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">&quot;term&quot;</span><span class="p">,</span> <span class="n">is_current</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_q_clsn</span> <span class="o">=</span> <span class="n">limit_by_classification</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">classification</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">query</span><span class="o">.</span><span class="n">include_cross_list</span><span class="p">:</span>
+        <span class="n">_q_clsn</span> <span class="o">|=</span> <span class="n">limit_by_classification</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">classification</span><span class="p">,</span>
+                                           <span class="s2">&quot;secondary_classification&quot;</span><span class="p">)</span>
     <span class="n">q</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">_fielded_terms_to_q</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="o">&amp;</span> <span class="n">_date_range</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
-        <span class="o">&amp;</span> <span class="n">_classifications</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="n">_q_clsn</span>
     <span class="p">)</span>
     <span class="k">if</span> <span class="n">query</span><span class="o">.</span><span class="n">order</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">query</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="s1">&#39;relevance&#39;</span><span class="p">:</span>
         <span class="c1"># Boost the current version heavily when sorting by relevance.</span>
@@ -88,31 +92,7 @@
     <span class="k">return</span> <span class="n">search</span></div>
 
 
-<span class="k">def</span> <span class="nf">_classification</span><span class="p">(</span><span class="n">field</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">classification</span><span class="p">:</span> <span class="n">Classification</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Match</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Get a query part for a :class:`.Classification`.&quot;&quot;&quot;</span>
-    <span class="n">query</span> <span class="o">=</span> <span class="n">Q</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">classification</span><span class="o">.</span><span class="n">group</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">__group__id&#39;</span> <span class="o">%</span> <span class="n">field</span>
-        <span class="n">query</span> <span class="o">&amp;=</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">field_name</span><span class="p">:</span> <span class="n">classification</span><span class="o">.</span><span class="n">group</span><span class="p">})</span>
-    <span class="k">if</span> <span class="n">classification</span><span class="o">.</span><span class="n">archive</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">__archive__id&#39;</span> <span class="o">%</span> <span class="n">field</span>
-        <span class="n">query</span> <span class="o">&amp;=</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">field_name</span><span class="p">:</span> <span class="n">classification</span><span class="o">.</span><span class="n">archive</span><span class="p">})</span>
-    <span class="k">return</span> <span class="n">query</span>
-
-
-<span class="k">def</span> <span class="nf">_classifications</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AdvancedQuery</span><span class="p">,</span> <span class="n">APIQuery</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Match</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Get a query part for classifications on an :class:`.AdvancedQuery`.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Q</span><span class="p">()</span>
-    <span class="n">query</span> <span class="o">=</span> <span class="n">_classification</span><span class="p">(</span><span class="s1">&#39;primary_classification&#39;</span><span class="p">,</span>
-                            <span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">classification</span> <span class="ow">in</span> <span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-            <span class="n">query</span> <span class="o">|=</span> <span class="n">_classification</span><span class="p">(</span><span class="s1">&#39;primary_classification&#39;</span><span class="p">,</span> <span class="n">classification</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">query</span>
-
-
-<span class="k">def</span> <span class="nf">_date_range</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AdvancedQuery</span><span class="p">,</span> <span class="n">APIQuery</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Range</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_date_range</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n">AdvancedQuery</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Range</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Generate a query part for a date range.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">q</span><span class="o">.</span><span class="n">date_range</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Q</span><span class="p">()</span>
@@ -159,7 +139,7 @@
     <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">operator</span>     <span class="c1"># type: ignore</span>
 
 
-<span class="k">def</span> <span class="nf">_group_terms</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AdvancedQuery</span><span class="p">,</span> <span class="n">APIQuery</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_group_terms</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="n">AdvancedQuery</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Group fielded search terms into a set of nested tuples.&quot;&quot;&quot;</span>
     <span class="n">terms</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">terms</span><span class="p">[:]</span>
     <span class="k">for</span> <span class="n">operator</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;NOT&#39;</span><span class="p">,</span> <span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="s1">&#39;OR&#39;</span><span class="p">]:</span>
@@ -174,7 +154,7 @@
     <span class="k">return</span> <span class="n">terms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>     <span class="c1"># type: ignore</span>
 
 
-<span class="k">def</span> <span class="nf">_fielded_terms_to_q</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AdvancedQuery</span><span class="p">,</span> <span class="n">APIQuery</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Match</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_fielded_terms_to_q</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="n">AdvancedQuery</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Match</span><span class="p">:</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">terms</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">SEARCH_FIELDS</span><span class="p">[</span><span class="n">query</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">field</span><span class="p">](</span><span class="n">query</span><span class="o">.</span><span class="n">terms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">term</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">terms</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -237,8 +217,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

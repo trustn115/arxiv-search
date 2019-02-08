@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -36,7 +35,7 @@
   <h1>Source code for search.controllers.api</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Controller for search API requests.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">date</span><span class="p">,</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">dateutil.relativedelta</span> <span class="k">import</span> <span class="n">relativedelta</span>
@@ -62,7 +61,7 @@
 <span class="n">EASTERN</span> <span class="o">=</span> <span class="n">timezone</span><span class="p">(</span><span class="s1">&#39;US/Eastern&#39;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="search"><a class="viewcode-back" href="../../../api/search.controllers.api.html#search.controllers.api.search">[docs]</a><span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">MultiDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">DocumentSet</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<div class="viewcode-block" id="search"><a class="viewcode-back" href="../../../api/search.controllers.api.html#search.controllers.api.search">[docs]</a><span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">MultiDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Handle a search request from the API.</span>
 
@@ -81,24 +80,40 @@
 <span class="sd">        Extra headers for the response.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">q</span> <span class="o">=</span> <span class="n">APIQuery</span><span class="p">()</span>
-    <span class="n">terms</span> <span class="o">=</span> <span class="n">_get_fielded_terms</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">query_terms</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">terms</span> <span class="o">=</span> <span class="n">_get_fielded_terms</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">query_terms</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">terms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">q</span><span class="o">.</span><span class="n">terms</span> <span class="o">=</span> <span class="n">terms</span>
-    <span class="n">date_range</span> <span class="o">=</span> <span class="n">_get_date_params</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">date_range</span> <span class="o">=</span> <span class="n">_get_date_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">query_terms</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">date_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">q</span><span class="o">.</span><span class="n">date_range</span> <span class="o">=</span> <span class="n">date_range</span>
 
-    <span class="n">classifications</span> <span class="o">=</span> <span class="n">_get_classifications</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">classifications</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span> <span class="o">=</span> <span class="n">classifications</span>
+    <span class="n">primary</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;primary_classification&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">primary</span><span class="p">:</span>
+        <span class="n">primary_classification</span> <span class="o">=</span> <span class="n">_get_classification</span><span class="p">(</span><span class="n">primary</span><span class="p">,</span>
+                                                     <span class="s1">&#39;primary_classification&#39;</span><span class="p">,</span>
+                                                     <span class="n">query_terms</span><span class="p">)</span>
+        <span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span> <span class="o">=</span> <span class="n">primary_classification</span>
+
+    <span class="n">secondaries</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s1">&#39;secondary_classification&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">secondaries</span><span class="p">:</span>
+        <span class="n">q</span><span class="o">.</span><span class="n">secondary_classification</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">_get_classification</span><span class="p">(</span><span class="n">sec</span><span class="p">,</span> <span class="s1">&#39;secondary_classification&#39;</span><span class="p">,</span> <span class="n">query_terms</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">secondaries</span>
+        <span class="p">]</span>
+
+    <span class="n">include_fields</span> <span class="o">=</span> <span class="n">_get_include_fields</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">query_terms</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">include_fields</span><span class="p">:</span>
+        <span class="n">q</span><span class="o">.</span><span class="n">include_fields</span> <span class="o">+=</span> <span class="n">include_fields</span>
 
     <span class="n">q</span> <span class="o">=</span> <span class="n">paginate</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>     <span class="c1"># type: ignore</span>
     <span class="n">document_set</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">highlight</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">document_set</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;query&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">query_terms</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Got document set with </span><span class="si">%i</span><span class="s1"> results&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">document_set</span><span class="o">.</span><span class="n">results</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">document_set</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="p">{}</span></div>
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;results&#39;</span><span class="p">:</span> <span class="n">document_set</span><span class="p">,</span> <span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="n">q</span><span class="p">},</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="p">{}</span></div>
 
 
-<div class="viewcode-block" id="paper"><a class="viewcode-back" href="../../../api/search.controllers.api.html#search.controllers.api.paper">[docs]</a><span class="k">def</span> <span class="nf">paper</span><span class="p">(</span><span class="n">paper_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<div class="viewcode-block" id="paper"><a class="viewcode-back" href="../../../api/search.controllers.api.html#search.controllers.api.paper">[docs]</a><span class="k">def</span> <span class="nf">paper</span><span class="p">(</span><span class="n">paper_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Handle a request for paper metadata from the API.</span>
 
@@ -127,14 +142,27 @@
     <span class="k">except</span> <span class="n">index</span><span class="o">.</span><span class="n">DocumentNotFound</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Document not found&#39;</span><span class="p">)</span>
         <span class="k">raise</span> <span class="n">NotFound</span><span class="p">(</span><span class="s1">&#39;No such document&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
-    <span class="k">return</span> <span class="n">document</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="p">{}</span></div>
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;results&#39;</span><span class="p">:</span> <span class="n">document</span><span class="p">},</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="p">{}</span></div>
 
 
-<span class="k">def</span> <span class="nf">_get_fielded_terms</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">MultiDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">FieldedSearchList</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">_get_include_fields</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">MultiDict</span><span class="p">,</span> <span class="n">query_terms</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">include_fields</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s1">&#39;include&#39;</span><span class="p">)</span>
+    <span class="n">allowed_fields</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">fields</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">include_fields</span><span class="p">:</span>
+        <span class="n">inc</span> <span class="o">=</span> <span class="p">[</span><span class="n">field</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">include_fields</span> <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">allowed_fields</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">inc</span><span class="p">:</span>
+            <span class="n">query_terms</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;parameter&#39;</span><span class="p">:</span> <span class="s1">&#39;include&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">inc</span>
+    <span class="k">return</span> <span class="p">[]</span>
+
+
+<span class="k">def</span> <span class="nf">_get_fielded_terms</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">MultiDict</span><span class="p">,</span> <span class="n">query_terms</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">FieldedSearchList</span><span class="p">]:</span>
     <span class="n">terms</span> <span class="o">=</span> <span class="n">FieldedSearchList</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">Query</span><span class="o">.</span><span class="n">SUPPORTED_FIELDS</span><span class="p">:</span>
         <span class="n">values</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+            <span class="n">query_terms</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;parameter&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
             <span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FieldedSearchTerm</span><span class="p">(</span>     <span class="c1"># type: ignore</span>
                 <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span>
                 <span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span>
@@ -145,9 +173,10 @@
     <span class="k">return</span> <span class="n">terms</span>
 
 
-<span class="k">def</span> <span class="nf">_get_date_params</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">MultiDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DateRange</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">_get_date_params</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">MultiDict</span><span class="p">,</span> <span class="n">query_terms</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DateRange</span><span class="p">]:</span>
     <span class="n">date_params</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;start_date&#39;</span><span class="p">,</span> <span class="s1">&#39;end_date&#39;</span><span class="p">,</span> <span class="s1">&#39;date_type&#39;</span><span class="p">]:</span>
+    <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;start_date&#39;</span><span class="p">,</span> <span class="s1">&#39;end_date&#39;</span><span class="p">]:</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
             <span class="k">continue</span>
@@ -159,25 +188,51 @@
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">BadRequest</span><span class="p">({</span><span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">,</span> <span class="s1">&#39;reason&#39;</span><span class="p">:</span> <span class="s1">&#39;invalid datetime&#39;</span><span class="p">})</span>
         <span class="n">date_params</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">dt</span>
+        <span class="n">query_terms</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;parameter&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">dt</span><span class="p">})</span>
+    <span class="k">if</span> <span class="s1">&#39;date_type&#39;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+        <span class="n">date_params</span><span class="p">[</span><span class="s1">&#39;date_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;date_type&#39;</span><span class="p">)</span>
+        <span class="n">query_terms</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;parameter&#39;</span><span class="p">:</span> <span class="s1">&#39;date_type&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">date_params</span><span class="p">[</span><span class="s1">&#39;date_type&#39;</span><span class="p">]})</span>
     <span class="k">if</span> <span class="n">date_params</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">DateRange</span><span class="p">(</span><span class="o">**</span><span class="n">date_params</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
     <span class="k">return</span> <span class="kc">None</span>
 
 
-<span class="k">def</span> <span class="nf">_get_classifications</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">MultiDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ClassificationList</span><span class="p">]:</span>
-    <span class="n">classifications</span> <span class="o">=</span> <span class="n">ClassificationList</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s1">&#39;primary_classification&#39;</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">ARCHIVES</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">BadRequest</span><span class="p">({</span>
-                <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="s1">&#39;primary_classification&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;reason&#39;</span><span class="p">:</span> <span class="s1">&#39;not a valid archive&#39;</span>
-            <span class="p">})</span>
-        <span class="n">classifications</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="n">Classification</span><span class="p">(</span><span class="n">archive</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>   <span class="c1"># type: ignore</span>
-        <span class="p">)</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">classifications</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span>
-    <span class="k">return</span> <span class="n">classifications</span>
+<span class="k">def</span> <span class="nf">_to_classification</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">query_terms</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Classification</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+    <span class="n">clsns</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">definitions</span><span class="o">.</span><span class="n">GROUPS</span><span class="p">:</span>
+        <span class="n">klass</span> <span class="o">=</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">Group</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="s1">&#39;group&#39;</span>
+    <span class="k">elif</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">definitions</span><span class="o">.</span><span class="n">ARCHIVES</span><span class="p">:</span>
+        <span class="n">klass</span> <span class="o">=</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">Archive</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="s1">&#39;archive&#39;</span>
+    <span class="k">elif</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">definitions</span><span class="o">.</span><span class="n">CATEGORIES</span><span class="p">:</span>
+        <span class="n">klass</span> <span class="o">=</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">Category</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="s1">&#39;category&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;not a valid classification&#39;</span><span class="p">)</span>
+    <span class="n">cast_value</span> <span class="o">=</span> <span class="n">klass</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">clsns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Classification</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">}}))</span>   <span class="c1"># type: ignore</span>
+    <span class="k">if</span> <span class="n">cast_value</span><span class="o">.</span><span class="n">unalias</span><span class="p">()</span> <span class="o">!=</span> <span class="n">cast_value</span><span class="p">:</span>
+        <span class="n">clsns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Classification</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">cast_value</span><span class="o">.</span><span class="n">unalias</span><span class="p">()}}))</span>   <span class="c1"># type: ignore</span>
+    <span class="k">if</span> <span class="n">cast_value</span><span class="o">.</span><span class="n">canonical</span> <span class="o">!=</span> <span class="n">cast_value</span> \
+            <span class="ow">and</span> <span class="n">cast_value</span><span class="o">.</span><span class="n">canonical</span> <span class="o">!=</span> <span class="n">cast_value</span><span class="o">.</span><span class="n">unalias</span><span class="p">():</span>
+        <span class="n">clsns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Classification</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">cast_value</span><span class="o">.</span><span class="n">canonical</span><span class="p">}}))</span>   <span class="c1"># type: ignore</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">clsns</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_get_classification</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">query_terms</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Classification</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">clsns</span> <span class="o">=</span> <span class="n">_to_classification</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">query_terms</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">BadRequest</span><span class="p">({</span>
+            <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">,</span>
+            <span class="s1">&#39;reason&#39;</span><span class="p">:</span> <span class="s1">&#39;not a valid classification term&#39;</span>
+        <span class="p">})</span>
+    <span class="n">query_terms</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;parameter&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">clsns</span>
 </pre></div>
 
           </div>
@@ -235,8 +290,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

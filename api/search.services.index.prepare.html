@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="search.services.index.results module" href="search.services.index.results.html" />
@@ -43,13 +42,41 @@ fields to query-building functions in the module.</p>
 <p>See <code class="xref py py-func docutils literal notranslate"><span class="pre">_query_all_fields()</span></code> for information on how results are scored.</p>
 <dl class="function">
 <dt id="search.services.index.prepare.limit_by_classification">
-<code class="descclassname">search.services.index.prepare.</code><code class="descname">limit_by_classification</code><span class="sig-paren">(</span><em>classifications</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/prepare.html#limit_by_classification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.prepare.limit_by_classification" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">search.services.index.prepare.</code><code class="descname">limit_by_classification</code><span class="sig-paren">(</span><em>classifications</em>, <em>field='primary_classification'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/prepare.html#limit_by_classification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.prepare.limit_by_classification" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a <code class="xref py py-class docutils literal notranslate"><span class="pre">Q</span></code> to limit a query by by classification.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function Q at 0x1080b2268&gt;</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function Q at 0x7f5f70230510&gt;</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.prepare.query_primary_exact">
+<code class="descclassname">search.services.index.prepare.</code><code class="descname">query_primary_exact</code><span class="sig-paren">(</span><em>classification</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/prepare.html#query_primary_exact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.prepare.query_primary_exact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a <code class="xref py py-class docutils literal notranslate"><span class="pre">Q</span></code> for primary classification by ID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function Q at 0x7f5f70230510&gt;</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.services.index.prepare.query_secondary_exact">
+<code class="descclassname">search.services.index.prepare.</code><code class="descname">query_secondary_exact</code><span class="sig-paren">(</span><em>classification</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/index/prepare.html#query_secondary_exact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.index.prepare.query_secondary_exact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a <code class="xref py py-class docutils literal notranslate"><span class="pre">Q</span></code> for secondary classification by ID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function Q at 0x7f5f70230510&gt;</td>
 </tr>
 </tbody>
 </table>
@@ -122,8 +149,8 @@ fields to query-building functions in the module.</p>
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/api/search.services.index.prepare.rst.txt"

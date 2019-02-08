@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
    
@@ -49,7 +48,7 @@
 <span class="kn">from</span> <span class="nn">wtforms</span> <span class="k">import</span> <span class="n">widgets</span>
 
 <span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">taxonomy</span>
-<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">DateRange</span>
+<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">DateRange</span><span class="p">,</span> <span class="n">AdvancedQuery</span>
 <span class="kn">from</span> <span class="nn">search.controllers.util</span> <span class="k">import</span> <span class="n">does_not_start_with_wildcard</span><span class="p">,</span> \
                                     <span class="n">strip_white_space</span><span class="p">,</span> <span class="n">has_balanced_quotes</span>
 
@@ -109,21 +108,7 @@
     <span class="n">operator</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s2">&quot;Operator&quot;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span>
         <span class="p">(</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="s1">&#39;AND&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;OR&#39;</span><span class="p">,</span> <span class="s1">&#39;OR&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;NOT&#39;</span><span class="p">,</span> <span class="s1">&#39;NOT&#39;</span><span class="p">)</span>
     <span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">)</span>
-    <span class="n">field</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s2">&quot;Field&quot;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span>
-        <span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;Title&#39;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;author&#39;</span><span class="p">,</span> <span class="s1">&#39;Author(s)&#39;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;abstract&#39;</span><span class="p">,</span> <span class="s1">&#39;Abstract&#39;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;comments&#39;</span><span class="p">,</span> <span class="s1">&#39;Comments&#39;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;journal_ref&#39;</span><span class="p">,</span> <span class="s1">&#39;Journal reference&#39;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;acm_class&#39;</span><span class="p">,</span> <span class="s1">&#39;ACM classification&#39;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;msc_class&#39;</span><span class="p">,</span> <span class="s1">&#39;MSC classification&#39;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;report_num&#39;</span><span class="p">,</span> <span class="s1">&#39;Report number&#39;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;paper_id&#39;</span><span class="p">,</span> <span class="s1">&#39;arXiv identifier&#39;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;doi&#39;</span><span class="p">,</span> <span class="s1">&#39;DOI&#39;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;orcid&#39;</span><span class="p">,</span> <span class="s1">&#39;ORCID&#39;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;author_id&#39;</span><span class="p">,</span> <span class="s1">&#39;arXiv author ID&#39;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;All fields&#39;</span><span class="p">)</span>
-    <span class="p">])</span></div>
+    <span class="n">field</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s2">&quot;Field&quot;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">AdvancedQuery</span><span class="o">.</span><span class="n">SUPPORTED_FIELDS</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ClassificationForm"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.ClassificationForm">[docs]</a><span class="k">class</span> <span class="nc">ClassificationForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
@@ -131,6 +116,8 @@
 
     <span class="c1"># pylint: disable=too-few-public-methods</span>
 
+    <span class="c1"># TODO: this should not be hard-coded!</span>
+    <span class="c1">#</span>
     <span class="c1"># Map arXiv archives to fields on this form. Ideally we would autogenerate</span>
     <span class="c1"># form fields based on the arXiv taxonomy, but this can&#39;t easily happen</span>
     <span class="c1"># until we replace the classic-style advanced interface with faceted</span>
@@ -150,6 +137,9 @@
          <span class="ow">in</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">ARCHIVES_ACTIVE</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
          <span class="k">if</span> <span class="n">description</span><span class="p">[</span><span class="s1">&#39;in_group&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;grp_physics&#39;</span><span class="p">]</span>
 
+    <span class="n">INCLUDE_CROSS_LIST</span> <span class="o">=</span> <span class="s1">&#39;include&#39;</span>
+    <span class="n">EXCLUDE_CROSS_LIST</span> <span class="o">=</span> <span class="s1">&#39;exclude&#39;</span>
+
     <span class="n">computer_science</span> <span class="o">=</span> <span class="n">BooleanField</span><span class="p">(</span><span class="s1">&#39;Computer Science (cs)&#39;</span><span class="p">)</span>
     <span class="n">economics</span> <span class="o">=</span> <span class="n">BooleanField</span><span class="p">(</span><span class="s1">&#39;Economics (econ)&#39;</span><span class="p">)</span>
     <span class="n">eess</span> <span class="o">=</span> <span class="n">BooleanField</span><span class="p">(</span><span class="s1">&#39;Electrical Engineering and Systems Science (eess)&#39;</span><span class="p">)</span>
@@ -158,7 +148,12 @@
     <span class="n">physics_archives</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="n">choices</span><span class="o">=</span><span class="n">PHYSICS_ARCHIVES</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
     <span class="n">q_biology</span> <span class="o">=</span> <span class="n">BooleanField</span><span class="p">(</span><span class="s1">&#39;Quantitative Biology (q-bio)&#39;</span><span class="p">)</span>
     <span class="n">q_finance</span> <span class="o">=</span> <span class="n">BooleanField</span><span class="p">(</span><span class="s1">&#39;Quantitative Finance (q-fin)&#39;</span><span class="p">)</span>
-    <span class="n">statistics</span> <span class="o">=</span> <span class="n">BooleanField</span><span class="p">(</span><span class="s1">&#39;Statistics (stat)&#39;</span><span class="p">)</span></div>
+    <span class="n">statistics</span> <span class="o">=</span> <span class="n">BooleanField</span><span class="p">(</span><span class="s1">&#39;Statistics (stat)&#39;</span><span class="p">)</span>
+
+    <span class="n">include_cross_list</span> <span class="o">=</span> <span class="n">RadioField</span><span class="p">(</span><span class="s1">&#39;Include cross-list&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="n">INCLUDE_CROSS_LIST</span><span class="p">,</span> <span class="s1">&#39;Include cross-listed papers&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">EXCLUDE_CROSS_LIST</span><span class="p">,</span> <span class="s1">&#39;Exclude cross-listed papers&#39;</span><span class="p">)</span>
+    <span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="n">INCLUDE_CROSS_LIST</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="yearInBounds"><a class="viewcode-back" href="../../../../api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.yearInBounds">[docs]</a><span class="k">def</span> <span class="nf">yearInBounds</span><span class="p">(</span><span class="n">form</span><span class="p">:</span> <span class="n">Form</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="n">DateField</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -323,8 +318,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

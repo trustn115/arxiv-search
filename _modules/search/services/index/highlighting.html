@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
    
@@ -45,14 +44,17 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span> <span class="nn">elasticsearch_dsl</span> <span class="k">import</span> <span class="n">Search</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">SF</span>
-<span class="kn">from</span> <span class="nn">elasticsearch_dsl.response</span> <span class="k">import</span> <span class="n">Response</span>
+<span class="kn">from</span> <span class="nn">elasticsearch_dsl.response</span> <span class="k">import</span> <span class="n">Response</span><span class="p">,</span> <span class="n">Hit</span>
 <span class="kn">import</span> <span class="nn">bleach</span>
 <span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">escape</span>
+<span class="kn">from</span> <span class="nn">arxiv.base</span> <span class="k">import</span> <span class="n">logging</span>
 
 <span class="kn">from</span> <span class="nn">.util</span> <span class="k">import</span> <span class="n">TEXISM</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="n">HIGHLIGHT_TAG_OPEN</span> <span class="o">=</span> <span class="s1">&#39;&lt;span class=&quot;search-hit mathjax&quot;&gt;&#39;</span>
 <span class="n">HIGHLIGHT_TAG_CLOSE</span> <span class="o">=</span> <span class="s1">&#39;&lt;/span&gt;&#39;</span>
@@ -96,15 +98,11 @@
     <span class="n">search</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="s1">&#39;doi&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;plain&#39;</span><span class="p">)</span>
     <span class="n">search</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="s1">&#39;report_num&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;plain&#39;</span><span class="p">)</span>
 
-    <span class="c1"># Setting number_of_fragments to 0 tells ES to highlight the entire</span>
-    <span class="c1"># abstract.</span>
+    <span class="c1"># Setting number_of_fragments to 0 tells ES to highlight the entire field.</span>
     <span class="n">search</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="s1">&#39;abstract&#39;</span><span class="p">,</span> <span class="n">number_of_fragments</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">search</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="s1">&#39;abstract.tex&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;plain&#39;</span><span class="p">,</span>
                               <span class="n">number_of_fragments</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">search</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="s1">&#39;abstract.english&#39;</span><span class="p">,</span> <span class="n">number_of_fragments</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-    <span class="n">search</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="s1">&#39;primary_classification*&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;plain&#39;</span><span class="p">,</span>
-                              <span class="n">number_of_fragments</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">search</span></div>
 
 
@@ -179,10 +177,7 @@
     <span class="k">return</span> <span class="n">snippet</span></div>
 
 
-<span class="c1"># def _highlight(value: str, pattern: )</span>
-
-
-<div class="viewcode-block" id="add_highlighting"><a class="viewcode-back" href="../../../../api/search.services.index.highlighting.html#search.services.index.highlighting.add_highlighting">[docs]</a><span class="k">def</span> <span class="nf">add_highlighting</span><span class="p">(</span><span class="n">result</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<div class="viewcode-block" id="add_highlighting"><a class="viewcode-back" href="../../../../api/search.services.index.highlighting.html#search.services.index.highlighting.add_highlighting">[docs]</a><span class="k">def</span> <span class="nf">add_highlighting</span><span class="p">(</span><span class="n">result</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Response</span><span class="p">,</span> <span class="n">Hit</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Add hit highlighting to a search result.</span>
 
@@ -202,9 +197,14 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># There may or may not be highlighting in the result set.</span>
     <span class="n">highlighted_fields</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">raw</span><span class="o">.</span><span class="n">meta</span><span class="p">,</span> <span class="s1">&#39;highlight&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
     <span class="c1"># ``meta.matched_queries`` contains a list of query ``_name``s that</span>
     <span class="c1"># matched. This is nice for non-string fields.</span>
     <span class="n">matched_fields</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">raw</span><span class="o">.</span><span class="n">meta</span><span class="p">,</span> <span class="s1">&#39;matched_queries&#39;</span><span class="p">,</span> <span class="p">[])</span>
+
+    <span class="c1"># These are from hits within child documents, e.g.</span>
+    <span class="c1"># secondary_classification.</span>
+    <span class="n">inner_hits</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">raw</span><span class="o">.</span><span class="n">meta</span><span class="p">,</span> <span class="s1">&#39;inner_hits&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="c1"># The values here will (almost) always be list-like. So we need to stitch</span>
     <span class="c1"># them together. Note that dir(None) won&#39;t return anything, so this block</span>
@@ -215,9 +215,6 @@
         <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">highlighted_fields</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
             <span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;&amp;hellip;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="s1">&#39;primary_classification&#39;</span> <span class="ow">in</span> <span class="n">field</span><span class="p">:</span>
-            <span class="n">field</span> <span class="o">=</span> <span class="s1">&#39;primary_classification&#39;</span>
 
         <span class="c1"># Non-TeX searches may hit inside of TeXisms. Highlighting those</span>
         <span class="c1"># fragments (i.e. inserting HTML) will break MathJax rendering.</span>
@@ -244,6 +241,13 @@
     <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">matched_fields</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;highlight&#39;</span><span class="p">]:</span>
             <span class="n">result</span><span class="p">[</span><span class="s1">&#39;match&#39;</span><span class="p">][</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="c1"># We&#39;re using inner_hits to see which category in particular responded to</span>
+    <span class="c1"># the query.</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">inner_hits</span><span class="p">,</span> <span class="s1">&#39;secondary_classification&#39;</span><span class="p">):</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;match&#39;</span><span class="p">][</span><span class="s1">&#39;secondary_classification&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">ih</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">ih</span> <span class="ow">in</span> <span class="n">inner_hits</span><span class="o">.</span><span class="n">secondary_classification</span>
+        <span class="p">]</span>
 
     <span class="c1"># We just want to know whether there was a hit on the announcement date.</span>
     <span class="n">result</span><span class="p">[</span><span class="s1">&#39;match&#39;</span><span class="p">][</span><span class="s1">&#39;announced_date_first&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
@@ -436,8 +440,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

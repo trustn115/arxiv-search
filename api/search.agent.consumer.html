@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="search.controllers package" href="search.controllers.html" />
@@ -41,14 +40,14 @@
 <dl class="exception">
 <dt id="search.agent.consumer.DocumentFailed">
 <em class="property">exception </em><code class="descclassname">search.agent.consumer.</code><code class="descname">DocumentFailed</code><a class="reference internal" href="../_modules/search/agent/consumer.html#DocumentFailed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.consumer.DocumentFailed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#RuntimeError" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
 <p>Raised when an arXiv paper could not be added to the search index.</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="search.agent.consumer.IndexingFailed">
 <em class="property">exception </em><code class="descclassname">search.agent.consumer.</code><code class="descname">IndexingFailed</code><a class="reference internal" href="../_modules/search/agent/consumer.html#IndexingFailed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.agent.consumer.IndexingFailed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#RuntimeError" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
 <p>Raised when indexing failed such that future success is unlikely.</p>
 </dd></dl>
 
@@ -71,7 +70,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>arxiv_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – A <strong>versionless</strong> arXiv e-print identifier.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>arxiv_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – A <strong>versionless</strong> arXiv e-print identifier.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -87,7 +86,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>arxiv_ids</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>]</em>) – A list of <strong>versionless</strong> arXiv e-print identifiers.</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>arxiv_ids</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>]</em>) – A list of <strong>versionless</strong> arXiv e-print identifiers.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
@@ -114,10 +113,10 @@ is unlikely for subsequent papers.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.7)"><em>bytes</em></a>) – </li>
-<li><strong>partition_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.7)"><em>bytes</em></a>) – </li>
-<li><strong>sequence_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – </li>
-<li><strong>sub_sequence_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – </li>
+<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytes" title="(in Python v3.6)"><em>bytes</em></a>) – </li>
+<li><strong>partition_key</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytes" title="(in Python v3.6)"><em>bytes</em></a>) – </li>
+<li><strong>sequence_number</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </li>
+<li><strong>sub_sequence_number</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </li>
 </ul>
 </td>
 </tr>
@@ -200,8 +199,8 @@ documents failed.</p>
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/api/search.agent.consumer.rst.txt"

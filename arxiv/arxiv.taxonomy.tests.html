@@ -1,0 +1,164 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.taxonomy.tests module &#8212; arXiv base 0.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arxiv.util package" href="arxiv.util.html" />
+    <link rel="prev" title="arxiv.taxonomy.definitions module" href="arxiv.taxonomy.definitions.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-arxiv.taxonomy.tests">
+<span id="arxiv-taxonomy-tests-module"></span><h1>arxiv.taxonomy.tests module<a class="headerlink" href="#module-arxiv.taxonomy.tests" title="Permalink to this headline">¶</a></h1>
+<p>Tests for arXiv taxonomy module.</p>
+<dl class="class">
+<dt id="arxiv.taxonomy.tests.TestTaxonomy">
+<em class="property">class </em><code class="descclassname">arxiv.taxonomy.tests.</code><code class="descname">TestTaxonomy</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/taxonomy/tests.html#TestTaxonomy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.taxonomy.tests.TestTaxonomy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Tests for the arXiv category taxonomy definitions.</p>
+<dl class="method">
+<dt id="arxiv.taxonomy.tests.TestTaxonomy.test_active_archives">
+<code class="descname">test_active_archives</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/taxonomy/tests.html#TestTaxonomy.test_active_archives"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.taxonomy.tests.TestTaxonomy.test_active_archives" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests for active (non-defunct) archives.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arxiv.taxonomy.tests.TestTaxonomy.test_aliases">
+<code class="descname">test_aliases</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/taxonomy/tests.html#TestTaxonomy.test_aliases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.taxonomy.tests.TestTaxonomy.test_aliases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test for category aliases.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arxiv.taxonomy.tests.TestTaxonomy.test_archives">
+<code class="descname">test_archives</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/taxonomy/tests.html#TestTaxonomy.test_archives"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.taxonomy.tests.TestTaxonomy.test_archives" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests for the middle level of the category taxonomy (archives).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arxiv.taxonomy.tests.TestTaxonomy.test_archives_subsumed">
+<code class="descname">test_archives_subsumed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/taxonomy/tests.html#TestTaxonomy.test_archives_subsumed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.taxonomy.tests.TestTaxonomy.test_archives_subsumed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests for defunct archives that have been subsumed by categories.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arxiv.taxonomy.tests.TestTaxonomy.test_categories">
+<code class="descname">test_categories</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/taxonomy/tests.html#TestTaxonomy.test_categories"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.taxonomy.tests.TestTaxonomy.test_categories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test for the lowest level of the category taxonomy (categories).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arxiv.taxonomy.tests.TestTaxonomy.test_groups">
+<code class="descname">test_groups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/taxonomy/tests.html#TestTaxonomy.test_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.taxonomy.tests.TestTaxonomy.test_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests for the highest level of the category taxonomy (groups).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arxiv.taxonomy.tests.TestTaxonomy.test_legacy_archives_as_categories">
+<code class="descname">test_legacy_archives_as_categories</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/taxonomy/tests.html#TestTaxonomy.test_legacy_archives_as_categories"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.taxonomy.tests.TestTaxonomy.test_legacy_archives_as_categories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test for archives that were used as primary/secondary categories.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv base</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">arxiv</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.html">arxiv package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="metadocs.html">Meta-documentation: How to create documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">arxiv</a><ul>
+  <li><a href="arxiv.html">arxiv package</a><ul>
+  <li><a href="arxiv.taxonomy.html">arxiv.taxonomy package</a><ul>
+      <li>Previous: <a href="arxiv.taxonomy.definitions.html" title="previous chapter">arxiv.taxonomy.definitions module</a></li>
+      <li>Next: <a href="arxiv.util.html" title="next chapter">arxiv.util package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/arxiv/arxiv.taxonomy.tests.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

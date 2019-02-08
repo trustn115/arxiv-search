@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -125,8 +124,8 @@
         <span class="n">arxiv_id</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="n">arxiv_id</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">{},</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_301_MOVED_PERMANENTLY</span><span class="p">,</span>\
-            <span class="p">{</span><span class="s1">&#39;Location&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s1">&#39;https://arxiv.org/abs/</span><span class="si">{arxiv_id}</span><span class="s1">&#39;</span><span class="p">}</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Location&#39;</span><span class="p">:</span> <span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;abs_by_id&#39;</span><span class="p">,</span> <span class="n">paper_id</span><span class="o">=</span><span class="n">arxiv_id</span><span class="p">)}</span>
+        <span class="k">return</span> <span class="p">{},</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_301_MOVED_PERMANENTLY</span><span class="p">,</span> <span class="n">headers</span>
 
     <span class="c1"># Here we intervene on the user&#39;s query to look for holdouts from the</span>
     <span class="c1"># classic search system&#39;s author indexing syntax (surname_f). We</span>
@@ -189,6 +188,11 @@
                 <span class="s2">&quot;There was a problem executing your query. Please try your &quot;</span>
                 <span class="s2">&quot;search again.  If this problem persists, please report it to &quot;</span>
                 <span class="s2">&quot;help@arxiv.org.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+        <span class="k">except</span> <span class="n">index</span><span class="o">.</span><span class="n">OutsideAllowedRange</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">BadRequest</span><span class="p">(</span>
+                <span class="s2">&quot;Hello clever friend. You can&#39;t get results in that range&quot;</span>
+                <span class="s2">&quot; right now.&quot;</span>
             <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
 
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -278,8 +282,9 @@
 <span class="sd">    :class:`SimpleQuery`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Search within </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">archives</span><span class="p">)</span>
-    <span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span> <span class="o">=</span> <span class="n">ClassificationList</span><span class="p">([</span>
-        <span class="n">Classification</span><span class="p">(</span><span class="n">archive</span><span class="o">=</span><span class="n">archive</span><span class="p">)</span> <span class="k">for</span> <span class="n">archive</span> <span class="ow">in</span> <span class="n">archives</span>  <span class="c1"># type: ignore</span>
+    <span class="n">q</span><span class="o">.</span><span class="n">classification</span> <span class="o">=</span> <span class="n">ClassificationList</span><span class="p">([</span>
+        <span class="n">Classification</span><span class="p">(</span><span class="n">archive</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">archive</span><span class="p">})</span>    <span class="c1"># type: ignore</span>
+        <span class="k">for</span> <span class="n">archive</span> <span class="ow">in</span> <span class="n">archives</span>
     <span class="p">])</span>
     <span class="k">return</span> <span class="n">q</span>
 
@@ -363,8 +368,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

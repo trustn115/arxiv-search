@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -76,6 +75,7 @@
 <span class="kn">from</span> <span class="nn">.util</span> <span class="k">import</span> <span class="n">MAX_RESULTS</span>
 <span class="kn">from</span> <span class="nn">.advanced</span> <span class="k">import</span> <span class="n">advanced_search</span>
 <span class="kn">from</span> <span class="nn">.simple</span> <span class="k">import</span> <span class="n">simple_search</span>
+<span class="kn">from</span> <span class="nn">.api</span> <span class="k">import</span> <span class="n">api_search</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">highlighting</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">results</span>
 
@@ -430,18 +430,26 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;got current search request </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">query</span><span class="p">))</span>
         <span class="n">current_search</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_search</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">AdvancedQuery</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">APIQuery</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">AdvancedQuery</span><span class="p">):</span>
                 <span class="n">current_search</span> <span class="o">=</span> <span class="n">advanced_search</span><span class="p">(</span><span class="n">current_search</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">SimpleQuery</span><span class="p">):</span>
                 <span class="n">current_search</span> <span class="o">=</span> <span class="n">simple_search</span><span class="p">(</span><span class="n">current_search</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">APIQuery</span><span class="p">):</span>
+                <span class="n">current_search</span> <span class="o">=</span> <span class="n">api_search</span><span class="p">(</span><span class="n">current_search</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Malformed query: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-            <span class="k">raise</span> <span class="n">QueryError</span><span class="p">(</span><span class="s1">&#39;Malformed query&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+            <span class="k">raise</span> <span class="n">e</span>
+            <span class="c1"># logger.error(&#39;Malformed query: %s&#39;, str(e))</span>
+            <span class="c1"># raise QueryError(&#39;Malformed query&#39;) from e</span>
 
         <span class="k">if</span> <span class="n">highlight</span><span class="p">:</span>
             <span class="c1"># Highlighting is performed by Elasticsearch; here we include the</span>
             <span class="c1"># fields and configuration for highlighting.</span>
             <span class="n">current_search</span> <span class="o">=</span> <span class="n">highlighting</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="n">current_search</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">APIQuery</span><span class="p">):</span>
+            <span class="n">current_search</span> <span class="o">=</span> <span class="n">current_search</span><span class="o">.</span><span class="n">extra</span><span class="p">(</span>
+                <span class="n">_source</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;include&#39;</span><span class="p">:</span> <span class="n">query</span><span class="o">.</span><span class="n">include_fields</span><span class="p">}</span>
+            <span class="p">)</span>
 
         <span class="k">with</span> <span class="n">handle_es_exceptions</span><span class="p">():</span>
             <span class="c1"># Slicing the search adds pagination parameters to the request.</span>
@@ -620,8 +628,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

@@ -1,0 +1,330 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.base.alerts module &#8212; arXiv base 0.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arxiv.base.config module" href="arxiv.base.config.html" />
+    <link rel="prev" title="arxiv.base.urls.links module" href="arxiv.base.urls.links.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-arxiv.base.alerts">
+<span id="arxiv-base-alerts-module"></span><h1>arxiv.base.alerts module<a class="headerlink" href="#module-arxiv.base.alerts" title="Permalink to this headline">¶</a></h1>
+<p>Support for typed flash alerts.</p>
+<p>Flask provides a <cite>simple cookie-based flashing mechanism
+&lt;http://flask.pocoo.org/docs/1.0/patterns/flashing/&gt;</cite>. This module extends
+that mechanism to support structured alerts (i.e. dicts) and set
+message categories/severity.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For security purposes, alerts are not treated as safe in the template by
+default. To treat a message as safe, use <code class="docutils literal notranslate"><span class="pre">safe=True</span></code> when generating the
+flash notification.</p>
+</div>
+<p>For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">url_for</span>
+<span class="kn">from</span> <span class="nn">arxiv.base</span> <span class="kn">import</span> <span class="n">alerts</span>
+
+<span class="k">def</span> <span class="nf">handle_request</span><span class="p">():</span>
+    <span class="o">...</span>
+
+    <span class="n">help_url</span> <span class="o">=</span> <span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;help&#39;</span><span class="p">)</span>
+    <span class="n">alerts</span><span class="o">.</span><span class="n">flash_warning</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;This is a warning, see &lt;a href=&quot;{help_url}&quot;&gt;&#39;</span>
+                         <span class="n">f</span><span class="s1">&#39;the docs&lt;/a&gt; for more information&#39;</span><span class="p">,</span>
+                         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Warning title&#39;</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">alerts</span><span class="o">.</span><span class="n">flash_info</span><span class="p">(</span><span class="s1">&#39;This is some info&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Info title&#39;</span><span class="p">)</span>
+    <span class="n">alerts</span><span class="o">.</span><span class="n">flash_failure</span><span class="p">(</span><span class="s1">&#39;This is a failure&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Failure title&#39;</span><span class="p">)</span>
+    <span class="n">alerts</span><span class="o">.</span><span class="n">flash_success</span><span class="p">(</span><span class="s1">&#39;This is a success&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Success title&#39;</span><span class="p">)</span>
+    <span class="n">alerts</span><span class="o">.</span><span class="n">flash_warning</span><span class="p">(</span><span class="s1">&#39;This is a warning that cannot be dismissed&#39;</span><span class="p">,</span>
+                         <span class="n">dismissable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="#arxiv.base.alerts.flash_hidden" title="arxiv.base.alerts.flash_hidden"><code class="xref py py-func docutils literal notranslate"><span class="pre">flash_hidden()</span></code></a> can be used to send hidden data across requests.</p>
+<dl class="function">
+<dt id="arxiv.base.alerts.flash_failure">
+<code class="descclassname">arxiv.base.alerts.</code><code class="descname">flash_failure</code><span class="sig-paren">(</span><em>message</em>, <em>title=None</em>, <em>dismissable=True</em>, <em>safe=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/alerts.html#flash_failure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.alerts.flash_failure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flash a failure message to the user.</p>
+<p>Failures are an unavoidable part of life. We should be honest about our
+mistakes, and find constructive ways to move forward with our lives. That
+means that we should provide some specific hints for how the user can
+achieve success (nb: this is an important accessibility requirement).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The content of the message.</li>
+<li><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – An optional title, displayed prominently atop the notification.</li>
+<li><strong>dismissable</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, a button will be provided that allows the user to hide the
+notification.</li>
+<li><strong>safe</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, the message content (only) will be treated as safe for display
+in the HTML page. NB: only use this if you know for sure that the
+message content is safe for display (i.e. you’re not using raw content
+from a request).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.alerts.flash_hidden">
+<code class="descclassname">arxiv.base.alerts.</code><code class="descname">flash_hidden</code><span class="sig-paren">(</span><em>message</em>, <em>key</em>, <em>dismissable=True</em>, <em>safe=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/alerts.html#flash_hidden"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.alerts.flash_hidden" title="Permalink to this definition">¶</a></dt>
+<dd><p>Propagate hidden data using the flash mechanism.</p>
+<p>Hidden messages are not shown to the user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Data to flash across requests.</li>
+<li><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – Key used to identify the data.</li>
+<li><strong>dismissable</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, a button will be provided that allows the user to hide the
+notification.</li>
+<li><strong>safe</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, the message content (only) will be treated as safe for display
+in the HTML page. NB: only use this if you know for sure that the
+message content is safe for display (i.e. you’re not using raw content
+from a request).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.alerts.flash_info">
+<code class="descclassname">arxiv.base.alerts.</code><code class="descname">flash_info</code><span class="sig-paren">(</span><em>message</em>, <em>title=None</em>, <em>dismissable=True</em>, <em>safe=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/alerts.html#flash_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.alerts.flash_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flash an informative message to the user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The content of the message.</li>
+<li><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – An optional title, displayed prominently atop the notification.</li>
+<li><strong>dismissable</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, a button will be provided that allows the user to hide the
+notification.</li>
+<li><strong>safe</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, the message content (only) will be treated as safe for display
+in the HTML page. NB: only use this if you know for sure that the
+message content is safe for display (i.e. you’re not using raw content
+from a request).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.alerts.flash_success">
+<code class="descclassname">arxiv.base.alerts.</code><code class="descname">flash_success</code><span class="sig-paren">(</span><em>message</em>, <em>title=None</em>, <em>dismissable=True</em>, <em>safe=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/alerts.html#flash_success"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.alerts.flash_success" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flash a success message to the user.</p>
+<p>It’s nice to know when you’ve done something right for a change.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The content of the message.</li>
+<li><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – An optional title, displayed prominently atop the notification.</li>
+<li><strong>dismissable</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, a button will be provided that allows the user to hide the
+notification.</li>
+<li><strong>safe</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, the message content (only) will be treated as safe for display
+in the HTML page. NB: only use this if you know for sure that the
+message content is safe for display (i.e. you’re not using raw content
+from a request).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.alerts.flash_warning">
+<code class="descclassname">arxiv.base.alerts.</code><code class="descname">flash_warning</code><span class="sig-paren">(</span><em>message</em>, <em>title=None</em>, <em>dismissable=True</em>, <em>safe=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/alerts.html#flash_warning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.alerts.flash_warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flash a warning message to the user.</p>
+<p>Warnings are like info alerts, but with a higher level of concern. For
+example, this might be used to notify a user that an unintended consequence
+might be imminent.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The content of the message.</li>
+<li><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – An optional title, displayed prominently atop the notification.</li>
+<li><strong>dismissable</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, a button will be provided that allows the user to hide the
+notification.</li>
+<li><strong>safe</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, the message content (only) will be treated as safe for display
+in the HTML page. NB: only use this if you know for sure that the
+message content is safe for display (i.e. you’re not using raw content
+from a request).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.alerts.get_alerts">
+<code class="descclassname">arxiv.base.alerts.</code><code class="descname">get_alerts</code><span class="sig-paren">(</span><em>severity=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/alerts.html#get_alerts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.alerts.get_alerts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get displayable alerts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>severity</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – If provided (default: None), only alerts of the specified severity
+will be loaded.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Items are (str, dict) tuples, where the first element is the severity
+and the second element is the alert itself.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.alerts.get_hidden_alerts">
+<code class="descclassname">arxiv.base.alerts.</code><code class="descname">get_hidden_alerts</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/alerts.html#get_hidden_alerts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.alerts.get_hidden_alerts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all hidden alerts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Key used to generate the hidden alert in the previous request.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv base</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">arxiv</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.html">arxiv package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="metadocs.html">Meta-documentation: How to create documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">arxiv</a><ul>
+  <li><a href="arxiv.html">arxiv package</a><ul>
+  <li><a href="arxiv.base.html">arxiv.base package</a><ul>
+      <li>Previous: <a href="arxiv.base.urls.links.html" title="previous chapter">arxiv.base.urls.links module</a></li>
+      <li>Next: <a href="arxiv.base.config.html" title="next chapter">arxiv.base.config module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/arxiv/arxiv.base.alerts.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

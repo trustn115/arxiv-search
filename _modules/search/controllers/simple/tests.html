@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
    
@@ -130,7 +129,9 @@
 <div class="viewcode-block" id="TestSearchController"><a class="viewcode-back" href="../../../../api/search.controllers.simple.tests.html#search.controllers.simple.tests.TestSearchController">[docs]</a><span class="k">class</span> <span class="nc">TestSearchController</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Tests for :func:`.simple.search`.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="TestSearchController.test_arxiv_id"><a class="viewcode-back" href="../../../../api/search.controllers.simple.tests.html#search.controllers.simple.tests.TestSearchController.test_arxiv_id">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.simple.index&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="TestSearchController.test_arxiv_id"><a class="viewcode-back" href="../../../../api/search.controllers.simple.tests.html#search.controllers.simple.tests.TestSearchController.test_arxiv_id">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.simple.url_for&#39;</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">k</span><span class="p">:</span> <span class="n">f</span><span class="s1">&#39;https://arxiv.org/</span><span class="si">{k[&quot;paper_id&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s1">&#39;search.controllers.simple.index&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">test_arxiv_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_index</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Query parameter contains an arXiv ID.&quot;&quot;&quot;</span>
         <span class="n">request_data</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span><span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="s1">&#39;1702.00123&#39;</span><span class="p">})</span>
@@ -526,8 +527,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

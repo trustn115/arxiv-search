@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -74,7 +73,8 @@
     <span class="c1"># requested = request.accept_mimetypes.best_match([JSON, ATOM_XML])</span>
     <span class="c1"># if requested == ATOM_XML:</span>
     <span class="c1">#     return serialize.as_atom(data), status, headers</span>
-    <span class="k">return</span> <span class="n">serialize</span><span class="o">.</span><span class="n">as_json</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">headers</span></div>
+    <span class="n">response_data</span> <span class="o">=</span> <span class="n">serialize</span><span class="o">.</span><span class="n">as_json</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">],</span> <span class="n">query</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;query&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">response_data</span><span class="p">,</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">headers</span></div>
 
 
 <div class="viewcode-block" id="paper"><a class="viewcode-back" href="../../../api/search.routes.api.html#search.routes.api.paper">[docs]</a><span class="nd">@blueprint</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;&lt;arxiv:paper_id&gt;v&lt;string:version&gt;&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
@@ -82,7 +82,7 @@
 <span class="k">def</span> <span class="nf">paper</span><span class="p">(</span><span class="n">paper_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Document metadata endpoint.&quot;&quot;&quot;</span>
     <span class="n">data</span><span class="p">,</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">paper</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{paper_id}</span><span class="s1">v</span><span class="si">{version}</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">serialize</span><span class="o">.</span><span class="n">as_json</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">headers</span></div>
+    <span class="k">return</span> <span class="n">serialize</span><span class="o">.</span><span class="n">as_json</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]),</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">headers</span></div>
 </pre></div>
 
           </div>
@@ -138,8 +138,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

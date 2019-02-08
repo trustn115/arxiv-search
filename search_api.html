@@ -14,7 +14,6 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="search" href="api/modules.html" />
@@ -63,10 +62,8 @@ same semantics as the advanced search UI.</li>
 <li>The paper metadata endpoint <a class="reference internal" href="api/search.routes.api.html#search.routes.api.paper" title="search.routes.api.paper"><code class="xref py py-func docutils literal notranslate"><span class="pre">search.routes.api.paper()</span></code></a> provides more
 detailed metadata for a specific arXiv e-print.</li>
 </ul>
-<p>Requests are handled by the controllers in <a class="reference internal" href="api/search.controllers.api.html#module-search.controllers.api" title="search.controllers.api"><code class="xref py py-mod docutils literal notranslate"><span class="pre">search.controllers.api</span></code></a>. As of
-this writing, the <a class="reference internal" href="api/search.domain.api.html#search.domain.api.APIQuery" title="search.domain.api.APIQuery"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.api.APIQuery</span></code></a> domain class is identical
-to <a class="reference internal" href="api/search.domain.advanced.html#search.domain.advanced.AdvancedQuery" title="search.domain.advanced.AdvancedQuery"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.advanced.AdvancedQuery</span></code></a>, but this may change in future
-versions.</p>
+<p>Requests are handled by the controllers in <a class="reference internal" href="api/search.controllers.api.html#module-search.controllers.api" title="search.controllers.api"><code class="xref py py-mod docutils literal notranslate"><span class="pre">search.controllers.api</span></code></a>, using
+the <a class="reference internal" href="api/search.domain.api.html#search.domain.api.APIQuery" title="search.domain.api.APIQuery"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.api.APIQuery</span></code></a> domain class.</p>
 </div>
 
 
@@ -123,8 +120,8 @@ versions.</p>
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/search_api.rst.txt"

@@ -1,0 +1,284 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.util.tex2utf &#8212; arXiv base 0.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for arxiv.util.tex2utf</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Convert between TeX escapes and UTF8.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Pattern</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Match</span>
+
+<span class="c1"># Hash to lookup tex markup and convert to Unicode</span>
+<span class="c1">#</span>
+<span class="c1"># macron is line above character (overbar \= in Tex)</span>
+<span class="c1"># caron is v-shape above (\v{ } in Tex)</span>
+<span class="c1"># See: http://www.unicode.org/charts/</span>
+
+<span class="n">accents</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># first accents with non-letter prefix, e.g. \&#39;A</span>
+    <span class="s2">&quot;&#39;A&quot;</span><span class="p">:</span> <span class="mh">0x00c1</span><span class="p">,</span> <span class="s2">&quot;&#39;C&quot;</span><span class="p">:</span> <span class="mh">0x0106</span><span class="p">,</span> <span class="s2">&quot;&#39;E&quot;</span><span class="p">:</span> <span class="mh">0x00c9</span><span class="p">,</span> <span class="s2">&quot;&#39;I&quot;</span><span class="p">:</span> <span class="mh">0x00cd</span><span class="p">,</span>
+    <span class="s2">&quot;&#39;L&quot;</span><span class="p">:</span> <span class="mh">0x0139</span><span class="p">,</span> <span class="s2">&quot;&#39;N&quot;</span><span class="p">:</span> <span class="mh">0x0143</span><span class="p">,</span> <span class="s2">&quot;&#39;O&quot;</span><span class="p">:</span> <span class="mh">0x00d3</span><span class="p">,</span> <span class="s2">&quot;&#39;R&quot;</span><span class="p">:</span> <span class="mh">0x0154</span><span class="p">,</span>
+    <span class="s2">&quot;&#39;S&quot;</span><span class="p">:</span> <span class="mh">0x015a</span><span class="p">,</span> <span class="s2">&quot;&#39;U&quot;</span><span class="p">:</span> <span class="mh">0x00da</span><span class="p">,</span> <span class="s2">&quot;&#39;Y&quot;</span><span class="p">:</span> <span class="mh">0x00dd</span><span class="p">,</span> <span class="s2">&quot;&#39;Z&quot;</span><span class="p">:</span> <span class="mh">0x0179</span><span class="p">,</span>
+    <span class="s2">&quot;&#39;a&quot;</span><span class="p">:</span> <span class="mh">0x00e1</span><span class="p">,</span> <span class="s2">&quot;&#39;c&quot;</span><span class="p">:</span> <span class="mh">0x0107</span><span class="p">,</span> <span class="s2">&quot;&#39;e&quot;</span><span class="p">:</span> <span class="mh">0x00e9</span><span class="p">,</span> <span class="s2">&quot;&#39;i&quot;</span><span class="p">:</span> <span class="mh">0x00ed</span><span class="p">,</span>
+    <span class="s2">&quot;&#39;l&quot;</span><span class="p">:</span> <span class="mh">0x013a</span><span class="p">,</span> <span class="s2">&quot;&#39;n&quot;</span><span class="p">:</span> <span class="mh">0x0144</span><span class="p">,</span> <span class="s2">&quot;&#39;o&quot;</span><span class="p">:</span> <span class="mh">0x00f3</span><span class="p">,</span> <span class="s2">&quot;&#39;r&quot;</span><span class="p">:</span> <span class="mh">0x0155</span><span class="p">,</span>
+    <span class="s2">&quot;&#39;s&quot;</span><span class="p">:</span> <span class="mh">0x015b</span><span class="p">,</span> <span class="s2">&quot;&#39;u&quot;</span><span class="p">:</span> <span class="mh">0x00fa</span><span class="p">,</span> <span class="s2">&quot;&#39;y&quot;</span><span class="p">:</span> <span class="mh">0x00fd</span><span class="p">,</span> <span class="s2">&quot;&#39;z&quot;</span><span class="p">:</span> <span class="mh">0x017a</span><span class="p">,</span>
+    <span class="s1">&#39;&quot;A&#39;</span><span class="p">:</span> <span class="mh">0x00c4</span><span class="p">,</span> <span class="s1">&#39;&quot;E&#39;</span><span class="p">:</span> <span class="mh">0x00cb</span><span class="p">,</span> <span class="s1">&#39;&quot;I&#39;</span><span class="p">:</span> <span class="mh">0x00cf</span><span class="p">,</span> <span class="s1">&#39;&quot;O&#39;</span><span class="p">:</span> <span class="mh">0x00d6</span><span class="p">,</span>
+    <span class="s1">&#39;&quot;U&#39;</span><span class="p">:</span> <span class="mh">0x00dc</span><span class="p">,</span> <span class="s1">&#39;&quot;Y&#39;</span><span class="p">:</span> <span class="mh">0x0178</span><span class="p">,</span> <span class="s1">&#39;&quot;a&#39;</span><span class="p">:</span> <span class="mh">0x00e4</span><span class="p">,</span> <span class="s1">&#39;&quot;e&#39;</span><span class="p">:</span> <span class="mh">0x00eb</span><span class="p">,</span>
+    <span class="s1">&#39;&quot;i&#39;</span><span class="p">:</span> <span class="mh">0x00ef</span><span class="p">,</span> <span class="s1">&#39;&quot;o&#39;</span><span class="p">:</span> <span class="mh">0x00f6</span><span class="p">,</span> <span class="s1">&#39;&quot;u&#39;</span><span class="p">:</span> <span class="mh">0x00fc</span><span class="p">,</span> <span class="s1">&#39;&quot;y&#39;</span><span class="p">:</span> <span class="mh">0x00ff</span><span class="p">,</span>
+    <span class="s1">&#39;.A&#39;</span><span class="p">:</span> <span class="mh">0x0226</span><span class="p">,</span> <span class="s1">&#39;.C&#39;</span><span class="p">:</span> <span class="mh">0x010a</span><span class="p">,</span> <span class="s1">&#39;.E&#39;</span><span class="p">:</span> <span class="mh">0x0116</span><span class="p">,</span> <span class="s1">&#39;.G&#39;</span><span class="p">:</span> <span class="mh">0x0120</span><span class="p">,</span>
+    <span class="s1">&#39;.I&#39;</span><span class="p">:</span> <span class="mh">0x0130</span><span class="p">,</span> <span class="s1">&#39;.O&#39;</span><span class="p">:</span> <span class="mh">0x022e</span><span class="p">,</span> <span class="s1">&#39;.Z&#39;</span><span class="p">:</span> <span class="mh">0x017b</span><span class="p">,</span> <span class="s1">&#39;.a&#39;</span><span class="p">:</span> <span class="mh">0x0227</span><span class="p">,</span>
+    <span class="s1">&#39;.c&#39;</span><span class="p">:</span> <span class="mh">0x010b</span><span class="p">,</span> <span class="s1">&#39;.e&#39;</span><span class="p">:</span> <span class="mh">0x0117</span><span class="p">,</span> <span class="s1">&#39;.g&#39;</span><span class="p">:</span> <span class="mh">0x0121</span><span class="p">,</span> <span class="s1">&#39;.o&#39;</span><span class="p">:</span> <span class="mh">0x022f</span><span class="p">,</span>
+    <span class="s1">&#39;.z&#39;</span><span class="p">:</span> <span class="mh">0x017c</span><span class="p">,</span> <span class="s1">&#39;=A&#39;</span><span class="p">:</span> <span class="mh">0x0100</span><span class="p">,</span> <span class="s1">&#39;=E&#39;</span><span class="p">:</span> <span class="mh">0x0112</span><span class="p">,</span> <span class="s1">&#39;=I&#39;</span><span class="p">:</span> <span class="mh">0x012a</span><span class="p">,</span>
+    <span class="s1">&#39;=O&#39;</span><span class="p">:</span> <span class="mh">0x014c</span><span class="p">,</span> <span class="s1">&#39;=U&#39;</span><span class="p">:</span> <span class="mh">0x016a</span><span class="p">,</span> <span class="s1">&#39;=Y&#39;</span><span class="p">:</span> <span class="mh">0x0232</span><span class="p">,</span> <span class="s1">&#39;=a&#39;</span><span class="p">:</span> <span class="mh">0x0101</span><span class="p">,</span>
+    <span class="s1">&#39;=e&#39;</span><span class="p">:</span> <span class="mh">0x0113</span><span class="p">,</span> <span class="s1">&#39;=i&#39;</span><span class="p">:</span> <span class="mh">0x012b</span><span class="p">,</span> <span class="s1">&#39;=o&#39;</span><span class="p">:</span> <span class="mh">0x014d</span><span class="p">,</span> <span class="s1">&#39;=u&#39;</span><span class="p">:</span> <span class="mh">0x016b</span><span class="p">,</span>
+    <span class="s1">&#39;=y&#39;</span><span class="p">:</span> <span class="mh">0x0233</span><span class="p">,</span> <span class="s1">&#39;^A&#39;</span><span class="p">:</span> <span class="mh">0x00c2</span><span class="p">,</span> <span class="s1">&#39;^C&#39;</span><span class="p">:</span> <span class="mh">0x0108</span><span class="p">,</span> <span class="s1">&#39;^E&#39;</span><span class="p">:</span> <span class="mh">0x00ca</span><span class="p">,</span>
+    <span class="s1">&#39;^G&#39;</span><span class="p">:</span> <span class="mh">0x011c</span><span class="p">,</span> <span class="s1">&#39;^H&#39;</span><span class="p">:</span> <span class="mh">0x0124</span><span class="p">,</span> <span class="s1">&#39;^I&#39;</span><span class="p">:</span> <span class="mh">0x00ce</span><span class="p">,</span> <span class="s1">&#39;^J&#39;</span><span class="p">:</span> <span class="mh">0x0134</span><span class="p">,</span>
+    <span class="s1">&#39;^O&#39;</span><span class="p">:</span> <span class="mh">0x00d4</span><span class="p">,</span> <span class="s1">&#39;^S&#39;</span><span class="p">:</span> <span class="mh">0x015c</span><span class="p">,</span> <span class="s1">&#39;^U&#39;</span><span class="p">:</span> <span class="mh">0x00db</span><span class="p">,</span> <span class="s1">&#39;^W&#39;</span><span class="p">:</span> <span class="mh">0x0174</span><span class="p">,</span>
+    <span class="s1">&#39;^Y&#39;</span><span class="p">:</span> <span class="mh">0x0176</span><span class="p">,</span> <span class="s1">&#39;^a&#39;</span><span class="p">:</span> <span class="mh">0x00e2</span><span class="p">,</span> <span class="s1">&#39;^c&#39;</span><span class="p">:</span> <span class="mh">0x0109</span><span class="p">,</span> <span class="s1">&#39;^e&#39;</span><span class="p">:</span> <span class="mh">0x00ea</span><span class="p">,</span>
+    <span class="s1">&#39;^g&#39;</span><span class="p">:</span> <span class="mh">0x011d</span><span class="p">,</span> <span class="s1">&#39;^h&#39;</span><span class="p">:</span> <span class="mh">0x0125</span><span class="p">,</span> <span class="s1">&#39;^i&#39;</span><span class="p">:</span> <span class="mh">0x00ee</span><span class="p">,</span> <span class="s1">&#39;^j&#39;</span><span class="p">:</span> <span class="mh">0x0135</span><span class="p">,</span>
+    <span class="s1">&#39;^o&#39;</span><span class="p">:</span> <span class="mh">0x00f4</span><span class="p">,</span> <span class="s1">&#39;^s&#39;</span><span class="p">:</span> <span class="mh">0x015d</span><span class="p">,</span> <span class="s1">&#39;^u&#39;</span><span class="p">:</span> <span class="mh">0x00fb</span><span class="p">,</span> <span class="s1">&#39;^w&#39;</span><span class="p">:</span> <span class="mh">0x0175</span><span class="p">,</span>
+    <span class="s1">&#39;^y&#39;</span><span class="p">:</span> <span class="mh">0x0177</span><span class="p">,</span> <span class="s1">&#39;`A&#39;</span><span class="p">:</span> <span class="mh">0x00c0</span><span class="p">,</span> <span class="s1">&#39;`E&#39;</span><span class="p">:</span> <span class="mh">0x00c8</span><span class="p">,</span> <span class="s1">&#39;`I&#39;</span><span class="p">:</span> <span class="mh">0x00cc</span><span class="p">,</span>
+    <span class="s1">&#39;`O&#39;</span><span class="p">:</span> <span class="mh">0x00d2</span><span class="p">,</span> <span class="s1">&#39;`U&#39;</span><span class="p">:</span> <span class="mh">0x00d9</span><span class="p">,</span> <span class="s1">&#39;`a&#39;</span><span class="p">:</span> <span class="mh">0x00e0</span><span class="p">,</span> <span class="s1">&#39;`e&#39;</span><span class="p">:</span> <span class="mh">0x00e8</span><span class="p">,</span>
+    <span class="s1">&#39;`i&#39;</span><span class="p">:</span> <span class="mh">0x00ec</span><span class="p">,</span> <span class="s1">&#39;`o&#39;</span><span class="p">:</span> <span class="mh">0x00f2</span><span class="p">,</span> <span class="s1">&#39;`u&#39;</span><span class="p">:</span> <span class="mh">0x00f9</span><span class="p">,</span> <span class="s1">&#39;~A&#39;</span><span class="p">:</span> <span class="mh">0x00c3</span><span class="p">,</span>
+    <span class="s1">&#39;~I&#39;</span><span class="p">:</span> <span class="mh">0x0128</span><span class="p">,</span> <span class="s1">&#39;~N&#39;</span><span class="p">:</span> <span class="mh">0x00d1</span><span class="p">,</span> <span class="s1">&#39;~O&#39;</span><span class="p">:</span> <span class="mh">0x00d5</span><span class="p">,</span> <span class="s1">&#39;~U&#39;</span><span class="p">:</span> <span class="mh">0x0168</span><span class="p">,</span>
+    <span class="s1">&#39;~a&#39;</span><span class="p">:</span> <span class="mh">0x00e3</span><span class="p">,</span> <span class="s1">&#39;~i&#39;</span><span class="p">:</span> <span class="mh">0x0129</span><span class="p">,</span> <span class="s1">&#39;~n&#39;</span><span class="p">:</span> <span class="mh">0x00f1</span><span class="p">,</span> <span class="s1">&#39;~o&#39;</span><span class="p">:</span> <span class="mh">0x00f5</span><span class="p">,</span>
+    <span class="s1">&#39;~u&#39;</span><span class="p">:</span> <span class="mh">0x0169</span><span class="p">,</span>
+    <span class="c1"># and now ones with letter prefix \c{c} etc..</span>
+    <span class="s1">&#39;HO&#39;</span><span class="p">:</span> <span class="mh">0x0150</span><span class="p">,</span> <span class="s1">&#39;HU&#39;</span><span class="p">:</span> <span class="mh">0x0170</span><span class="p">,</span> <span class="s1">&#39;Ho&#39;</span><span class="p">:</span> <span class="mh">0x0151</span><span class="p">,</span> <span class="s1">&#39;Hu&#39;</span><span class="p">:</span> <span class="mh">0x0171</span><span class="p">,</span>
+    <span class="s1">&#39;cC&#39;</span><span class="p">:</span> <span class="mh">0x00c7</span><span class="p">,</span> <span class="s1">&#39;cE&#39;</span><span class="p">:</span> <span class="mh">0x0228</span><span class="p">,</span>
+    <span class="s1">&#39;cG&#39;</span><span class="p">:</span> <span class="mh">0x0122</span><span class="p">,</span> <span class="s1">&#39;cK&#39;</span><span class="p">:</span> <span class="mh">0x0136</span><span class="p">,</span> <span class="s1">&#39;cL&#39;</span><span class="p">:</span> <span class="mh">0x013b</span><span class="p">,</span> <span class="s1">&#39;cN&#39;</span><span class="p">:</span> <span class="mh">0x0145</span><span class="p">,</span>
+    <span class="s1">&#39;cR&#39;</span><span class="p">:</span> <span class="mh">0x0156</span><span class="p">,</span> <span class="s1">&#39;cS&#39;</span><span class="p">:</span> <span class="mh">0x015e</span><span class="p">,</span> <span class="s1">&#39;cT&#39;</span><span class="p">:</span> <span class="mh">0x0162</span><span class="p">,</span> <span class="s1">&#39;cc&#39;</span><span class="p">:</span> <span class="mh">0x00e7</span><span class="p">,</span>
+    <span class="s1">&#39;ce&#39;</span><span class="p">:</span> <span class="mh">0x0229</span><span class="p">,</span> <span class="s1">&#39;cg&#39;</span><span class="p">:</span> <span class="mh">0x0123</span><span class="p">,</span> <span class="s1">&#39;ck&#39;</span><span class="p">:</span> <span class="mh">0x0137</span><span class="p">,</span> <span class="s1">&#39;cl&#39;</span><span class="p">:</span> <span class="mh">0x013c</span><span class="p">,</span>
+    <span class="c1"># Commented out due ARXIVDEV-2322 (bug reported by PG)</span>
+    <span class="c1"># &#39;ci&#39; : &#39;i\x{0327}&#39; = chr(0x69).ch(0x327) # i with combining cedilla</span>
+    <span class="s1">&#39;cn&#39;</span><span class="p">:</span> <span class="mh">0x0146</span><span class="p">,</span> <span class="s1">&#39;cr&#39;</span><span class="p">:</span> <span class="mh">0x0157</span><span class="p">,</span> <span class="s1">&#39;cs&#39;</span><span class="p">:</span> <span class="mh">0x015f</span><span class="p">,</span> <span class="s1">&#39;ct&#39;</span><span class="p">:</span> <span class="mh">0x0163</span><span class="p">,</span>
+    <span class="s1">&#39;kA&#39;</span><span class="p">:</span> <span class="mh">0x0104</span><span class="p">,</span> <span class="s1">&#39;kE&#39;</span><span class="p">:</span> <span class="mh">0x0118</span><span class="p">,</span> <span class="s1">&#39;kI&#39;</span><span class="p">:</span> <span class="mh">0x012e</span><span class="p">,</span> <span class="s1">&#39;kO&#39;</span><span class="p">:</span> <span class="mh">0x01ea</span><span class="p">,</span>
+    <span class="s1">&#39;kU&#39;</span><span class="p">:</span> <span class="mh">0x0172</span><span class="p">,</span> <span class="s1">&#39;ka&#39;</span><span class="p">:</span> <span class="mh">0x0105</span><span class="p">,</span> <span class="s1">&#39;ke&#39;</span><span class="p">:</span> <span class="mh">0x0119</span><span class="p">,</span> <span class="s1">&#39;ki&#39;</span><span class="p">:</span> <span class="mh">0x012f</span><span class="p">,</span>
+    <span class="s1">&#39;ko&#39;</span><span class="p">:</span> <span class="mh">0x01eb</span><span class="p">,</span> <span class="s1">&#39;ku&#39;</span><span class="p">:</span> <span class="mh">0x0173</span><span class="p">,</span> <span class="s1">&#39;rA&#39;</span><span class="p">:</span> <span class="mh">0x00c5</span><span class="p">,</span> <span class="s1">&#39;rU&#39;</span><span class="p">:</span> <span class="mh">0x016e</span><span class="p">,</span>
+    <span class="s1">&#39;ra&#39;</span><span class="p">:</span> <span class="mh">0x00e5</span><span class="p">,</span> <span class="s1">&#39;ru&#39;</span><span class="p">:</span> <span class="mh">0x016f</span><span class="p">,</span> <span class="s1">&#39;uA&#39;</span><span class="p">:</span> <span class="mh">0x0102</span><span class="p">,</span> <span class="s1">&#39;uE&#39;</span><span class="p">:</span> <span class="mh">0x0114</span><span class="p">,</span>
+    <span class="s1">&#39;uG&#39;</span><span class="p">:</span> <span class="mh">0x011e</span><span class="p">,</span> <span class="s1">&#39;uI&#39;</span><span class="p">:</span> <span class="mh">0x012c</span><span class="p">,</span> <span class="s1">&#39;uO&#39;</span><span class="p">:</span> <span class="mh">0x014e</span><span class="p">,</span> <span class="s1">&#39;uU&#39;</span><span class="p">:</span> <span class="mh">0x016c</span><span class="p">,</span>
+    <span class="s1">&#39;ua&#39;</span><span class="p">:</span> <span class="mh">0x0103</span><span class="p">,</span> <span class="s1">&#39;ue&#39;</span><span class="p">:</span> <span class="mh">0x0115</span><span class="p">,</span> <span class="s1">&#39;ug&#39;</span><span class="p">:</span> <span class="mh">0x011f</span><span class="p">,</span>
+    <span class="s1">&#39;ui&#39;</span><span class="p">:</span> <span class="mh">0x012d</span><span class="p">,</span> <span class="s1">&#39;uo&#39;</span><span class="p">:</span> <span class="mh">0x014f</span><span class="p">,</span> <span class="s1">&#39;uu&#39;</span><span class="p">:</span> <span class="mh">0x016d</span><span class="p">,</span>
+    <span class="s1">&#39;vA&#39;</span><span class="p">:</span> <span class="mh">0x01cd</span><span class="p">,</span> <span class="s1">&#39;vC&#39;</span><span class="p">:</span> <span class="mh">0x010c</span><span class="p">,</span> <span class="s1">&#39;vD&#39;</span><span class="p">:</span> <span class="mh">0x010e</span><span class="p">,</span>
+    <span class="s1">&#39;vE&#39;</span><span class="p">:</span> <span class="mh">0x011a</span><span class="p">,</span> <span class="s1">&#39;vG&#39;</span><span class="p">:</span> <span class="mh">0x01e6</span><span class="p">,</span> <span class="s1">&#39;vH&#39;</span><span class="p">:</span> <span class="mh">0x021e</span><span class="p">,</span> <span class="s1">&#39;vI&#39;</span><span class="p">:</span> <span class="mh">0x01cf</span><span class="p">,</span>
+    <span class="s1">&#39;vK&#39;</span><span class="p">:</span> <span class="mh">0x01e8</span><span class="p">,</span> <span class="s1">&#39;vL&#39;</span><span class="p">:</span> <span class="mh">0x013d</span><span class="p">,</span> <span class="s1">&#39;vN&#39;</span><span class="p">:</span> <span class="mh">0x0147</span><span class="p">,</span> <span class="s1">&#39;vO&#39;</span><span class="p">:</span> <span class="mh">0x01d1</span><span class="p">,</span>
+    <span class="s1">&#39;vR&#39;</span><span class="p">:</span> <span class="mh">0x0158</span><span class="p">,</span> <span class="s1">&#39;vS&#39;</span><span class="p">:</span> <span class="mh">0x0160</span><span class="p">,</span> <span class="s1">&#39;vT&#39;</span><span class="p">:</span> <span class="mh">0x0164</span><span class="p">,</span> <span class="s1">&#39;vU&#39;</span><span class="p">:</span> <span class="mh">0x01d3</span><span class="p">,</span>
+    <span class="s1">&#39;vZ&#39;</span><span class="p">:</span> <span class="mh">0x017d</span><span class="p">,</span> <span class="s1">&#39;va&#39;</span><span class="p">:</span> <span class="mh">0x01ce</span><span class="p">,</span> <span class="s1">&#39;vc&#39;</span><span class="p">:</span> <span class="mh">0x010d</span><span class="p">,</span> <span class="s1">&#39;vd&#39;</span><span class="p">:</span> <span class="mh">0x010f</span><span class="p">,</span>
+    <span class="s1">&#39;ve&#39;</span><span class="p">:</span> <span class="mh">0x011b</span><span class="p">,</span> <span class="s1">&#39;vg&#39;</span><span class="p">:</span> <span class="mh">0x01e7</span><span class="p">,</span> <span class="s1">&#39;vh&#39;</span><span class="p">:</span> <span class="mh">0x021f</span><span class="p">,</span> <span class="s1">&#39;vi&#39;</span><span class="p">:</span> <span class="mh">0x01d0</span><span class="p">,</span>
+    <span class="s1">&#39;vk&#39;</span><span class="p">:</span> <span class="mh">0x01e9</span><span class="p">,</span> <span class="s1">&#39;vl&#39;</span><span class="p">:</span> <span class="mh">0x013e</span><span class="p">,</span> <span class="s1">&#39;vn&#39;</span><span class="p">:</span> <span class="mh">0x0148</span><span class="p">,</span> <span class="s1">&#39;vo&#39;</span><span class="p">:</span> <span class="mh">0x01d2</span><span class="p">,</span>
+    <span class="s1">&#39;vr&#39;</span><span class="p">:</span> <span class="mh">0x0159</span><span class="p">,</span> <span class="s1">&#39;vs&#39;</span><span class="p">:</span> <span class="mh">0x0161</span><span class="p">,</span> <span class="s1">&#39;vt&#39;</span><span class="p">:</span> <span class="mh">0x0165</span><span class="p">,</span> <span class="s1">&#39;vu&#39;</span><span class="p">:</span> <span class="mh">0x01d4</span><span class="p">,</span>
+    <span class="s1">&#39;vz&#39;</span><span class="p">:</span> <span class="mh">0x017e</span>
+<span class="p">}</span>
+
+<span class="n">textlet</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;AA&#39;</span><span class="p">:</span> <span class="mh">0x00c5</span><span class="p">,</span> <span class="s1">&#39;AE&#39;</span><span class="p">:</span> <span class="mh">0x00c6</span><span class="p">,</span> <span class="s1">&#39;DH&#39;</span><span class="p">:</span> <span class="mh">0x00d0</span><span class="p">,</span> <span class="s1">&#39;DJ&#39;</span><span class="p">:</span> <span class="mh">0x0110</span><span class="p">,</span>
+    <span class="s1">&#39;ETH&#39;</span><span class="p">:</span> <span class="mh">0x00d0</span><span class="p">,</span> <span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="mh">0x0141</span><span class="p">,</span> <span class="s1">&#39;NG&#39;</span><span class="p">:</span> <span class="mh">0x014a</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mh">0x00d8</span><span class="p">,</span>
+    <span class="s1">&#39;oe&#39;</span><span class="p">:</span> <span class="mh">0x0153</span><span class="p">,</span> <span class="s1">&#39;OE&#39;</span><span class="p">:</span> <span class="mh">0x0152</span><span class="p">,</span> <span class="s1">&#39;TH&#39;</span><span class="p">:</span> <span class="mh">0x00de</span><span class="p">,</span> <span class="s1">&#39;aa&#39;</span><span class="p">:</span> <span class="mh">0x00e5</span><span class="p">,</span>
+    <span class="s1">&#39;ae&#39;</span><span class="p">:</span> <span class="mh">0x00e6</span><span class="p">,</span>
+    <span class="s1">&#39;dh&#39;</span><span class="p">:</span> <span class="mh">0x00f0</span><span class="p">,</span> <span class="s1">&#39;dj&#39;</span><span class="p">:</span> <span class="mh">0x0111</span><span class="p">,</span> <span class="s1">&#39;eth&#39;</span><span class="p">:</span> <span class="mh">0x00f0</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">:</span> <span class="mh">0x0131</span><span class="p">,</span>
+    <span class="s1">&#39;l&#39;</span><span class="p">:</span> <span class="mh">0x0142</span><span class="p">,</span> <span class="s1">&#39;ng&#39;</span><span class="p">:</span> <span class="mh">0x014b</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">:</span> <span class="mh">0x00f8</span><span class="p">,</span> <span class="s1">&#39;ss&#39;</span><span class="p">:</span> <span class="mh">0x00df</span><span class="p">,</span>
+    <span class="s1">&#39;th&#39;</span><span class="p">:</span> <span class="mh">0x00fe</span><span class="p">,</span>
+    <span class="c1"># Greek (upper)</span>
+    <span class="s1">&#39;Gamma&#39;</span><span class="p">:</span> <span class="mh">0x0393</span><span class="p">,</span> <span class="s1">&#39;Delta&#39;</span><span class="p">:</span> <span class="mh">0x0394</span><span class="p">,</span> <span class="s1">&#39;Theta&#39;</span><span class="p">:</span> <span class="mh">0x0398</span><span class="p">,</span>
+    <span class="s1">&#39;Lambda&#39;</span><span class="p">:</span> <span class="mh">0x039b</span><span class="p">,</span> <span class="s1">&#39;Xi&#39;</span><span class="p">:</span> <span class="mh">0x039E</span><span class="p">,</span> <span class="s1">&#39;Pi&#39;</span><span class="p">:</span> <span class="mh">0x03a0</span><span class="p">,</span>
+    <span class="s1">&#39;Sigma&#39;</span><span class="p">:</span> <span class="mh">0x03a3</span><span class="p">,</span> <span class="s1">&#39;Upsilon&#39;</span><span class="p">:</span> <span class="mh">0x03a5</span><span class="p">,</span> <span class="s1">&#39;Phi&#39;</span><span class="p">:</span> <span class="mh">0x03a6</span><span class="p">,</span>
+    <span class="s1">&#39;Psi&#39;</span><span class="p">:</span> <span class="mh">0x03a8</span><span class="p">,</span> <span class="s1">&#39;Omega&#39;</span><span class="p">:</span> <span class="mh">0x03a9</span><span class="p">,</span>
+    <span class="c1"># Greek (lower)</span>
+    <span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mh">0x03b1</span><span class="p">,</span> <span class="s1">&#39;beta&#39;</span><span class="p">:</span> <span class="mh">0x03b2</span><span class="p">,</span> <span class="s1">&#39;gamma&#39;</span><span class="p">:</span> <span class="mh">0x03b3</span><span class="p">,</span>
+    <span class="s1">&#39;delta&#39;</span><span class="p">:</span> <span class="mh">0x03b4</span><span class="p">,</span> <span class="s1">&#39;epsilon&#39;</span><span class="p">:</span> <span class="mh">0x03b5</span><span class="p">,</span> <span class="s1">&#39;zeta&#39;</span><span class="p">:</span> <span class="mh">0x03b6</span><span class="p">,</span>
+    <span class="s1">&#39;eta&#39;</span><span class="p">:</span> <span class="mh">0x03b7</span><span class="p">,</span> <span class="s1">&#39;theta&#39;</span><span class="p">:</span> <span class="mh">0x03b8</span><span class="p">,</span> <span class="s1">&#39;iota&#39;</span><span class="p">:</span> <span class="mh">0x03b9</span><span class="p">,</span>
+    <span class="s1">&#39;kappa&#39;</span><span class="p">:</span> <span class="mh">0x03ba</span><span class="p">,</span> <span class="s1">&#39;lambda&#39;</span><span class="p">:</span> <span class="mh">0x03bb</span><span class="p">,</span> <span class="s1">&#39;mu&#39;</span><span class="p">:</span> <span class="mh">0x03bc</span><span class="p">,</span>
+    <span class="s1">&#39;nu&#39;</span><span class="p">:</span> <span class="mh">0x03bd</span><span class="p">,</span> <span class="s1">&#39;xi&#39;</span><span class="p">:</span> <span class="mh">0x03be</span><span class="p">,</span> <span class="s1">&#39;omicron&#39;</span><span class="p">:</span> <span class="mh">0x03bf</span><span class="p">,</span>
+    <span class="s1">&#39;pi&#39;</span><span class="p">:</span> <span class="mh">0x03c0</span><span class="p">,</span> <span class="s1">&#39;rho&#39;</span><span class="p">:</span> <span class="mh">0x03c1</span><span class="p">,</span> <span class="s1">&#39;varsigma&#39;</span><span class="p">:</span> <span class="mh">0x03c2</span><span class="p">,</span>
+    <span class="s1">&#39;sigma&#39;</span><span class="p">:</span> <span class="mh">0x03c3</span><span class="p">,</span> <span class="s1">&#39;tau&#39;</span><span class="p">:</span> <span class="mh">0x03c4</span><span class="p">,</span> <span class="s1">&#39;upsion&#39;</span><span class="p">:</span> <span class="mh">0x03c5</span><span class="p">,</span>
+    <span class="s1">&#39;phi&#39;</span><span class="p">:</span> <span class="mh">0x03c6</span><span class="p">,</span> <span class="s1">&#39;chi&#39;</span><span class="p">:</span> <span class="mh">0x03c7</span><span class="p">,</span> <span class="s1">&#39;psi&#39;</span><span class="p">:</span> <span class="mh">0x03c8</span><span class="p">,</span>
+    <span class="s1">&#39;omega&#39;</span><span class="p">:</span> <span class="mh">0x03c9</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">_p_to_match</span><span class="p">(</span><span class="n">tex_to_chr</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Pattern</span><span class="p">:</span>
+    <span class="c1"># textsym and textlet both use the same sort of regex pattern.</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">(&#39;</span> <span class="o">+</span> <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tex_to_chr</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span>
+    <span class="n">pstr</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;({)?&#39;</span> <span class="o">+</span> <span class="n">keys</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;(\b|(?=_))(?(1)}|(</span><span class="se">\\</span><span class="s1">(?= )| |</span><span class="si">{}</span><span class="s1">|)?)&#39;</span>
+    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pstr</span><span class="p">)</span>
+
+
+<span class="n">textlet_pattern</span> <span class="o">=</span> <span class="n">_p_to_match</span><span class="p">(</span><span class="n">textlet</span><span class="p">)</span>
+
+<span class="n">textsym</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;P&#39;</span><span class="p">:</span> <span class="mh">0x00b6</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="mh">0x00a7</span><span class="p">,</span> <span class="s1">&#39;copyright&#39;</span><span class="p">:</span> <span class="mh">0x00a9</span><span class="p">,</span>
+    <span class="s1">&#39;guillemotleft&#39;</span><span class="p">:</span> <span class="mh">0x00ab</span><span class="p">,</span> <span class="s1">&#39;guillemotright&#39;</span><span class="p">:</span> <span class="mh">0x00bb</span><span class="p">,</span>
+    <span class="s1">&#39;pounds&#39;</span><span class="p">:</span> <span class="mh">0x00a3</span><span class="p">,</span> <span class="s1">&#39;dag&#39;</span><span class="p">:</span> <span class="mh">0x2020</span><span class="p">,</span> <span class="s1">&#39;ddag&#39;</span><span class="p">:</span> <span class="mh">0x2021</span><span class="p">,</span>
+    <span class="s1">&#39;div&#39;</span><span class="p">:</span> <span class="mh">0x00f7</span><span class="p">,</span> <span class="s1">&#39;deg&#39;</span><span class="p">:</span> <span class="mh">0x00b0</span><span class="p">}</span>
+
+<span class="n">textsym_pattern</span> <span class="o">=</span> <span class="n">_p_to_match</span><span class="p">(</span><span class="n">textsym</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_textlet_sub</span><span class="p">(</span><span class="n">match</span><span class="p">:</span> <span class="n">Match</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="n">textlet</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)])</span>
+
+
+<span class="k">def</span> <span class="nf">_textsym_sub</span><span class="p">(</span><span class="n">match</span><span class="p">:</span> <span class="n">Match</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="n">textsym</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)])</span>
+
+
+<div class="viewcode-block" id="texch2UTF"><a class="viewcode-back" href="../../../arxiv/arxiv.util.tex2utf.html#arxiv.util.tex2utf.texch2UTF">[docs]</a><span class="k">def</span> <span class="nf">texch2UTF</span><span class="p">(</span><span class="n">acc</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert single character TeX accents to UTF-8.</span>
+
+<span class="sd">    Strip non-whitepsace characters from any sequence not recognized (hence</span>
+<span class="sd">    could return an empty string if there are no word characters in the input</span>
+<span class="sd">    string).</span>
+
+<span class="sd">    chr(num) will automatically create a UTF8 string for big num</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">acc</span> <span class="ow">in</span> <span class="n">accents</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="n">accents</span><span class="p">[</span><span class="n">acc</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w]+&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span></div>
+
+
+<span class="c1">#   my ($acc)=@_;</span>
+<span class="c1">#   #warn &quot;acc = $acc\n&quot;;</span>
+<span class="c1">#   return(chr($accents{$acc})) if (defined($accents{$acc}));</span>
+<span class="c1">#   #warn &quot;Unknown accent &#39;$acc&#39;\n&quot;;</span>
+<span class="c1">#   $acc=~s/[^\w]+//ig;</span>
+<span class="c1">#   return($acc);</span>
+<span class="c1"># }</span>
+<span class="c1">#</span>
+
+<div class="viewcode-block" id="tex2utf"><a class="viewcode-back" href="../../../arxiv/arxiv.util.tex2utf.html#arxiv.util.tex2utf.tex2utf">[docs]</a><span class="k">def</span> <span class="nf">tex2utf</span><span class="p">(</span><span class="n">tex</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Converts some accents and greek TeX to utf8.&quot;&quot;&quot;</span>
+    <span class="c1"># This is Legacy stuff and might not be needed if we move toward all utf8</span>
+
+    <span class="c1"># Do dotless i,j -&gt; plain i,j where they are part of an accented i or j</span>
+    <span class="n">utf</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;/(</span><span class="se">\\</span><span class="s2">[&#39;`\^</span><span class="se">\&quot;</span><span class="s2">\~\=\.uvH])\{</span><span class="se">\\</span><span class="s2">([ij])\}&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;\g&lt;1&gt;\{\g&lt;2&gt;\}&quot;</span><span class="p">,</span> <span class="n">tex</span><span class="p">)</span>
+    <span class="c1"># $utf =~ s/(\\[&#39;`\^&quot;\~\=\.uvH])\{\\([ij])\}/$1\{$2\}/g; #&#39;</span>
+
+    <span class="c1"># Now work on the Tex sequences, first those with letters only match</span>
+    <span class="n">utf</span> <span class="o">=</span> <span class="n">textlet_pattern</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">_textlet_sub</span><span class="p">,</span> <span class="n">utf</span><span class="p">)</span>
+    <span class="n">utf</span> <span class="o">=</span> <span class="n">textsym_pattern</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">_textsym_sub</span><span class="p">,</span> <span class="n">utf</span><span class="p">)</span>
+
+    <span class="n">utf</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\{</span><span class="se">\\</span><span class="s1">j\}|</span><span class="se">\\</span><span class="s1">j\s&#39;</span><span class="p">,</span> <span class="s1">&#39;j&#39;</span><span class="p">,</span> <span class="n">utf</span><span class="p">)</span>  <span class="c1"># not in Unicode?</span>
+
+    <span class="c1"># reduce {{x}}, {{{x}}}, ... down to {x}</span>
+    <span class="k">while</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\{\{([^\}]*)\}\}&#39;</span><span class="p">,</span> <span class="n">utf</span><span class="p">):</span>
+        <span class="n">utf</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\{\{([^\}]*)\}\}&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;{\g&lt;1&gt;}&#39;</span><span class="p">,</span> <span class="n">utf</span><span class="p">)</span>
+        <span class="c1"># $utf =~ s/\{\{([^\}]*)\}\}/{$1}/g;</span>
+
+    <span class="c1"># Accents which have a non-letter prefix in TeX, first \&#39;e</span>
+    <span class="c1"># $utf =~ s/\\([&#39;`\^&quot;\~\=\.][a-zA-Z])/&amp;texch2UTF($1)/eg; #&#39;</span>
+    <span class="n">utf</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">([</span><span class="se">\&#39;</span><span class="s1">`^&quot;~=.][a-zA-Z])&#39;</span><span class="p">,</span>
+                 <span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">texch2UTF</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span> <span class="n">utf</span><span class="p">)</span>
+
+    <span class="c1"># then \&#39;{e} form:</span>
+    <span class="c1"># $utf =~ s/\\([&#39;`\^&quot;\~\=\.])\{([a-zA-Z])\}/&amp;texch2UTF(&quot;$1$2&quot;)/eg; #&#39;</span>
+    <span class="n">utf</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">([</span><span class="se">\&#39;</span><span class="s1">`^&quot;~=.])\{([a-zA-Z])\}&#39;</span><span class="p">,</span>
+                 <span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">texch2UTF</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span> <span class="n">utf</span><span class="p">)</span>
+
+    <span class="c1"># Accents which have a letter prefix in TeX</span>
+    <span class="c1">#  \u{x} u above (breve), \v{x}   v above (caron), \H{x}   double accute...</span>
+    <span class="c1"># $utf =~ s/\\([Hckoruv])\{([a-zA-Z])\}/&amp;texch2UTF(&quot;$1$2&quot;)/eg;</span>
+    <span class="n">utf</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">([Hckoruv])\{([a-zA-Z])\}&#39;</span><span class="p">,</span>
+                 <span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">texch2UTF</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span> <span class="n">utf</span><span class="p">)</span>
+
+    <span class="c1"># Don&#39;t do \t{oo} yet,</span>
+    <span class="c1"># $utf =~ s/\\t\{([^\}])\}/$2/g;</span>
+    <span class="n">utf</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">t{([^\}])\}&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;\g&lt;1&gt;&#39;</span><span class="p">,</span> <span class="n">utf</span><span class="p">)</span>
+
+    <span class="c1"># bdc34: commented out in original Perl</span>
+    <span class="c1"># $utf =~ s/\{(.)\}/$1/g; #  remove { } from around {x}</span>
+
+    <span class="k">return</span> <span class="n">utf</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">arXiv base</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../arxiv/modules.html">arxiv</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arxiv/metadocs.html">Meta-documentation: How to create documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -41,6 +40,8 @@
 <span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">attrgetter</span>
 <span class="kn">from</span> <span class="nn">pytz</span> <span class="k">import</span> <span class="n">timezone</span>
 <span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">taxonomy</span>
 
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="k">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="k">import</span> <span class="n">asdict</span> <span class="k">as</span> <span class="n">_asdict</span>
@@ -166,11 +167,56 @@
     <span class="n">archive</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">category</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">group_display</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get a human-friendly display label for the group.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">label</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="k">if</span> <span class="s2">&quot;name&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">get_group_display</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">label</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">archive_display</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get a human-friendly display label for the archive.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">archive</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">label</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="k">if</span> <span class="s2">&quot;name&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">archive</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">archive</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">get_archive_display</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">archive</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">label</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">category_display</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get a human-friendly display label for the category.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">category</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">label</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="k">if</span> <span class="s2">&quot;name&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">category</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">category</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">get_category_display</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">category</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">label</span>
+
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Build a string representation, for use in rendering.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">archive</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">category</span><span class="p">]</span> <span class="k">if</span> <span class="n">p</span><span class="p">]</span>
-        <span class="p">)</span></div>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_display</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">archive</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">s</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot; :: &quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">archive_display</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">category</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">s</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot; :: &quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">category_display</span>
+        <span class="k">return</span> <span class="n">s</span></div>
 
 
 <div class="viewcode-block" id="ClassificationList"><a class="viewcode-back" href="../../../api/search.domain.base.html#search.domain.base.ClassificationList">[docs]</a><span class="k">class</span> <span class="nc">ClassificationList</span><span class="p">(</span><span class="nb">list</span><span class="p">):</span>
@@ -201,6 +247,7 @@
         <span class="p">(</span><span class="s1">&#39;paper_id&#39;</span><span class="p">,</span> <span class="s1">&#39;arXiv identifier&#39;</span><span class="p">),</span>
         <span class="p">(</span><span class="s1">&#39;doi&#39;</span><span class="p">,</span> <span class="s1">&#39;DOI&#39;</span><span class="p">),</span>
         <span class="p">(</span><span class="s1">&#39;orcid&#39;</span><span class="p">,</span> <span class="s1">&#39;ORCID&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;license&#39;</span><span class="p">,</span> <span class="s1">&#39;License (URI)&#39;</span><span class="p">),</span>
         <span class="p">(</span><span class="s1">&#39;author_id&#39;</span><span class="p">,</span> <span class="s1">&#39;arXiv author ID&#39;</span><span class="p">),</span>
         <span class="p">(</span><span class="s1">&#39;help&#39;</span><span class="p">,</span> <span class="s1">&#39;Help pages&#39;</span><span class="p">),</span>
         <span class="p">(</span><span class="s1">&#39;full_text&#39;</span><span class="p">,</span> <span class="s1">&#39;Full text&#39;</span><span class="p">)</span>
@@ -237,9 +284,14 @@
 
     <span class="n">search_field</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
     <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
-    <span class="n">primary_classification</span><span class="p">:</span> <span class="n">ClassificationList</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
+
+    <span class="n">classification</span><span class="p">:</span> <span class="n">ClassificationList</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="n">ClassificationList</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;Classification(s) by which to limit results.&quot;&quot;&quot;</span>
+
+    <span class="n">include_cross_list</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;If True, secondaries are considered when limiting by classification.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="Document"><a class="viewcode-back" href="../../../api/search.domain.base.html#search.domain.base.Document">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -379,8 +431,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

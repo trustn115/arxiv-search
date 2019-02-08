@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -71,10 +70,33 @@
 <span class="sd">    An advanced query contains fielded search terms and boolean operators.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">SUPPORTED_FIELDS</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;Title&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;author&#39;</span><span class="p">,</span> <span class="s1">&#39;Author(s)&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;abstract&#39;</span><span class="p">,</span> <span class="s1">&#39;Abstract&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;comments&#39;</span><span class="p">,</span> <span class="s1">&#39;Comments&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;journal_ref&#39;</span><span class="p">,</span> <span class="s1">&#39;Journal reference&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;acm_class&#39;</span><span class="p">,</span> <span class="s1">&#39;ACM classification&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;msc_class&#39;</span><span class="p">,</span> <span class="s1">&#39;MSC classification&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;report_num&#39;</span><span class="p">,</span> <span class="s1">&#39;Report number&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;paper_id&#39;</span><span class="p">,</span> <span class="s1">&#39;arXiv identifier&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;cross_list_category&#39;</span><span class="p">,</span> <span class="s1">&#39;Cross-list category&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;doi&#39;</span><span class="p">,</span> <span class="s1">&#39;DOI&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;orcid&#39;</span><span class="p">,</span> <span class="s1">&#39;ORCID&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;author_id&#39;</span><span class="p">,</span> <span class="s1">&#39;arXiv author ID&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;All fields&#39;</span><span class="p">)</span>
+    <span class="p">]</span>
+
     <span class="n">date_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DateRange</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">primary_classification</span><span class="p">:</span> <span class="n">ClassificationList</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
+
+    <span class="n">classification</span><span class="p">:</span> <span class="n">ClassificationList</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="n">ClassificationList</span>
     <span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;Classification(s) by which to limit results.&quot;&quot;&quot;</span>
+
+    <span class="n">include_cross_list</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;If True, secondaries are considered when limiting by classification.&quot;&quot;&quot;</span>
+
     <span class="n">terms</span><span class="p">:</span> <span class="n">FieldedSearchList</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">FieldedSearchList</span><span class="p">)</span></div>
 </pre></div>
 
@@ -131,8 +153,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

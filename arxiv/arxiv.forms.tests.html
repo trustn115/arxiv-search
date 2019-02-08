@@ -1,0 +1,140 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.forms.tests module &#8212; arXiv base 0.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arxiv.identifier package" href="arxiv.identifier.html" />
+    <link rel="prev" title="arxiv.forms.csrf module" href="arxiv.forms.csrf.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-arxiv.forms.tests">
+<span id="arxiv-forms-tests-module"></span><h1>arxiv.forms.tests module<a class="headerlink" href="#module-arxiv.forms.tests" title="Permalink to this headline">¶</a></h1>
+<p>Tests for <a class="reference internal" href="arxiv.forms.html#module-arxiv.forms" title="arxiv.forms"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.forms</span></code></a>.</p>
+<dl class="class">
+<dt id="arxiv.forms.tests.TestCSRFForm">
+<em class="property">class </em><code class="descclassname">arxiv.forms.tests.</code><code class="descname">TestCSRFForm</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/forms/tests.html#TestCSRFForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.forms.tests.TestCSRFForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Tests for <a class="reference internal" href="arxiv.forms.csrf.html#arxiv.forms.csrf.CSRFForm" title="arxiv.forms.csrf.CSRFForm"><code class="xref py py-class docutils literal notranslate"><span class="pre">arxiv.forms.csrf.CSRFForm</span></code></a>.</p>
+<dl class="method">
+<dt id="arxiv.forms.tests.TestCSRFForm.test_expired_token">
+<code class="descname">test_expired_token</code><span class="sig-paren">(</span><em>mock_get_config</em>, <em>mock_request</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/forms/tests.html#TestCSRFForm.test_expired_token"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.forms.tests.TestCSRFForm.test_expired_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>A valid but expired CSRF token is passed in the form data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arxiv.forms.tests.TestCSRFForm.test_invalid_token">
+<code class="descname">test_invalid_token</code><span class="sig-paren">(</span><em>mock_get_config</em>, <em>mock_request</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/forms/tests.html#TestCSRFForm.test_invalid_token"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.forms.tests.TestCSRFForm.test_invalid_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>An invalid CSRF token is passed in the form data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arxiv.forms.tests.TestCSRFForm.test_valid_token">
+<code class="descname">test_valid_token</code><span class="sig-paren">(</span><em>mock_get_config</em>, <em>mock_request</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/forms/tests.html#TestCSRFForm.test_valid_token"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.forms.tests.TestCSRFForm.test_valid_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>A valid CSRF token is passed in the form data.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv base</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">arxiv</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.html">arxiv package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="metadocs.html">Meta-documentation: How to create documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">arxiv</a><ul>
+  <li><a href="arxiv.html">arxiv package</a><ul>
+  <li><a href="arxiv.forms.html">arxiv.forms package</a><ul>
+      <li>Previous: <a href="arxiv.forms.csrf.html" title="previous chapter">arxiv.forms.csrf module</a></li>
+      <li>Next: <a href="arxiv.identifier.html" title="next chapter">arxiv.identifier package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/arxiv/arxiv.forms.tests.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

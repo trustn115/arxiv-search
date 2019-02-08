@@ -1,0 +1,256 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.forms.csrf &#8212; arXiv base 0.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for arxiv.forms.csrf</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">CSRF protection for arXiv forms.</span>
+
+<span class="sd">To protect a form, inherit from :class:`CSRFForm`. When the form is handled,</span>
+<span class="sd">this class expects that:</span>
+
+<span class="sd">- There is an active :class:`flask.Request`.</span>
+<span class="sd">- The object ``flask.request.session`` exists, and has a ``str`` attribute</span>
+<span class="sd">  ``nonce``. See :class:`arxiv.users.domain.Session` and</span>
+<span class="sd">  :class:`arxiv.users.auth.Auth`.</span>
+<span class="sd">- A parameter called ``CSRF_SECRET`` is set in the application configuration.</span>
+
+<span class="sd">Here&#39;s an example:</span>
+
+<span class="sd">.. code-block:: python</span>
+
+
+<span class="sd">   from typing import Tuple</span>
+<span class="sd">   from werkzeug import MultiDict</span>
+<span class="sd">   from wtforms import StringField</span>
+<span class="sd">   from arxiv import status</span>
+<span class="sd">   from arxiv.forms import csrf</span>
+
+<span class="sd">   ResponseData = Tuple[dict, int, dict]</span>
+
+
+<span class="sd">   class ProtectedForm(csrf.CSRFForm):</span>
+<span class="sd">       &#39;&#39;&#39;A CSRF-protected form.&#39;&#39;&#39;</span>
+
+<span class="sd">       something_sensitive = StringField(&#39;Something sensitive&#39;)</span>
+
+
+<span class="sd">   def some_controller(method: str, form_data: MultiDict) -&gt; ResponseData:</span>
+<span class="sd">       &#39;&#39;&#39;Handle a form-based view.&#39;&#39;&#39;</span>
+<span class="sd">       headers = {}</span>
+<span class="sd">       if method == &#39;POST&#39;:</span>
+<span class="sd">           form = ProtectedForm(form_data)</span>
+<span class="sd">           data = {&#39;form&#39;: form}</span>
+<span class="sd">           if not form.validate():    # Checks the CSRF token, too!</span>
+<span class="sd">               return data, status.HTTP_400_BAD_REQUEST, headers</span>
+
+<span class="sd">           # do something sensitive</span>
+<span class="sd">           return data, status.HTTP_201_CREATED, headers</span>
+
+<span class="sd">       form = ProtectedForm()</span>
+<span class="sd">       return {&#39;form&#39;: form}, status.HTTP_200_OK, headers</span>
+
+
+<span class="sd">And in your template:</span>
+
+<span class="sd">.. code-block:: html</span>
+
+<span class="sd">   {% extends &quot;base/base.html&quot; %}</span>
+<span class="sd">   {% block content %}</span>
+<span class="sd">   &lt;form method=&quot;POST&quot; action=&quot;{{ url_for(&#39;ui.some_view&#39;) }}&quot;&gt;</span>
+<span class="sd">     {{ form.csrf_token }}</span>
+<span class="sd">     {{ form.something_sensitive }}</span>
+<span class="sd">     &lt;input type=&quot;submit&quot; class=&quot;button is-link is-small&quot;&gt;&lt;/input&gt;</span>
+<span class="sd">   &lt;/form&gt;</span>
+<span class="sd">   {% endblock content %}</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">hmac</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">import</span> <span class="nn">dateutil.parser</span>
+
+<span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">request</span>
+<span class="kn">from</span> <span class="nn">wtforms</span> <span class="k">import</span> <span class="n">Form</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">ValidationError</span>
+<span class="kn">from</span> <span class="nn">wtforms.csrf.core</span> <span class="k">import</span> <span class="n">CSRF</span>
+<span class="kn">from</span> <span class="nn">arxiv.base.globals</span> <span class="k">import</span> <span class="n">get_application_config</span>
+
+
+<div class="viewcode-block" id="SessionCSRF"><a class="viewcode-back" href="../../../arxiv/arxiv.forms.csrf.html#arxiv.forms.csrf.SessionCSRF">[docs]</a><span class="k">class</span> <span class="nc">SessionCSRF</span><span class="p">(</span><span class="n">CSRF</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Session-based CSRF protection.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SessionCSRF.setup_form"><a class="viewcode-back" href="../../../arxiv/arxiv.forms.csrf.html#arxiv.forms.csrf.SessionCSRF.setup_form">[docs]</a>    <span class="k">def</span> <span class="nf">setup_form</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">:</span> <span class="s1">&#39;CSRFForm&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Grab the CSRF context and secret from the form.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">csrf_context</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">csrf_context</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">csrf_secret</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">csrf_secret</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">SessionCSRF</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setup_form</span><span class="p">(</span><span class="n">form</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_hash</span><span class="p">(</span><span class="n">secret</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">nonce</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">expires</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{nonce}{ip_address}{expires}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="n">csrf_hmac</span> <span class="o">=</span> <span class="n">hmac</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">secret</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">),</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">digestmod</span><span class="o">=</span><span class="s1">&#39;sha256&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">csrf_hmac</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_new_expiry</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">300</span><span class="p">))</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_join</span><span class="p">(</span><span class="n">digest</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">expires</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{digest}</span><span class="s2">::</span><span class="si">{expires}</span><span class="s2">&quot;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_split</span><span class="p">(</span><span class="n">csrf_token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="n">digest</span><span class="p">,</span> <span class="n">expires</span> <span class="o">=</span> <span class="n">csrf_token</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;::&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">digest</span><span class="p">,</span> <span class="n">expires</span>
+
+<div class="viewcode-block" id="SessionCSRF.generate_csrf_token"><a class="viewcode-back" href="../../../arxiv/arxiv.forms.csrf.html#arxiv.forms.csrf.SessionCSRF.generate_csrf_token">[docs]</a>    <span class="k">def</span> <span class="nf">generate_csrf_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="s1">&#39;CSRFForm&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Generate a new CSRF token using the CSRF secret and context.&quot;&quot;&quot;</span>
+        <span class="n">expires</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_new_expiry</span><span class="p">()</span>
+        <span class="n">nonce</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">csrf_context</span><span class="p">[</span><span class="s1">&#39;nonce&#39;</span><span class="p">]</span>
+        <span class="n">ip_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">csrf_context</span><span class="p">[</span><span class="s1">&#39;ip_address&#39;</span><span class="p">]</span>
+        <span class="n">digest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">csrf_secret</span><span class="p">,</span> <span class="n">nonce</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span> <span class="n">expires</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join</span><span class="p">(</span><span class="n">digest</span><span class="p">,</span> <span class="n">expires</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SessionCSRF.validate_csrf_token"><a class="viewcode-back" href="../../../arxiv/arxiv.forms.csrf.html#arxiv.forms.csrf.SessionCSRF.validate_csrf_token">[docs]</a>    <span class="k">def</span> <span class="nf">validate_csrf_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">:</span> <span class="s1">&#39;CSRFForm&#39;</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="n">Field</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Validate the CSRF token passed with form data.&quot;&quot;&quot;</span>
+        <span class="n">digest</span><span class="p">,</span> <span class="n">expires</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">nonce</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">csrf_context</span><span class="p">[</span><span class="s1">&#39;nonce&#39;</span><span class="p">]</span>
+        <span class="n">ip_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">csrf_context</span><span class="p">[</span><span class="s1">&#39;ip_address&#39;</span><span class="p">]</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">csrf_secret</span><span class="p">,</span> <span class="n">nonce</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span> <span class="n">expires</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dateutil</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">expires</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;CSRF token has expired&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">hmac</span><span class="o">.</span><span class="n">compare_digest</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">digest</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;CSRF token is invalid&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="CSRFForm"><a class="viewcode-back" href="../../../arxiv/arxiv.forms.csrf.html#arxiv.forms.csrf.CSRFForm">[docs]</a><span class="k">class</span> <span class="nc">CSRFForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base form with support for CSRF protection.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CSRFForm.Meta"><a class="viewcode-back" href="../../../arxiv/arxiv.forms.csrf.html#arxiv.forms.csrf.CSRFForm.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Set CSRF configuration.&quot;&quot;&quot;</span>
+
+        <span class="n">csrf</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">csrf_field_name</span> <span class="o">=</span> <span class="s2">&quot;csrf_token&quot;</span>
+        <span class="n">csrf_class</span> <span class="o">=</span> <span class="n">SessionCSRF</span>    <span class="c1"># Set the CSRF implementation</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">csrf_secret</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="sd">&quot;&quot;&quot;The CSRF secret from the current application configuration.&quot;&quot;&quot;</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">get_application_config</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">secret</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;CSRF_SECRET&#39;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Parameter CSRF_SECRET must be set&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+            <span class="k">return</span> <span class="n">secret</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">csrf_context</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+            <span class="sd">&quot;&quot;&quot;Session information used to generate a CSRF token.&quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Missing active user session&#39;</span><span class="p">)</span>
+
+            <span class="c1"># Sessions provided by arxiv.auth should have a nonce that was</span>
+            <span class="c1"># generated when the session was created. Legacy sessions, however,</span>
+            <span class="c1"># do not support this. So we&#39;ll fall back to using the session ID</span>
+            <span class="c1"># instead.</span>
+            <span class="n">nonce</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="s1">&#39;nonce&#39;</span><span class="p">,</span>
+                            <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;ip_address&#39;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">remote_addr</span><span class="p">,</span>
+                <span class="s1">&#39;nonce&#39;</span><span class="p">:</span> <span class="n">nonce</span>
+            <span class="p">}</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">arXiv base</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../arxiv/modules.html">arxiv</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arxiv/metadocs.html">Meta-documentation: How to create documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

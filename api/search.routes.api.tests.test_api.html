@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="search.routes.api.tests.test_serialize module" href="search.routes.api.tests.test_serialize.html" />
@@ -45,7 +44,7 @@
 <p>Requests against the main search API.</p>
 <dl class="attribute">
 <dt id="search.routes.api.tests.test_api.TestAPISearchRequests.SCHEMA_PATH">
-<code class="descname">SCHEMA_PATH</code><em class="property"> = '/Users/brp53/projects/arxiv-search/docs/schema/resources/DocumentSet.json'</em><a class="headerlink" href="#search.routes.api.tests.test_api.TestAPISearchRequests.SCHEMA_PATH" title="Permalink to this definition">¶</a></dt>
+<code class="descname">SCHEMA_PATH</code><em class="property"> = '/home/jaimie/workspace/arxiv/arxiv-search/docs/source/schema/resources/DocumentSet.json'</em><a class="headerlink" href="#search.routes.api.tests.test_api.TestAPISearchRequests.SCHEMA_PATH" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -68,7 +67,13 @@
 
 <dl class="method">
 <dt id="search.routes.api.tests.test_api.TestAPISearchRequests.test_with_valid_token">
-<code class="descname">test_with_valid_token</code><span class="sig-paren">(</span><em>mock_api_controller</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/routes/api/tests/test_api.html#TestAPISearchRequests.test_with_valid_token"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.routes.api.tests.test_api.TestAPISearchRequests.test_with_valid_token" title="Permalink to this definition">¶</a></dt>
+<code class="descname">test_with_valid_token</code><span class="sig-paren">(</span><em>mock_controller</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/routes/api/tests/test_api.html#TestAPISearchRequests.test_with_valid_token"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.routes.api.tests.test_api.TestAPISearchRequests.test_with_valid_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>Client auth token has required public read scope.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="search.routes.api.tests.test_api.TestAPISearchRequests.test_with_valid_token_limit_fields">
+<code class="descname">test_with_valid_token_limit_fields</code><span class="sig-paren">(</span><em>mock_controller</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/routes/api/tests/test_api.html#TestAPISearchRequests.test_with_valid_token_limit_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.routes.api.tests.test_api.TestAPISearchRequests.test_with_valid_token_limit_fields" title="Permalink to this definition">¶</a></dt>
 <dd><p>Client auth token has required public read scope.</p>
 </dd></dl>
 
@@ -143,8 +148,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/api/search.routes.api.tests.test_api.rst.txt"

@@ -1,0 +1,417 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.base.urls.links &#8212; arXiv base 0.2 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for arxiv.base.urls.links</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Patterns and functions to detect arXiv ids and Urls in text.</span>
+
+<span class="sd">Functions to detech arXiv ids, URLs and DOI in text.</span>
+<span class="sd">Functions to transform them to &lt;a&gt; tags.</span>
+
+<span class="sd">These were originally jinja filters but became a little too big</span>
+<span class="sd">for that so they were split out and made more general so they didn&#39;t</span>
+<span class="sd">rely on the Flask context.</span>
+
+<span class="sd">These all use expect input of Markup or non-markup text and return</span>
+<span class="sd">Markup objects. This is because the &lt;a&gt; that get added need to avoid</span>
+<span class="sd">double escaping.</span>
+
+<span class="sd">There are several classes of patterns we want to match but there is</span>
+<span class="sd">some overlap in these patterns. To avoid looking for and parsing HTML in each</span>
+<span class="sd">jinja filter, detecting these patterns is combined.</span>
+
+<span class="sd">So far we are looking for:</span>
+<span class="sd">DOIs            DOI: 10.1145/0001234.1234567</span>
+<span class="sd">arXiv IDS:      1234.12345 1234.12345v1 hep-ph1307.1843</span>
+<span class="sd">HTTP URLs:      http://something.org/myPaper/1234.12345</span>
+<span class="sd">FTP URLs:       ftp://example.com/files/1234.12345</span>
+
+<span class="sd">Just matching for arXiv ids with \d{4}\.\d{4,5} will match several of</span>
+<span class="sd">these. To deal with this we are priortizing the matches and</span>
+<span class="sd">interupting once one is found.</span>
+
+<span class="sd">We should probably match DOIs first because they are the source of a</span>
+<span class="sd">lot of false positives for arxiv matches.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Pattern</span><span class="p">,</span> <span class="n">Match</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> \
+    <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="k">import</span> <span class="n">quote</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">url_for</span>
+<span class="kn">from</span> <span class="nn">jinja2</span> <span class="k">import</span> <span class="n">Markup</span><span class="p">,</span> <span class="n">escape</span>
+
+<span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">identifier</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">clickthrough</span>
+
+
+<div class="viewcode-block" id="Matchable"><a class="viewcode-back" href="../../../../arxiv/arxiv.base.urls.links.html#arxiv.base.urls.links.Matchable">[docs]</a><span class="k">class</span> <span class="nc">Matchable</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class for paterns.&quot;&quot;&quot;</span>
+
+    <span class="n">examples</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">pattern</span><span class="p">:</span> <span class="n">Pattern</span></div>
+
+
+<span class="n">Izer</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span>
+<span class="n">Substituter</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Match</span><span class="p">,</span> <span class="n">Izer</span><span class="p">],</span>
+                       <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Markup</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="n">Markup</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]</span>
+<span class="n">URLType</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Matchable</span><span class="p">],</span> <span class="n">Substituter</span><span class="p">,</span> <span class="n">Izer</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_identity</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Identity funciton for default in some places.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">x</span>
+
+
+<span class="n">doi_patterns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Matchable</span><span class="p">([</span><span class="s1">&#39;10.1145/0001234.1234567&#39;</span><span class="p">],</span>
+              <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;doi&gt;10.\d{4,9}/[-._;()/:A-Z0-9]+)&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">))</span>
+<span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">List of Matchable for DOIs in text.</span>
+
+<span class="sd">We should probably match DOIs first because they are the source of a</span>
+<span class="sd">lot of false positives for arxiv matches.</span>
+
+<span class="sd">Only using the most general express from</span>
+<span class="sd">https://www.crossref.org/blog/dois-and-matching-regular-expressions/</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">basic_arxiv_id_patterns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Matchable</span><span class="p">([</span><span class="s1">&#39;math/0501233&#39;</span><span class="p">,</span> <span class="s1">&#39;hep-ph/0611734&#39;</span><span class="p">,</span> <span class="s1">&#39;gr-qc/0112123&#39;</span><span class="p">],</span>
+              <span class="n">identifier</span><span class="o">.</span><span class="n">OLD_STYLE_WITH_ARCHIVE</span><span class="p">),</span>
+    <span class="n">Matchable</span><span class="p">([</span><span class="s1">&#39;math.GR/0601136v3&#39;</span><span class="p">,</span> <span class="s1">&#39;math.GR/0601136&#39;</span><span class="p">],</span>
+              <span class="n">identifier</span><span class="o">.</span><span class="n">OLD_STYLE_WITH_CATEGORY</span><span class="p">),</span>
+    <span class="n">Matchable</span><span class="p">([</span><span class="s1">&#39;1609.05068&#39;</span><span class="p">,</span> <span class="s1">&#39;1207.1234v1&#39;</span><span class="p">,</span> <span class="s1">&#39;1207.1234&#39;</span><span class="p">,</span> <span class="s1">&#39;1807.12345&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;1807.12345v1&#39;</span><span class="p">,</span> <span class="s1">&#39;1807.12345v12&#39;</span><span class="p">],</span>
+              <span class="n">identifier</span><span class="o">.</span><span class="n">STANDARD</span><span class="p">)</span>
+<span class="p">]</span>
+
+<span class="n">OKCHARS</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;([a-z0-9,_.\-+~:]|%[a-f0-9]*)&#39;</span>
+<span class="sd">&quot;&quot;&quot;Chacters that are acceptable during PATH, QUERY and ANCHOR parts&quot;&quot;&quot;</span>
+
+<span class="n">HOST_NAME</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;(?:[a-z0-9][a-z0-9\-.:]+[a-z0-9])&#39;</span>
+<span class="sd">&quot;&quot;&quot;Regex used to match host names in arXiv urlize.</span>
+
+<span class="sd">This is not a perfect regex for a host name, It accepts only a sub-set</span>
+<span class="sd">of hostnames to meet the needs of arxiv.</span>
+
+<span class="sd">HOST_NAME must end with a simplified character to avoid capturing a</span>
+<span class="sd">period.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">PATH</span> <span class="o">=</span> <span class="n">rf</span><span class="s1">&#39;(?P&lt;PATH&gt;(/</span><span class="si">{OKCHARS}</span><span class="s1">*)+)?&#39;</span>
+<span class="sd">&quot;&quot;&quot;Regex for path part of URLs for use in urlize&quot;&quot;&quot;</span>
+
+<span class="n">QUERY</span> <span class="o">=</span> <span class="n">rf</span><span class="s1">&#39;(?P&lt;QUERY&gt;\?(&amp;?(</span><span class="si">{OKCHARS}</span><span class="s1">*(=</span><span class="si">{OKCHARS}</span><span class="s1">*)?))*)?&#39;</span>
+<span class="sd">&quot;&quot;&quot;Regex for query part of URLs for use in urlize&quot;&quot;&quot;</span>
+
+<span class="n">ANCHOR</span> <span class="o">=</span> <span class="n">rf</span><span class="s1">&#39;(?P&lt;ANCHOR&gt;#(</span><span class="si">{OKCHARS}</span><span class="s1">|/)*)?&#39;</span>
+<span class="sd">&quot;&quot;&quot;Regex for anchor part of URLs for use in urlize&quot;&quot;&quot;</span>
+
+<span class="n">URLINTEXT_PAT</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;url&gt;(?:https?://)&#39;</span>
+                           <span class="n">f</span><span class="s1">&#39;</span><span class="si">{HOST_NAME}{PATH}{QUERY}{ANCHOR}</span><span class="s1">)&#39;</span><span class="p">,</span>
+                           <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;Regex to match URLs in text.&quot;&quot;&quot;</span>
+
+<span class="n">FTP_PAT</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">rf</span><span class="s1">&#39;(?P&lt;url&gt;(?:ftp://)(</span><span class="si">{OKCHARS}</span><span class="s1">|(@))*</span><span class="si">{PATH}</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;Regex to match FTP URLs in text.&quot;&quot;&quot;</span>
+
+<span class="n">basic_url_patterns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Matchable</span><span class="p">([</span><span class="s1">&#39;http://something.com/bla&#39;</span><span class="p">],</span> <span class="n">URLINTEXT_PAT</span><span class="p">),</span>
+    <span class="n">Matchable</span><span class="p">([</span><span class="s1">&#39;ftp://something.com/bla&#39;</span><span class="p">],</span> <span class="n">FTP_PAT</span><span class="p">)</span>
+<span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;List of Matchable to use when finding URLs in text&quot;&quot;&quot;</span>
+
+<span class="n">bad_arxiv_id_patterns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;vixra&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">),</span>  <span class="c1"># don&#39;t need to link to vixra</span>
+<span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;List of Regex patterns that will cause matching to be skipped for</span>
+<span class="sd">the token.&quot;&quot;&quot;</span>
+
+<span class="n">dois_ids_and_urls</span> <span class="o">=</span> <span class="n">basic_url_patterns</span> <span class="o">+</span> <span class="n">doi_patterns</span> <span class="o">+</span> <span class="n">basic_arxiv_id_patterns</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">List of Matchable to use when finding DOIs, arXiv IDs, and URLs.</span>
+
+<span class="sd">URLs are first because some URLs contain DOIs or arXiv IDS.</span>
+
+<span class="sd">DOI are before arXiv ids because many DOIs are falsely matched by the</span>
+<span class="sd">arxiv_id patterns.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="n">_bad_endings</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="s1">&#39;;&#39;</span><span class="p">,</span> <span class="s1">&#39;&amp;&#39;</span><span class="p">,</span> <span class="s1">&#39;(&#39;</span><span class="p">,</span> <span class="s1">&#39;[&#39;</span><span class="p">,</span> <span class="s1">&#39;{&#39;</span><span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;These should not appear at the end of URLs because they are likely</span>
+<span class="sd">part of the surrounding text&quot;&quot;&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">_find_match</span><span class="p">(</span><span class="n">patterns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Matchable</span><span class="p">],</span> <span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Match</span><span class="p">,</span> <span class="n">Matchable</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;Find first in patterns that is found in txt.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">chgMtch</span> <span class="ow">in</span> <span class="n">patterns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">chgMtch</span><span class="o">.</span><span class="n">pattern</span><span class="o">.</span><span class="n">flags</span><span class="p">:</span>
+            <span class="n">fnd</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">chgMtch</span><span class="o">.</span><span class="n">pattern</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fnd</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">chgMtch</span><span class="o">.</span><span class="n">pattern</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fnd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">fnd</span><span class="p">,</span> <span class="n">chgMtch</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span> <span class="nf">_transform_token</span><span class="p">(</span><span class="n">targets</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Substituter</span><span class="p">,</span> <span class="n">Izer</span><span class="p">],</span>
+                     <span class="n">bad_patterns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Pattern</span><span class="p">],</span> <span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transform a token from text to one of the Matchables.</span>
+
+<span class="sd">    This only transforms against the first of Matchable matched.</span>
+<span class="sd">    Matching on this token will be skipped if any of the bad_patterns</span>
+<span class="sd">    match the token (that is re.search).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">bad_patterns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">token</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">token</span>
+
+    <span class="n">patterns</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ptns</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">targets</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ptns</span><span class="p">]</span>    <span class="c1"># type: ignore</span>
+    <span class="n">mtch</span> <span class="o">=</span> <span class="n">_find_match</span><span class="p">(</span><span class="n">patterns</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mtch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">token</span>
+
+    <span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="n">mtch</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="n">target_match</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">target_type</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">substituter</span><span class="p">,</span> <span class="n">izer</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">:</span>   <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="n">target_type</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">front</span><span class="p">,</span> <span class="n">back</span><span class="p">)</span> <span class="o">=</span> <span class="n">substituter</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="n">izer</span><span class="p">)</span>
+            <span class="n">target_match</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">break</span>
+    <span class="c1"># If no substituters apply, there is nothing more to do.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">target_match</span><span class="p">:</span>    <span class="c1"># But this would be an odd case...</span>
+        <span class="k">return</span> <span class="n">token</span>
+
+    <span class="k">if</span> <span class="n">back</span><span class="p">:</span>
+        <span class="n">t_back</span> <span class="o">=</span> <span class="n">_transform_token</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">bad_patterns</span><span class="p">,</span> <span class="n">back</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">front</span> <span class="o">+</span> <span class="n">Markup</span><span class="p">(</span><span class="n">t_back</span><span class="p">)</span>   <span class="c1"># type: ignore</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">front</span>       <span class="c1"># type: ignore</span>
+
+
+<div class="viewcode-block" id="id_substituter"><a class="viewcode-back" href="../../../../arxiv/arxiv.base.urls.links.html#arxiv.base.urls.links.id_substituter">[docs]</a><span class="k">def</span> <span class="nf">id_substituter</span><span class="p">(</span><span class="n">match</span><span class="p">:</span> <span class="n">Match</span><span class="p">,</span> <span class="n">id_to_url</span><span class="p">:</span> <span class="n">Izer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Markup</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Return match.string transformed for a arxiv id match.&quot;&quot;&quot;</span>
+    <span class="n">aid</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;arxiv_id&#39;</span><span class="p">)</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;arXiv:&#39;</span> <span class="k">if</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;arxiv_prefix&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="n">aid</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">_bad_endings</span><span class="p">:</span>
+        <span class="n">arxiv_url</span> <span class="o">=</span> <span class="n">id_to_url</span><span class="p">(</span><span class="n">aid</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">anchor</span> <span class="o">=</span> <span class="n">aid</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">back</span> <span class="o">=</span> <span class="n">aid</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">match</span><span class="o">.</span><span class="n">string</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">():]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">arxiv_url</span> <span class="o">=</span> <span class="n">id_to_url</span><span class="p">(</span><span class="n">aid</span><span class="p">)</span>
+        <span class="n">anchor</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">aid</span>
+        <span class="n">back</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">string</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">():]</span>
+
+    <span class="n">front</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">string</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">()]</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">Markup</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{front}</span><span class="s1">&lt;a href=&quot;</span><span class="si">{arxiv_url}</span><span class="s1">&quot;&gt;</span><span class="si">{anchor}</span><span class="s1">&lt;/a&gt;&#39;</span><span class="p">),</span> <span class="n">back</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="doi_substituter"><a class="viewcode-back" href="../../../../arxiv/arxiv.base.urls.links.html#arxiv.base.urls.links.doi_substituter">[docs]</a><span class="k">def</span> <span class="nf">doi_substituter</span><span class="p">(</span><span class="n">match</span><span class="p">:</span> <span class="n">Match</span><span class="p">,</span> <span class="n">url_for_doi</span><span class="p">:</span> <span class="n">Izer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Markup</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Return match.string transformed for a DOI match.&quot;&quot;&quot;</span>
+    <span class="n">doi</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;doi&#39;</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">doi</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">_bad_endings</span><span class="p">):</span>
+        <span class="n">back</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">string</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">():]</span> <span class="o">+</span> <span class="n">doi</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">doi</span> <span class="o">=</span> <span class="n">doi</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">back</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">string</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">():]</span>
+
+    <span class="n">doi_url</span> <span class="o">=</span> <span class="n">url_for_doi</span><span class="p">(</span><span class="n">doi</span><span class="p">)</span>
+
+    <span class="n">anchor</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">doi</span><span class="p">)</span>
+    <span class="n">front</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">string</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">()]</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">Markup</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{front}</span><span class="s1">&lt;a href=&quot;</span><span class="si">{doi_url}</span><span class="s1">&quot;&gt;</span><span class="si">{anchor}</span><span class="s1">&lt;/a&gt;&#39;</span><span class="p">),</span> <span class="n">back</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="url_substituter"><a class="viewcode-back" href="../../../../arxiv/arxiv.base.urls.links.html#arxiv.base.urls.links.url_substituter">[docs]</a><span class="k">def</span> <span class="nf">url_substituter</span><span class="p">(</span><span class="n">match</span><span class="p">:</span> <span class="n">Match</span><span class="p">,</span> <span class="n">url_to_url</span><span class="p">:</span> <span class="n">Izer</span><span class="p">)</span> <span class="o">-&gt;</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Markup</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Return match.string transformed for a URL match.&quot;&quot;&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;url&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;https&#39;</span><span class="p">):</span>
+        <span class="n">anchor</span> <span class="o">=</span> <span class="s1">&#39;this https URL&#39;</span>
+    <span class="k">elif</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;http&#39;</span><span class="p">):</span>
+        <span class="n">anchor</span> <span class="o">=</span> <span class="s1">&#39;this http URL&#39;</span>
+    <span class="k">elif</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;ftp&#39;</span><span class="p">):</span>
+        <span class="n">anchor</span> <span class="o">=</span> <span class="s1">&#39;this ftp URL&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">anchor</span> <span class="o">=</span> <span class="s1">&#39;this URL&#39;</span>
+
+    <span class="n">front</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">string</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">()]</span>
+    <span class="k">if</span> <span class="n">url</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">_bad_endings</span><span class="p">:</span>
+        <span class="n">back</span> <span class="o">=</span> <span class="n">url</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">match</span><span class="o">.</span><span class="n">string</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">():]</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">url</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">back</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">string</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">():]</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="n">url_to_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">Markup</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{front}</span><span class="s1">&lt;a href=&quot;</span><span class="si">{url}</span><span class="s1">&quot;&gt;</span><span class="si">{anchor}</span><span class="s1">&lt;/a&gt;&#39;</span><span class="p">),</span> <span class="n">back</span><span class="p">)</span></div>
+
+
+<span class="n">_word_split_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(\s+)&#39;</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;Regex to split to tokens during _to_tags.</span>
+
+<span class="sd">Capturing group causes the splitting spaces to be included</span>
+<span class="sd">in the returned list.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">_to_tags</span><span class="p">(</span><span class="n">targets</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Substituter</span><span class="p">,</span> <span class="n">Izer</span><span class="p">],</span>
+             <span class="n">bad_patterns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Pattern</span><span class="p">],</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span><span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Split text to tokens, do _transform_token for each, return results.&quot;&quot;&quot;</span>
+    <span class="n">transform_token</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_transform_token</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">bad_patterns</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s1">&#39;__html__&#39;</span><span class="p">):</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">Markup</span><span class="p">(</span><span class="n">escape</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
+
+    <span class="n">words</span> <span class="o">=</span> <span class="n">_word_split_re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">token</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">words</span><span class="p">):</span>
+        <span class="n">token_2</span> <span class="o">=</span> <span class="n">transform_token</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">token_2</span> <span class="o">!=</span> <span class="n">token</span><span class="p">:</span>
+            <span class="n">words</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">token_2</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Markup</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="arxiv_id_to_url"><a class="viewcode-back" href="../../../../arxiv/arxiv.base.urls.links.html#arxiv.base.urls.links.arxiv_id_to_url">[docs]</a><span class="k">def</span> <span class="nf">arxiv_id_to_url</span><span class="p">(</span><span class="n">arxiv_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Generate an URL for an arXiv ID.&quot;&quot;&quot;</span>
+    <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;abs_by_id&#39;</span><span class="p">,</span> <span class="n">paper_id</span><span class="o">=</span><span class="n">arxiv_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">url</span></div>
+
+
+<div class="viewcode-block" id="url_for_doi"><a class="viewcode-back" href="../../../../arxiv/arxiv.base.urls.links.html#arxiv.base.urls.links.url_for_doi">[docs]</a><span class="k">def</span> <span class="nf">url_for_doi</span><span class="p">(</span><span class="n">doi</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Generate an URL for a DOI.&quot;&quot;&quot;</span>
+    <span class="n">quoted_doi</span> <span class="o">=</span> <span class="n">quote</span><span class="p">(</span><span class="n">doi</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">f</span><span class="s1">&#39;https://dx.doi.org/</span><span class="si">{quoted_doi}</span><span class="s1">&#39;</span></div>
+
+
+<div class="viewcode-block" id="clickthrough_url_for_doi"><a class="viewcode-back" href="../../../../arxiv/arxiv.base.urls.links.html#arxiv.base.urls.links.clickthrough_url_for_doi">[docs]</a><span class="k">def</span> <span class="nf">clickthrough_url_for_doi</span><span class="p">(</span><span class="n">doi</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Generate a clickthrough URL for a DOI.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">clickthrough</span><span class="o">.</span><span class="n">clickthrough_url</span><span class="p">(</span><span class="n">url_for_doi</span><span class="p">(</span><span class="n">doi</span><span class="p">))</span></div>
+
+
+<span class="n">URL_TYPES</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">URLType</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">basic_url_patterns</span><span class="p">,</span> <span class="n">url_substituter</span><span class="p">,</span> <span class="n">_identity</span><span class="p">),</span>
+    <span class="s1">&#39;arxiv_id&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">basic_arxiv_id_patterns</span><span class="p">,</span> <span class="n">id_substituter</span><span class="p">,</span> <span class="n">arxiv_id_to_url</span><span class="p">),</span>
+    <span class="s1">&#39;doi&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">doi_patterns</span><span class="p">,</span> <span class="n">doi_substituter</span><span class="p">,</span> <span class="n">clickthrough_url_for_doi</span><span class="p">),</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="urlizer"><a class="viewcode-back" href="../../../../arxiv/arxiv.base.urls.links.html#arxiv.base.urls.links.urlizer">[docs]</a><span class="k">def</span> <span class="nf">urlizer</span><span class="p">(</span><span class="n">kinds</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">URL_TYPES</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+            <span class="n">extra_types</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">URLType</span><span class="p">]</span> <span class="o">=</span> <span class="p">{})</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Generate a new urlize function for a specific set of tokens.&quot;&quot;&quot;</span>
+    <span class="n">types</span> <span class="o">=</span> <span class="n">URL_TYPES</span>
+    <span class="k">if</span> <span class="n">extra_types</span><span class="p">:</span>
+        <span class="n">types</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">extra_types</span><span class="p">)</span>
+    <span class="n">target_types</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">kind</span><span class="p">,</span> <span class="o">*</span><span class="n">target</span><span class="p">)</span> <span class="k">for</span> <span class="n">kind</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">types</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">kind</span> <span class="ow">in</span> <span class="n">kinds</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">_to_tags</span><span class="p">,</span> <span class="n">target_types</span><span class="p">,</span> <span class="n">bad_arxiv_id_patterns</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="urlize"><a class="viewcode-back" href="../../../../arxiv/arxiv.base.urls.links.html#arxiv.base.urls.links.urlize">[docs]</a><span class="k">def</span> <span class="nf">urlize</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">kinds</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">URL_TYPES</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Convert URLs and certain identifiers to links.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">urlizer</span><span class="p">(</span><span class="n">kinds</span><span class="o">=</span><span class="n">kinds</span><span class="p">)(</span><span class="n">text</span><span class="p">))</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">arXiv base</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../arxiv/modules.html">arxiv</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../arxiv/metadocs.html">Meta-documentation: How to create documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  <li><a href="../../base.html">arxiv.base</a><ul>
+  <li><a href="../urls.html">arxiv.base.urls</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

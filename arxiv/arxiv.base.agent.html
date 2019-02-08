@@ -1,0 +1,337 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.base.agent package &#8212; arXiv base 0.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arxiv.base.agent.exceptions module" href="arxiv.base.agent.exceptions.html" />
+    <link rel="prev" title="arxiv.base package" href="arxiv.base.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-arxiv.base.agent">
+<span id="arxiv-base-agent-package"></span><h1>arxiv.base.agent package<a class="headerlink" href="#module-arxiv.base.agent" title="Permalink to this headline">¶</a></h1>
+<p>Provides base classes and tools for building agents (Kinesis consumers).</p>
+<p>We use Kinesis streams to broker notifications that concern multiple services
+in the arXiv system. For example, at publication time, the publication process
+generates notifications about new arXiv papers so that services like search
+can update themselves.</p>
+<p>This module provides a base class for building agents with Kinesis streams,
+<a class="reference internal" href="#arxiv.base.agent.BaseConsumer" title="arxiv.base.agent.BaseConsumer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseConsumer</span></code></a>. The objective is to provide all of the
+stream-management (e.g. checkpointing) and error-handling boilerplate needed
+for any Kinesis consumer, so that we can focus on building the idiosyncratic
+functional bits in arXiv services.</p>
+<div class="section" id="using-baseconsumer">
+<h2>Using <a class="reference internal" href="#arxiv.base.agent.BaseConsumer" title="arxiv.base.agent.BaseConsumer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseConsumer</span></code></a><a class="headerlink" href="#using-baseconsumer" title="Permalink to this headline">¶</a></h2>
+<p>You (the developer) should be able to create a minimal agent by:</p>
+<ol class="arabic simple">
+<li>Defining a class that inherits from <a class="reference internal" href="#arxiv.base.agent.BaseConsumer" title="arxiv.base.agent.BaseConsumer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseConsumer</span></code></a></li>
+<li>Defining an instace method on that class with the signature:
+<code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">process_record(self,</span> <span class="pre">record:</span> <span class="pre">dict)</span> <span class="pre">-&gt;</span> <span class="pre">None:</span></code> that implements
+application-specific processing for each notification.</li>
+<li>Calling <a class="reference internal" href="#arxiv.base.agent.process_stream" title="arxiv.base.agent.process_stream"><code class="xref py py-func docutils literal notranslate"><span class="pre">process_stream()</span></code></a> with your consumer class and an application
+config (e.g. from Flask).</li>
+</ol>
+<p>Your config should include the following:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">KINESIS_STREAM</span></code> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Name of the stream to consume.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">KINESIS_SHARD_ID</span></code> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>E.g. <code class="docutils literal notranslate"><span class="pre">&quot;shardId-000000000000&quot;</span></code>.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Access key ID with read access to Kinesis streams.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Secret access key with read access to Kinesis streams.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">AWS_REGION</span></code> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>E.g. <code class="docutils literal notranslate"><span class="pre">us-east-1</span></code>.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">KINESIS_ENDPOINT</span></code> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>This should be <code class="docutils literal notranslate"><span class="pre">None</span></code> in production, but can be set to something else
+for integration testing (e.g. with localstack).</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">KINESIS_VERIFY</span></code> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>This should be <code class="docutils literal notranslate"><span class="pre">&quot;true&quot;</span></code> in production, but can be disabled when doing
+integration testing (since localstack certs won’t verify).</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">KINESIS_START_TYPE</span></code>: str</dt>
+<dd>How to get the first shard iterator (if a starting position is not
+available via the checkpointer). Currently supports <code class="docutils literal notranslate"><span class="pre">TRIM_HORIZON</span></code>
+and <code class="docutils literal notranslate"><span class="pre">AT_TIMESTAMP</span></code>.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">KINESIS_START_AT</span></code> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>If using <code class="docutils literal notranslate"><span class="pre">AT_TIMESTAMP</span></code>, the point of time from which to start in the
+stream. Should have the format <code class="docutils literal notranslate"><span class="pre">'%Y-%m-%dT%H:%M:%S'</span></code>.</dd>
+</dl>
+<p>If you’re using the provided <a class="reference internal" href="#arxiv.base.agent.DiskCheckpointManager" title="arxiv.base.agent.DiskCheckpointManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskCheckpointManager</span></code></a> provided here
+(used by default in <a class="reference internal" href="#arxiv.base.agent.process_stream" title="arxiv.base.agent.process_stream"><code class="xref py py-func docutils literal notranslate"><span class="pre">process_stream()</span></code></a>), you should also set:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">KINESIS_CHECKPOINT_VOLUME</span></code> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Full path to a directory where the consumer should store its position.
+Must be readable/writeable.</dd>
+</dl>
+</div>
+<div class="section" id="testing-and-development">
+<h2>Testing and development<a class="headerlink" href="#testing-and-development" title="Permalink to this headline">¶</a></h2>
+<p>The easiest way to write tests for Kinesis consumers is to mock the
+[<code class="docutils literal notranslate"><span class="pre">boto3.client</span></code> factory](<a class="reference external" href="http://boto3.readthedocs.io/en/latest/reference/services/kinesis.html">http://boto3.readthedocs.io/en/latest/reference/services/kinesis.html</a>).
+Unit tests for this module can be found in <a class="reference internal" href="arxiv.base.agent.tests.html#module-arxiv.base.agent.tests" title="arxiv.base.agent.tests"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.base.agent.tests</span></code></a>,
+most of which mock boto3 in this way.</p>
+<p>For integration tests, or developing against a “live” Kinesis stream,
+[Localstack](<a class="reference external" href="https://github.com/localstack/localstack">https://github.com/localstack/localstack</a>) provides a Kinesis
+for testing/development purposes (port 4568). You can use the config
+parameters above to point to a local instance of localstack (e.g. run with
+Docker).</p>
+<dl class="class">
+<dt id="arxiv.base.agent.BaseConsumer">
+<em class="property">class </em><code class="descclassname">arxiv.base.agent.</code><code class="descname">BaseConsumer</code><span class="sig-paren">(</span><em>stream_name=''</em>, <em>shard_id=''</em>, <em>access_key=None</em>, <em>secret_key=None</em>, <em>region=''</em>, <em>checkpointer=None</em>, <em>back_off=5</em>, <em>batch_size=50</em>, <em>endpoint=None</em>, <em>verify=True</em>, <em>duration=None</em>, <em>start_type='AT_TIMESTAMP'</em>, <em>start_at='2019-02-08T12:03:01'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/agent.html#BaseConsumer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.agent.BaseConsumer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Kinesis stream consumer.</p>
+<p>Consumes a single shard from a single stream, and checkpoints on disk
+(to reduce external dependencies).</p>
+<dl class="method">
+<dt id="arxiv.base.agent.BaseConsumer.go">
+<code class="descname">go</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/agent.html#BaseConsumer.go"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.agent.BaseConsumer.go" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main processing routine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="arxiv.base.agent.BaseConsumer.process_record">
+<code class="descname">process_record</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/agent.html#BaseConsumer.process_record"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.agent.BaseConsumer.process_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a single record from the stream.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>record</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="arxiv.base.agent.BaseConsumer.process_records">
+<code class="descname">process_records</code><span class="sig-paren">(</span><em>start</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/agent.html#BaseConsumer.process_records"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.agent.BaseConsumer.process_records" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve and process records starting at <code class="docutils literal notranslate"><span class="pre">start</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="arxiv.base.agent.BaseConsumer.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><em>signal</em>, <em>frame</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/agent.html#BaseConsumer.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.agent.BaseConsumer.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set exit flag for a graceful stop.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.base.agent.DiskCheckpointManager">
+<em class="property">class </em><code class="descclassname">arxiv.base.agent.</code><code class="descname">DiskCheckpointManager</code><span class="sig-paren">(</span><em>base_path</em>, <em>stream_name</em>, <em>shard_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/agent.html#DiskCheckpointManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.agent.DiskCheckpointManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Provides on-disk loading and updating of consumer checkpoints.</p>
+<p>You can substitute any other mechanism that you prefer for checkpointing
+when you instantiate your consumer, so long as the passed object:</p>
+<ol class="arabic simple">
+<li>Has an instance method <code class="docutils literal notranslate"><span class="pre">checkpoint(self,</span> <span class="pre">position:</span> <span class="pre">str)</span> <span class="pre">-&gt;</span> <span class="pre">None:</span></code> that
+stores <code class="docutils literal notranslate"><span class="pre">position</span></code>, and</li>
+<li>Exposes a property <code class="docutils literal notranslate"><span class="pre">.position</span></code> that is the last value passed to
+<code class="docutils literal notranslate"><span class="pre">checkpoint</span></code>.</li>
+</ol>
+<dl class="method">
+<dt id="arxiv.base.agent.DiskCheckpointManager.checkpoint">
+<code class="descname">checkpoint</code><span class="sig-paren">(</span><em>position</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/agent.html#DiskCheckpointManager.checkpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.agent.DiskCheckpointManager.checkpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checkpoint at <code class="docutils literal notranslate"><span class="pre">position</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.agent.process_stream">
+<code class="descclassname">arxiv.base.agent.</code><code class="descname">process_stream</code><span class="sig-paren">(</span><em>Consumer</em>, <em>config</em>, <em>checkpointmanager=None</em>, <em>duration=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/agent.html#process_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.agent.process_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure and run an agent (Kinesis consumer).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>Consumer</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#type" title="(in Python v3.6)"><em>type</em></a>) – A class that inherits from <a class="reference internal" href="#arxiv.base.agent.BaseConsumer" title="arxiv.base.agent.BaseConsumer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseConsumer</span></code></a>.</li>
+<li><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – An application config (e.g. a Flask config).</li>
+<li><strong>duration</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Time (in seconds) to consume records. If None (default), will
+run “forever”.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.agent.retry">
+<code class="descclassname">arxiv.base.agent.</code><code class="descname">retry</code><span class="sig-paren">(</span><em>retries=5</em>, <em>wait=5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/agent.html#retry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.agent.retry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator factory for retrying Kinesis calls.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>retries</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Number of times to retry before failing.</li>
+<li><strong>wait</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Number of seconds to wait between retries.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A decorator that retries the decorated func <code class="docutils literal notranslate"><span class="pre">retries</span></code> times before
+raising <a class="reference internal" href="arxiv.base.agent.exceptions.html#arxiv.base.agent.exceptions.KinesisRequestFailed" title="arxiv.base.agent.exceptions.KinesisRequestFailed"><code class="xref py py-class docutils literal notranslate"><span class="pre">KinesisRequestFailed</span></code></a>.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">function</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.Callable" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="arxiv.base.agent.exceptions.html">arxiv.base.agent.exceptions module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="arxiv.base.agent.tests.html">arxiv.base.agent.tests module</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv base</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">arxiv</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.html">arxiv package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="metadocs.html">Meta-documentation: How to create documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">arxiv</a><ul>
+  <li><a href="arxiv.html">arxiv package</a><ul>
+  <li><a href="arxiv.base.html">arxiv.base package</a><ul>
+      <li>Previous: <a href="arxiv.base.html" title="previous chapter">arxiv.base package</a></li>
+      <li>Next: <a href="arxiv.base.agent.exceptions.html" title="next chapter">arxiv.base.agent.exceptions module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/arxiv/arxiv.base.agent.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

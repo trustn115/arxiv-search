@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="search.domain.base module" href="search.domain.base.html" />
@@ -40,7 +39,7 @@
 <p>API-specific domain classes.</p>
 <dl class="class">
 <dt id="search.domain.api.APIQuery">
-<em class="property">class </em><code class="descclassname">search.domain.api.</code><code class="descname">APIQuery</code><span class="sig-paren">(</span><em>order=None</em>, <em>size=50</em>, <em>page_start=0</em>, <em>include_older_versions=False</em>, <em>hide_abstracts=False</em>, <em>date_range=None</em>, <em>primary_classification=&lt;factory&gt;</em>, <em>terms=&lt;factory&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/api.html#APIQuery"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.api.APIQuery" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">search.domain.api.</code><code class="descname">APIQuery</code><span class="sig-paren">(</span><em>order=None</em>, <em>size=50</em>, <em>page_start=0</em>, <em>include_older_versions=False</em>, <em>hide_abstracts=False</em>, <em>date_range=None</em>, <em>primary_classification=&lt;factory&gt;</em>, <em>secondary_classification=&lt;factory&gt;</em>, <em>terms=&lt;factory&gt;</em>, <em>include_fields=&lt;factory&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/api.html#APIQuery"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.api.APIQuery" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="search.domain.base.html#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.base.Query</span></code></a></p>
 <p>Represents an API query.</p>
 <p>Similar to an advanced query.</p>
@@ -49,6 +48,46 @@
 <code class="descname">date_range</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.api.APIQuery.date_range" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="attribute">
+<dt id="search.domain.api.APIQuery.primary_classification">
+<code class="descname">primary_classification</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.api.APIQuery.primary_classification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Limit results to a specific primary classification.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.api.APIQuery.secondary_classification">
+<code class="descname">secondary_classification</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.api.APIQuery.secondary_classification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Limit results by cross-list classification.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="search.domain.api.get_default_extra_fields">
+<code class="descclassname">search.domain.api.</code><code class="descname">get_default_extra_fields</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/api.html#get_default_extra_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.api.get_default_extra_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>These are the default extra fields.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="search.domain.api.get_required_fields">
+<code class="descclassname">search.domain.api.</code><code class="descname">get_required_fields</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/api.html#get_required_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.api.get_required_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>These fields should always be included.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -116,8 +155,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/api/search.domain.api.rst.txt"

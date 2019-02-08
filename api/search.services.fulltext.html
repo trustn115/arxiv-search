@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="search.services.metadata module" href="search.services.metadata.html" />
@@ -41,7 +40,7 @@
 <dl class="class">
 <dt id="search.services.fulltext.FulltextSession">
 <em class="property">class </em><code class="descclassname">search.services.fulltext.</code><code class="descname">FulltextSession</code><span class="sig-paren">(</span><em>endpoint</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/services/fulltext.html#FulltextSession"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.services.fulltext.FulltextSession" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>An HTTP session with the fulltext endpoint.</p>
 <dl class="method">
 <dt id="search.services.fulltext.FulltextSession.retrieve">
@@ -52,8 +51,8 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>document_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – arXiv identifier, including version tag. E.g. <code class="docutils literal notranslate"><span class="pre">&quot;1234.56787v3&quot;</span></code>.</li>
-<li><strong>endpoint</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Base URL for fulltext endpoint.</li>
+<li><strong>document_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – arXiv identifier, including version tag. E.g. <code class="docutils literal notranslate"><span class="pre">&quot;1234.56787v3&quot;</span></code>.</li>
+<li><strong>endpoint</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Base URL for fulltext endpoint.</li>
 </ul>
 </td>
 </tr>
@@ -65,8 +64,8 @@ extractor version.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – Raised when <code class="docutils literal notranslate"><span class="pre">document_id</span></code> is not a valid arXiv paper identifier.</li>
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – Raised when unable to retrieve fulltext content.</li>
+<li><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – Raised when <code class="docutils literal notranslate"><span class="pre">document_id</span></code> is not a valid arXiv paper identifier.</li>
+<li><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – Raised when unable to retrieve fulltext content.</li>
 </ul>
 </td>
 </tr>
@@ -130,8 +129,8 @@ extractor version.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>document_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – arXiv identifier, including version tag. E.g. <code class="docutils literal notranslate"><span class="pre">&quot;1234.56787v3&quot;</span></code>.</li>
-<li><strong>endpoint</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Base URL for fulltext endpoint.</li>
+<li><strong>document_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – arXiv identifier, including version tag. E.g. <code class="docutils literal notranslate"><span class="pre">&quot;1234.56787v3&quot;</span></code>.</li>
+<li><strong>endpoint</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Base URL for fulltext endpoint.</li>
 </ul>
 </td>
 </tr>
@@ -143,8 +142,8 @@ extractor version.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – Raised when <code class="docutils literal notranslate"><span class="pre">document_id</span></code> is not a valid arXiv paper identifier.</li>
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – Raised when unable to retrieve fulltext content.</li>
+<li><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – Raised when <code class="docutils literal notranslate"><span class="pre">document_id</span></code> is not a valid arXiv paper identifier.</li>
+<li><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – Raised when unable to retrieve fulltext content.</li>
 </ul>
 </td>
 </tr>
@@ -220,8 +219,8 @@ extractor version.</p>
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/api/search.services.fulltext.rst.txt"

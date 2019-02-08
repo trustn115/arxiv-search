@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
    
@@ -80,7 +79,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="TestAPISearchRequests.test_with_valid_token"><a class="viewcode-back" href="../../../../../api/search.routes.api.tests.test_api.html#search.routes.api.tests.test_api.TestAPISearchRequests.test_with_valid_token">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{factory.__name__}</span><span class="s1">.api.api&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">test_with_valid_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_api_controller</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">test_with_valid_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_controller</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Client auth token has required public read scope.&quot;&quot;&quot;</span>
         <span class="n">document</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">Document</span><span class="p">(</span>
             <span class="n">submitted_date</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
@@ -136,7 +135,8 @@
             <span class="n">results</span><span class="o">=</span><span class="p">[</span><span class="n">document</span><span class="p">],</span>
             <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span> <span class="s1">&#39;total&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
         <span class="p">)</span>
-        <span class="n">mock_api_controller</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">docs</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="p">{}</span>
+        <span class="n">r_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;results&#39;</span><span class="p">:</span> <span class="n">docs</span><span class="p">,</span> <span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">APIQuery</span><span class="p">()}</span>
+        <span class="n">mock_controller</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">r_data</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="p">{}</span>
         <span class="n">token</span> <span class="o">=</span> <span class="n">helpers</span><span class="o">.</span><span class="n">generate_token</span><span class="p">(</span><span class="s1">&#39;1234&#39;</span><span class="p">,</span> <span class="s1">&#39;foo@bar.com&#39;</span><span class="p">,</span> <span class="s1">&#39;foouser&#39;</span><span class="p">,</span>
                                        <span class="n">scope</span><span class="o">=</span><span class="p">[</span><span class="n">auth</span><span class="o">.</span><span class="n">scopes</span><span class="o">.</span><span class="n">READ_PUBLIC</span><span class="p">])</span>
         <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Authorization&#39;</span><span class="p">:</span> <span class="n">token</span><span class="p">})</span>
@@ -148,7 +148,90 @@
             <span class="kc">None</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNone</span><span class="p">(</span><span class="n">jsonschema</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="p">,</span> <span class="n">resolver</span><span class="o">=</span><span class="n">res</span><span class="p">),</span>
-                          <span class="s1">&#39;Response content is valid per schema&#39;</span><span class="p">)</span></div></div>
+                          <span class="s1">&#39;Response content is valid per schema&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">domain</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">get_required_fields</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="TestAPISearchRequests.test_with_valid_token_limit_fields"><a class="viewcode-back" href="../../../../../api/search.routes.api.tests.test_api.html#search.routes.api.tests.test_api.TestAPISearchRequests.test_with_valid_token_limit_fields">[docs]</a>    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{factory.__name__}</span><span class="s1">.api.api&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_with_valid_token_limit_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_controller</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Client auth token has required public read scope.&quot;&quot;&quot;</span>
+        <span class="n">document</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">Document</span><span class="p">(</span>
+            <span class="n">submitted_date</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+            <span class="n">submitted_date_first</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+            <span class="n">announced_date_first</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+            <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;1234.5678&#39;</span><span class="p">,</span>
+            <span class="n">abstract</span><span class="o">=</span><span class="s1">&#39;very abstract&#39;</span><span class="p">,</span>
+            <span class="n">authors</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">domain</span><span class="o">.</span><span class="n">Person</span><span class="p">(</span><span class="n">full_name</span><span class="o">=</span><span class="s1">&#39;F. Bar&#39;</span><span class="p">,</span> <span class="n">orcid</span><span class="o">=</span><span class="s1">&#39;1234-5678-9012-3456&#39;</span><span class="p">)</span>
+            <span class="p">],</span>
+            <span class="n">submitter</span><span class="o">=</span><span class="n">domain</span><span class="o">.</span><span class="n">Person</span><span class="p">(</span><span class="n">full_name</span><span class="o">=</span><span class="s1">&#39;S. Ubmitter&#39;</span><span class="p">,</span> <span class="n">author_id</span><span class="o">=</span><span class="s1">&#39;su_1&#39;</span><span class="p">),</span>
+            <span class="n">modified_date</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+            <span class="n">updated_date</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+            <span class="n">is_current</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">is_withdrawn</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">license</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;uri&#39;</span><span class="p">:</span> <span class="s1">&#39;http://foo.license/1&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;Notalicense 5.4&#39;</span>
+            <span class="p">},</span>
+            <span class="n">paper_id</span><span class="o">=</span><span class="s1">&#39;1234.5678&#39;</span><span class="p">,</span>
+            <span class="n">paper_id_v</span><span class="o">=</span><span class="s1">&#39;1234.5678v6&#39;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s1">&#39;tiiiitle&#39;</span><span class="p">,</span>
+            <span class="n">source</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;pdftotex&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;size_bytes&#39;</span><span class="p">:</span> <span class="mi">2</span>
+            <span class="p">},</span>
+            <span class="n">version</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+            <span class="n">latest</span><span class="o">=</span><span class="s1">&#39;1234.5678v6&#39;</span><span class="p">,</span>
+            <span class="n">latest_version</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+            <span class="n">report_num</span><span class="o">=</span><span class="s1">&#39;somenum1&#39;</span><span class="p">,</span>
+            <span class="n">msc_class</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;c1&#39;</span><span class="p">],</span>
+            <span class="n">acm_class</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;z2&#39;</span><span class="p">],</span>
+            <span class="n">journal_ref</span><span class="o">=</span><span class="s1">&#39;somejournal (1991): 2-34&#39;</span><span class="p">,</span>
+            <span class="n">doi</span><span class="o">=</span><span class="s1">&#39;10.123456/7890&#39;</span><span class="p">,</span>
+            <span class="n">comments</span><span class="o">=</span><span class="s1">&#39;very science&#39;</span><span class="p">,</span>
+            <span class="n">abs_categories</span><span class="o">=</span><span class="s1">&#39;astro-ph.CO foo.BR&#39;</span><span class="p">,</span>
+            <span class="n">formats</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pdf&#39;</span><span class="p">,</span> <span class="s1">&#39;other&#39;</span><span class="p">],</span>
+            <span class="n">primary_classification</span><span class="o">=</span><span class="n">domain</span><span class="o">.</span><span class="n">Classification</span><span class="p">(</span>
+                <span class="n">group</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Foo Group&#39;</span><span class="p">},</span>
+                <span class="n">archive</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Foo Archive&#39;</span><span class="p">},</span>
+                <span class="n">category</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;foo.BR&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Foo Category&#39;</span><span class="p">},</span>
+            <span class="p">),</span>
+            <span class="n">secondary_classification</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">domain</span><span class="o">.</span><span class="n">Classification</span><span class="p">(</span>
+                    <span class="n">group</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Foo Group&#39;</span><span class="p">},</span>
+                    <span class="n">archive</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Foo Archive&#39;</span><span class="p">},</span>
+                    <span class="n">category</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;foo.BZ&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Baz Category&#39;</span><span class="p">},</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">docs</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">DocumentSet</span><span class="p">(</span>
+            <span class="n">results</span><span class="o">=</span><span class="p">[</span><span class="n">document</span><span class="p">],</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span> <span class="s1">&#39;total&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">APIQuery</span><span class="p">(</span><span class="n">include_fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;abstract&#39;</span><span class="p">,</span> <span class="s1">&#39;license&#39;</span><span class="p">])</span>
+        <span class="n">r_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;results&#39;</span><span class="p">:</span> <span class="n">docs</span><span class="p">,</span> <span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="n">query</span><span class="p">}</span>
+        <span class="n">mock_controller</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">r_data</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="p">{}</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">helpers</span><span class="o">.</span><span class="n">generate_token</span><span class="p">(</span><span class="s1">&#39;1234&#39;</span><span class="p">,</span> <span class="s1">&#39;foo@bar.com&#39;</span><span class="p">,</span> <span class="s1">&#39;foouser&#39;</span><span class="p">,</span>
+                                       <span class="n">scope</span><span class="o">=</span><span class="p">[</span><span class="n">auth</span><span class="o">.</span><span class="n">scopes</span><span class="o">.</span><span class="n">READ_PUBLIC</span><span class="p">])</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Authorization&#39;</span><span class="p">:</span> <span class="n">token</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">jsonschema</span><span class="o">.</span><span class="n">RefResolver</span><span class="p">(</span>
+            <span class="s1">&#39;file://</span><span class="si">%s</span><span class="s1">/&#39;</span> <span class="o">%</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SCHEMA_PATH</span><span class="p">)),</span>
+            <span class="kc">None</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNone</span><span class="p">(</span><span class="n">jsonschema</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="p">,</span> <span class="n">resolver</span><span class="o">=</span><span class="n">res</span><span class="p">),</span>
+                          <span class="s1">&#39;Response content is valid per schema&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">domain</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">get_required_fields</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+                <span class="nb">set</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                <span class="nb">set</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">include_fields</span><span class="p">)</span>
+            <span class="p">)</span></div></div>
 </pre></div>
 
           </div>
@@ -206,8 +289,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

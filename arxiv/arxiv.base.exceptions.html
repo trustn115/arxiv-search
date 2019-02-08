@@ -1,0 +1,261 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.base.exceptions module &#8212; arXiv base 0.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arxiv.base.factory module" href="arxiv.base.factory.html" />
+    <link rel="prev" title="arxiv.base.converter module" href="arxiv.base.converter.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-arxiv.base.exceptions">
+<span id="arxiv-base-exceptions-module"></span><h1>arxiv.base.exceptions module<a class="headerlink" href="#module-arxiv.base.exceptions" title="Permalink to this headline">¶</a></h1>
+<p>Provides base HTTP exceptions and exception handling.</p>
+<p>arXiv-base exceptions inherit from <a class="reference external" href="http://werkzeug.pocoo.org/docs/0.14/exceptions/">Werkzeug HTTPExceptions</a>. In most cases it will
+make sense to simply use Werkzeug’s many HTTP exceptions directly. Custom
+exceptions can also be defined by further subclassing those exceptions.</p>
+<p>These handlers are attached to any Flask app passed to
+<a class="reference internal" href="arxiv.base.html#arxiv.base.Base" title="arxiv.base.Base"><code class="xref py py-class docutils literal notranslate"><span class="pre">arxiv.base.Base</span></code></a>. Thus any services that extends arXiv base need only
+define (if needed) and raise exceptions.</p>
+<p>Controllers should raise HTTP exceptions. The exception message (description)
+will be rendered within the base template for that exception class, including
+markup.</p>
+<dl class="exception">
+<dt id="arxiv.base.exceptions.ConfigurationError">
+<em class="property">exception </em><code class="descclassname">arxiv.base.exceptions.</code><code class="descname">ConfigurationError</code><span class="sig-paren">(</span><em>description=None</em>, <em>response=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/exceptions.html#ConfigurationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.exceptions.ConfigurationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">werkzeug.exceptions.InternalServerError</span></code></p>
+<p>Raised when a configuration parameter is missing or invalid.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.exceptions.get_handlers">
+<code class="descclassname">arxiv.base.exceptions.</code><code class="descname">get_handlers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/exceptions.html#get_handlers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.exceptions.get_handlers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of registered exception handlers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of (<code class="xref py py-class docutils literal notranslate"><span class="pre">HTTPException</span></code>, callable) tuples.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#type" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a>, <a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.Callable" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.exceptions.handle_bad_request">
+<code class="descclassname">arxiv.base.exceptions.</code><code class="descname">handle_bad_request</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/exceptions.html#handle_bad_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.exceptions.handle_bad_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render the base 400 error page.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.exceptions.handle_forbidden">
+<code class="descclassname">arxiv.base.exceptions.</code><code class="descname">handle_forbidden</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/exceptions.html#handle_forbidden"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.exceptions.handle_forbidden" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render the base 403 error page.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.exceptions.handle_internal_server_error">
+<code class="descclassname">arxiv.base.exceptions.</code><code class="descname">handle_internal_server_error</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/exceptions.html#handle_internal_server_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.exceptions.handle_internal_server_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render the base 500 error page.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.exceptions.handle_method_not_allowed">
+<code class="descclassname">arxiv.base.exceptions.</code><code class="descname">handle_method_not_allowed</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/exceptions.html#handle_method_not_allowed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.exceptions.handle_method_not_allowed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render the base 405 error page.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.exceptions.handle_not_found">
+<code class="descclassname">arxiv.base.exceptions.</code><code class="descname">handle_not_found</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/exceptions.html#handle_not_found"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.exceptions.handle_not_found" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render the base 404 error page.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.exceptions.handle_request_entity_too_large">
+<code class="descclassname">arxiv.base.exceptions.</code><code class="descname">handle_request_entity_too_large</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/exceptions.html#handle_request_entity_too_large"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.exceptions.handle_request_entity_too_large" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render the base 413 error page.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.exceptions.handle_unauthorized">
+<code class="descclassname">arxiv.base.exceptions.</code><code class="descname">handle_unauthorized</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/exceptions.html#handle_unauthorized"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.exceptions.handle_unauthorized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render the base 401 error page.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.exceptions.handler">
+<code class="descclassname">arxiv.base.exceptions.</code><code class="descname">handler</code><span class="sig-paren">(</span><em>exception</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/exceptions.html#handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.exceptions.handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a decorator to register a handler for an exception.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.Callable" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv base</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">arxiv</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.html">arxiv package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="metadocs.html">Meta-documentation: How to create documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">arxiv</a><ul>
+  <li><a href="arxiv.html">arxiv package</a><ul>
+  <li><a href="arxiv.base.html">arxiv.base package</a><ul>
+      <li>Previous: <a href="arxiv.base.converter.html" title="previous chapter">arxiv.base.converter module</a></li>
+      <li>Next: <a href="arxiv.base.factory.html" title="next chapter">arxiv.base.factory module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/arxiv/arxiv.base.exceptions.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

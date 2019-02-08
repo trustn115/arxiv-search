@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
    
@@ -147,24 +146,53 @@
 
 
 <span class="k">def</span> <span class="nf">_query_primary</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;and&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
-    <span class="c1"># In the &#39;or&#39; case, we&#39;re basically just looking for hit highlighting</span>
-    <span class="c1"># after a match on the combined field. Since primary classification fields</span>
-    <span class="c1"># are keyword fields, they won&#39;t match the same way as the combined field</span>
-    <span class="c1"># (text). So we have to be a bit fuzzy here to get the highlight.</span>
-    <span class="c1"># TODO: in a future version, we should consider changes to the mappings</span>
-    <span class="c1"># to make this more straightforward.</span>
-    <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="s1">&#39;or&#39;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">ior</span><span class="p">,</span> <span class="p">[(</span>
-            <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__category__id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">part</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="p">}})</span>
-            <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;wildcard&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification.category.name&quot;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;*</span><span class="si">{part}</span><span class="s2">*&quot;</span><span class="p">})</span>
-            <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__archive__id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">part</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="p">}})</span>
-            <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;wildcard&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification.archive.name&quot;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;*</span><span class="si">{part}</span><span class="s2">*&quot;</span><span class="p">})</span>
-        <span class="p">)</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">term</span><span class="o">.</span><span class="n">split</span><span class="p">()])</span>
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__category__id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">term</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="p">}})</span>
-        <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__category__name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">term</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="p">}})</span>
-        <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__archive__id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">term</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="p">}})</span>
-        <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__archive__name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">term</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="p">}})</span>
+    <span class="c1"># This now uses the &quot;primary_classification.combined&quot; field, which is</span>
+    <span class="c1"># isomorphic to the document-level &quot;combined&quot; field. So we get</span>
+    <span class="c1"># straightforward hit highlighting and a more consistent behavior.</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span>
+        <span class="s2">&quot;primary_classification__combined&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">term</span><span class="p">,</span>
+            <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="p">,</span>
+            <span class="s2">&quot;_name&quot;</span><span class="p">:</span> <span class="s2">&quot;primary_classification&quot;</span>
+        <span class="p">}</span>
+    <span class="p">})</span>
+
+
+<div class="viewcode-block" id="query_primary_exact"><a class="viewcode-back" href="../../../../api/search.services.index.prepare.html#search.services.index.prepare.query_primary_exact">[docs]</a><span class="k">def</span> <span class="nf">query_primary_exact</span><span class="p">(</span><span class="n">classification</span><span class="p">:</span> <span class="n">Classification</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Generate a :class:`Q` for primary classification by ID.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">iand</span><span class="p">,</span> <span class="p">[</span>
+        <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">f</span><span class="s2">&quot;primary_classification__</span><span class="si">{field}</span><span class="s2">__id&quot;</span><span class="p">:</span>
+                      <span class="nb">getattr</span><span class="p">(</span><span class="n">classification</span><span class="p">,</span> <span class="n">field</span><span class="p">)[</span><span class="s1">&#39;id&#39;</span><span class="p">]})</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;archive&#39;</span><span class="p">,</span> <span class="s1">&#39;category&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">classification</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="query_secondary_exact"><a class="viewcode-back" href="../../../../api/search.services.index.prepare.html#search.services.index.prepare.query_secondary_exact">[docs]</a><span class="k">def</span> <span class="nf">query_secondary_exact</span><span class="p">(</span><span class="n">classification</span><span class="p">:</span> <span class="n">Classification</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Generate a :class:`Q` for secondary classification by ID.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;nested&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;secondary_classification&quot;</span><span class="p">,</span>
+             <span class="n">query</span><span class="o">=</span><span class="n">reduce</span><span class="p">(</span><span class="n">iand</span><span class="p">,</span> <span class="p">[</span>
+                 <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">f</span><span class="s2">&quot;secondary_classification__</span><span class="si">{field}</span><span class="s2">__id&quot;</span><span class="p">:</span>
+                               <span class="nb">getattr</span><span class="p">(</span><span class="n">classification</span><span class="p">,</span> <span class="n">field</span><span class="p">)[</span><span class="s1">&#39;id&#39;</span><span class="p">]})</span>
+                 <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;archive&#39;</span><span class="p">,</span> <span class="s1">&#39;category&#39;</span><span class="p">]</span>
+                 <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">classification</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+             <span class="p">]))</span></div>
+
+
+<span class="k">def</span> <span class="nf">_query_secondary</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;and&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span>
+        <span class="s2">&quot;nested&quot;</span><span class="p">,</span>
+        <span class="n">path</span><span class="o">=</span><span class="s2">&quot;secondary_classification&quot;</span><span class="p">,</span>
+        <span class="n">query</span><span class="o">=</span><span class="n">Q</span><span class="p">(</span>
+            <span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span>
+                <span class="s2">&quot;secondary_classification.combined&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">term</span><span class="p">,</span>
+                    <span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">operator</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">),</span>
+        <span class="n">_name</span><span class="o">=</span><span class="s2">&quot;secondary_classification&quot;</span><span class="p">,</span>
+        <span class="n">inner_hits</span><span class="o">=</span><span class="p">{}</span>   <span class="c1"># This gets us the specific category that matched.</span>
     <span class="p">)</span>
 
 
@@ -178,11 +206,15 @@
     <span class="k">return</span> <span class="n">q</span>
 
 
+<span class="k">def</span> <span class="nf">_license_query</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;and&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Search by license, using its URI (exact).&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;term&#39;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s1">&#39;license__uri&#39;</span><span class="p">:</span> <span class="n">term</span><span class="p">})</span>
+
+
 <span class="k">def</span> <span class="nf">_query_combined</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
     <span class="c1"># Only wildcards in literals should be escaped.</span>
     <span class="n">wildcard_escaped</span><span class="p">,</span> <span class="n">has_wildcard</span> <span class="o">=</span> <span class="n">wildcard_escape</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
     <span class="n">query_term</span> <span class="o">=</span> <span class="p">(</span><span class="n">wildcard_escaped</span> <span class="k">if</span> <span class="n">has_wildcard</span> <span class="k">else</span> <span class="n">escape</span><span class="p">(</span><span class="n">term</span><span class="p">))</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-
     <span class="c1"># All terms must match in the combined field.</span>
     <span class="k">return</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;query_string&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;combined&#39;</span><span class="p">],</span> <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span>
              <span class="n">allow_leading_wildcard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query_term</span><span class="p">)</span>
@@ -251,7 +283,8 @@
         <span class="n">_query_report_num</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
         <span class="n">_query_acm_class</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
         <span class="n">_query_msc_class</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
-        <span class="n">_query_primary</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">)</span>
+        <span class="n">_query_primary</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
+        <span class="n">_query_secondary</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">),</span>
     <span class="p">]</span>
 
     <span class="c1"># If the whole query matches on a specific field, we should consider that</span>
@@ -269,9 +302,9 @@
         <span class="n">_query_report_num</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
         <span class="n">_query_acm_class</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
         <span class="n">_query_msc_class</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
-        <span class="n">_query_primary</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">)</span>
+        <span class="n">_query_primary</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+        <span class="n">_query_secondary</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">)</span>
     <span class="p">])</span>
-
 
     <span class="c1"># It is possible that the query includes a date-related term, which we</span>
     <span class="c1"># interpret as an announcement date of v1 of the paper. We currently</span>
@@ -329,7 +362,7 @@
                 <span class="n">match_remainder</span> <span class="o">=</span> <span class="n">_query_combined</span><span class="p">(</span><span class="n">remainder</span><span class="p">)</span>
                 <span class="n">match_all_fields</span> <span class="o">|=</span> <span class="p">(</span><span class="n">match_remainder</span> <span class="o">&amp;</span> <span class="n">match_date</span><span class="p">)</span>
 
-                <span class="n">match_individual_sans_date</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">ior</span><span class="p">,</span> <span class="p">[</span>
+                <span class="n">match_sans_date</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">ior</span><span class="p">,</span> <span class="p">[</span>
                     <span class="n">_query_paper_id</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">),</span>
                     <span class="n">author_query</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;AND&#39;</span><span class="p">),</span>
                     <span class="n">_query_title</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">default_operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
@@ -342,16 +375,12 @@
                     <span class="n">_query_report_num</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
                     <span class="n">_query_acm_class</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
                     <span class="n">_query_msc_class</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
-                    <span class="n">_query_primary</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">)</span>
+                    <span class="n">_query_primary</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">),</span>
+                    <span class="n">_query_secondary</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">)</span>
                 <span class="p">])</span>
-                <span class="n">match_individual_field</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;bool&#39;</span><span class="p">,</span> <span class="n">should</span><span class="o">=</span><span class="p">[</span>
-                        <span class="n">match_individual_field</span><span class="p">,</span>
-                        <span class="n">match_individual_sans_date</span> <span class="o">&amp;</span> <span class="n">match_date</span>
-                    <span class="p">],</span> <span class="n">minimum_should_match</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">match_individual_field</span> <span class="o">|=</span> <span class="p">(</span><span class="n">match_sans_date</span> <span class="o">&amp;</span> <span class="n">match_date</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">match_all_fields</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;bool&#39;</span><span class="p">,</span>
-                                     <span class="n">should</span><span class="o">=</span><span class="p">[</span><span class="n">match_all_fields</span><span class="p">,</span> <span class="n">match_date</span><span class="p">],</span>
-                                     <span class="n">minimum_should_match</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">match_all_fields</span> <span class="o">|=</span> <span class="n">match_date</span>
 
     <span class="n">query</span> <span class="o">=</span> <span class="p">(</span><span class="n">match_all_fields</span> <span class="o">|</span> <span class="n">match_individual_field</span><span class="p">)</span>
     <span class="n">query</span> <span class="o">&amp;=</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;bool&quot;</span><span class="p">,</span> <span class="n">should</span><span class="o">=</span><span class="n">queries</span><span class="p">)</span>  <span class="c1"># Partial matches across fields.</span>
@@ -361,26 +390,24 @@
              <span class="n">boost_mode</span><span class="o">=</span><span class="s1">&#39;multiply&#39;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="limit_by_classification"><a class="viewcode-back" href="../../../../api/search.services.index.prepare.html#search.services.index.prepare.limit_by_classification">[docs]</a><span class="k">def</span> <span class="nf">limit_by_classification</span><span class="p">(</span><span class="n">classifications</span><span class="p">:</span> <span class="n">ClassificationList</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+<div class="viewcode-block" id="limit_by_classification"><a class="viewcode-back" href="../../../../api/search.services.index.prepare.html#search.services.index.prepare.limit_by_classification">[docs]</a><span class="k">def</span> <span class="nf">limit_by_classification</span><span class="p">(</span><span class="n">classifications</span><span class="p">:</span> <span class="n">ClassificationList</span><span class="p">,</span>
+                            <span class="n">field</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;primary_classification&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Generate a :class:`Q` to limit a query by by classification.&quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">_to_q</span><span class="p">(</span><span class="n">classification</span><span class="p">:</span> <span class="n">Classification</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
-        <span class="n">_qs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">if</span> <span class="n">classification</span><span class="o">.</span><span class="n">group</span><span class="p">:</span>
-            <span class="n">_qs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__group__id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">classification</span><span class="o">.</span><span class="n">group</span><span class="p">}})</span>
-            <span class="p">)</span>
-        <span class="k">if</span> <span class="n">classification</span><span class="o">.</span><span class="n">archive</span><span class="p">:</span>
-            <span class="n">_qs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__archive__id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">classification</span><span class="o">.</span><span class="n">archive</span><span class="p">}})</span>
-            <span class="p">)</span>
-        <span class="k">if</span> <span class="n">classification</span><span class="o">.</span><span class="n">category</span><span class="p">:</span>
-            <span class="n">_qs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;primary_classification__category__id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">classification</span><span class="o">.</span><span class="n">category</span><span class="p">}})</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">iand</span><span class="p">,</span> <span class="n">_qs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">classifications</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Q</span><span class="p">()</span>
 
-    <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">ior</span><span class="p">,</span> <span class="p">[</span><span class="n">_to_q</span><span class="p">(</span><span class="n">clsn</span><span class="p">)</span> <span class="k">for</span> <span class="n">clsn</span> <span class="ow">in</span> <span class="n">classifications</span><span class="p">])</span></div>
+    <span class="k">def</span> <span class="nf">_to_q</span><span class="p">(</span><span class="n">clsn</span><span class="p">:</span> <span class="n">Classification</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Q</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">iand</span><span class="p">,</span> <span class="p">[</span>
+            <span class="n">Q</span><span class="p">(</span><span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{field}</span><span class="s1">__</span><span class="si">{level}</span><span class="s1">__id&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">clsn</span><span class="p">,</span> <span class="n">level</span><span class="p">)[</span><span class="s1">&#39;id&#39;</span><span class="p">]})</span>
+            <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;archive&#39;</span><span class="p">,</span> <span class="s1">&#39;category&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">clsn</span><span class="p">,</span> <span class="n">level</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">])</span>
 
+    <span class="n">_q</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">ior</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="n">_to_q</span><span class="p">,</span> <span class="n">classifications</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">field</span> <span class="o">==</span> <span class="s1">&#39;secondary_classification&#39;</span><span class="p">:</span>
+        <span class="n">_q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;nested&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;secondary_classification&quot;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">_q</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_q</span></div>
 
 
 <span class="n">SEARCH_FIELDS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Q</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([</span>
@@ -392,10 +419,12 @@
     <span class="p">(</span><span class="s1">&#39;report_num&#39;</span><span class="p">,</span> <span class="n">_query_report_num</span><span class="p">),</span>
     <span class="p">(</span><span class="s1">&#39;acm_class&#39;</span><span class="p">,</span> <span class="n">_query_acm_class</span><span class="p">),</span>
     <span class="p">(</span><span class="s1">&#39;msc_class&#39;</span><span class="p">,</span> <span class="n">_query_msc_class</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;cross_list_category&#39;</span><span class="p">,</span> <span class="n">_query_secondary</span><span class="p">),</span>
     <span class="p">(</span><span class="s1">&#39;doi&#39;</span><span class="p">,</span> <span class="n">_query_doi</span><span class="p">),</span>
     <span class="p">(</span><span class="s1">&#39;paper_id&#39;</span><span class="p">,</span> <span class="n">_query_paper_id</span><span class="p">),</span>
     <span class="p">(</span><span class="s1">&#39;orcid&#39;</span><span class="p">,</span> <span class="n">orcid_query</span><span class="p">),</span>
     <span class="p">(</span><span class="s1">&#39;author_id&#39;</span><span class="p">,</span> <span class="n">author_id_query</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;license&#39;</span><span class="p">,</span> <span class="n">_license_query</span><span class="p">),</span>
     <span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">_query_all_fields</span><span class="p">)</span>
 <span class="p">])</span>
 </pre></div>
@@ -455,8 +484,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -36,11 +35,21 @@
   <h1>Source code for search.domain.api</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;API-specific domain classes.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">DateRange</span><span class="p">,</span> <span class="n">Query</span><span class="p">,</span> <span class="n">ClassificationList</span>
+<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">DateRange</span><span class="p">,</span> <span class="n">Query</span><span class="p">,</span> <span class="n">ClassificationList</span><span class="p">,</span> <span class="n">Classification</span><span class="p">,</span> <span class="n">List</span>
 <span class="kn">from</span> <span class="nn">.advanced</span> <span class="k">import</span> <span class="n">FieldedSearchList</span><span class="p">,</span> <span class="n">FieldedSearchTerm</span>
 
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="k">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+
+<div class="viewcode-block" id="get_default_extra_fields"><a class="viewcode-back" href="../../../api/search.domain.api.html#search.domain.api.get_default_extra_fields">[docs]</a><span class="k">def</span> <span class="nf">get_default_extra_fields</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;These are the default extra fields.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="get_required_fields"><a class="viewcode-back" href="../../../api/search.domain.api.html#search.domain.api.get_required_fields">[docs]</a><span class="k">def</span> <span class="nf">get_required_fields</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;These fields should always be included.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;paper_id&#39;</span><span class="p">,</span> <span class="s1">&#39;paper_id_v&#39;</span><span class="p">,</span> <span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="s1">&#39;href&#39;</span><span class="p">,</span> <span class="s1">&#39;canonical&#39;</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="APIQuery"><a class="viewcode-back" href="../../../api/search.domain.api.html#search.domain.api.APIQuery">[docs]</a><span class="nd">@dataclass</span>
@@ -52,10 +61,21 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">date_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DateRange</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">primary_classification</span><span class="p">:</span> <span class="n">ClassificationList</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
-        <span class="n">default_factory</span><span class="o">=</span><span class="n">ClassificationList</span>
+    <span class="n">primary_classification</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Classification</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> \
+        <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">tuple</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;Limit results to a specific primary classification.&quot;&quot;&quot;</span>
+    <span class="n">secondary_classification</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Classification</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
+        <span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span>
     <span class="p">)</span>
-    <span class="n">terms</span><span class="p">:</span> <span class="n">FieldedSearchList</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">FieldedSearchList</span><span class="p">)</span></div>
+    <span class="sd">&quot;&quot;&quot;Limit results by cross-list classification.&quot;&quot;&quot;</span>
+    <span class="n">terms</span><span class="p">:</span> <span class="n">FieldedSearchList</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">FieldedSearchList</span><span class="p">)</span>
+    <span class="n">include_fields</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">get_default_extra_fields</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Be sure that the required fields are prepended to include_fields.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_fields</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span><span class="n">get_required_fields</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_fields</span><span class="p">)</span>
+        <span class="p">)</span></div>
 </pre></div>
 
           </div>
@@ -111,8 +131,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

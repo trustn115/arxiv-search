@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="search.process package" href="search.process.html" />
@@ -41,7 +40,7 @@
 <dl class="class">
 <dt id="search.domain.base.Classification">
 <em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">Classification</code><span class="sig-paren">(</span><em>group=None</em>, <em>archive=None</em>, <em>category=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#Classification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.Classification" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Represents an arXiv classification for a paper.</p>
 <dl class="attribute">
 <dt id="search.domain.base.Classification.archive">
@@ -49,28 +48,70 @@
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="search.domain.base.Classification.archive_display">
+<code class="descname">archive_display</code><a class="headerlink" href="#search.domain.base.Classification.archive_display" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a human-friendly display label for the archive.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="search.domain.base.Classification.category">
 <code class="descname">category</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.base.Classification.category" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.base.Classification.category_display">
+<code class="descname">category_display</code><a class="headerlink" href="#search.domain.base.Classification.category_display" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a human-friendly display label for the category.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="search.domain.base.Classification.group">
 <code class="descname">group</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.base.Classification.group" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="attribute">
+<dt id="search.domain.base.Classification.group_display">
+<code class="descname">group_display</code><a class="headerlink" href="#search.domain.base.Classification.group_display" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a human-friendly display label for the group.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="search.domain.base.ClassificationList">
 <em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">ClassificationList</code><a class="reference internal" href="../_modules/search/domain/base.html#ClassificationList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.ClassificationList" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></p>
 <p>Represents a list of arXiv classifications.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="search.domain.base.DateRange">
-<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">DateRange</code><span class="sig-paren">(</span><em>start_date=datetime.datetime(1990</em>, <em>1</em>, <em>1</em>, <em>0</em>, <em>0</em>, <em>tzinfo=&lt;DstTzInfo 'US/Eastern' LMT-1 day</em>, <em>19:04:00 STD&gt;)</em>, <em>end_date=datetime.datetime(2018</em>, <em>9</em>, <em>18</em>, <em>15</em>, <em>39</em>, <em>44</em>, <em>24781</em>, <em>tzinfo=&lt;DstTzInfo 'US/Eastern' EDT-1 day</em>, <em>20:00:00 DST&gt;)</em>, <em>date_type='submitted_date'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#DateRange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.DateRange" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">DateRange</code><span class="sig-paren">(</span><em>start_date=datetime.datetime(1990</em>, <em>1</em>, <em>1</em>, <em>0</em>, <em>0</em>, <em>tzinfo=&lt;DstTzInfo 'US/Eastern' LMT-1 day</em>, <em>19:04:00 STD&gt;)</em>, <em>end_date=datetime.datetime(2019</em>, <em>2</em>, <em>8</em>, <em>12</em>, <em>36</em>, <em>49</em>, <em>201527</em>, <em>tzinfo=&lt;DstTzInfo 'US/Eastern' EST-1 day</em>, <em>19:00:00 STD&gt;)</em>, <em>date_type='submitted_date'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#DateRange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.DateRange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Represents an open or closed date range, for use in <a class="reference internal" href="#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">Query</span></code></a>.</p>
 <dl class="attribute">
 <dt id="search.domain.base.DateRange.ANNOUNCED">
@@ -95,7 +136,7 @@
 
 <dl class="attribute">
 <dt id="search.domain.base.DateRange.end_date">
-<code class="descname">end_date</code><em class="property"> = datetime.datetime(2018, 9, 18, 15, 39, 44, 24781, tzinfo=&lt;DstTzInfo 'US/Eastern' EDT-1 day, 20:00:00 DST&gt;)</em><a class="headerlink" href="#search.domain.base.DateRange.end_date" title="Permalink to this definition">¶</a></dt>
+<code class="descname">end_date</code><em class="property"> = datetime.datetime(2019, 2, 8, 12, 36, 49, 201527, tzinfo=&lt;DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD&gt;)</em><a class="headerlink" href="#search.domain.base.DateRange.end_date" title="Permalink to this definition">¶</a></dt>
 <dd><p>The day/time at (just before) which the range ends.</p>
 </dd></dl>
 
@@ -110,7 +151,7 @@
 <dl class="class">
 <dt id="search.domain.base.DocMeta">
 <em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">DocMeta</code><span class="sig-paren">(</span><em>paper_id=&lt;factory&gt;</em>, <em>abstract=&lt;factory&gt;</em>, <em>abstract_utf8=&lt;factory&gt;</em>, <em>authors_parsed=&lt;factory&gt;</em>, <em>authors_utf8=&lt;factory&gt;</em>, <em>author_owners=&lt;factory&gt;</em>, <em>authors=&lt;factory&gt;</em>, <em>submitted_date=&lt;factory&gt;</em>, <em>submitted_date_all=&lt;factory&gt;</em>, <em>modified_date=&lt;factory&gt;</em>, <em>updated_date=&lt;factory&gt;</em>, <em>announced_date_first=&lt;factory&gt;</em>, <em>is_current=True</em>, <em>is_withdrawn=False</em>, <em>license=&lt;factory&gt;</em>, <em>primary_classification=&lt;factory&gt;</em>, <em>secondary_classification=&lt;factory&gt;</em>, <em>title=&lt;factory&gt;</em>, <em>title_utf8=&lt;factory&gt;</em>, <em>source=&lt;factory&gt;</em>, <em>version=1</em>, <em>submitter=&lt;factory&gt;</em>, <em>report_num=&lt;factory&gt;</em>, <em>proxy=False</em>, <em>msc_class=&lt;factory&gt;</em>, <em>acm_class=&lt;factory&gt;</em>, <em>metadata_id=-1</em>, <em>document_id=-1</em>, <em>journal_ref=&lt;factory&gt;</em>, <em>journal_ref_utf8=&lt;factory&gt;</em>, <em>doi=&lt;factory&gt;</em>, <em>comments=&lt;factory&gt;</em>, <em>comments_utf8=&lt;factory&gt;</em>, <em>abs_categories=&lt;factory&gt;</em>, <em>formats=&lt;factory&gt;</em>, <em>latest_version=1</em>, <em>latest=&lt;factory&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#DocMeta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.DocMeta" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Metadata for an arXiv paper, retrieved from the core repository.</p>
 <dl class="attribute">
 <dt id="search.domain.base.DocMeta.document_id">
@@ -152,7 +193,7 @@
 <dl class="class">
 <dt id="search.domain.base.Document">
 <em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">Document</code><span class="sig-paren">(</span><em>submitted_date=None</em>, <em>announced_date_first=None</em>, <em>submitted_date_first=None</em>, <em>submitted_date_latest=None</em>, <em>submitted_date_all=&lt;factory&gt;</em>, <em>id=&lt;factory&gt;</em>, <em>abstract=&lt;factory&gt;</em>, <em>abstract_tex=&lt;factory&gt;</em>, <em>authors=&lt;factory&gt;</em>, <em>authors_freeform=&lt;factory&gt;</em>, <em>owners=&lt;factory&gt;</em>, <em>modified_date=&lt;factory&gt;</em>, <em>updated_date=&lt;factory&gt;</em>, <em>is_current=True</em>, <em>is_withdrawn=False</em>, <em>license=&lt;factory&gt;</em>, <em>paper_id=&lt;factory&gt;</em>, <em>paper_id_v=&lt;factory&gt;</em>, <em>title=&lt;factory&gt;</em>, <em>title_tex=&lt;factory&gt;</em>, <em>source=&lt;factory&gt;</em>, <em>version=1</em>, <em>latest=&lt;factory&gt;</em>, <em>latest_version=0</em>, <em>submitter=None</em>, <em>report_num=&lt;factory&gt;</em>, <em>proxy=False</em>, <em>msc_class=&lt;factory&gt;</em>, <em>acm_class=&lt;factory&gt;</em>, <em>metadata_id=-1</em>, <em>journal_ref=&lt;factory&gt;</em>, <em>doi=&lt;factory&gt;</em>, <em>comments=&lt;factory&gt;</em>, <em>abs_categories=&lt;factory&gt;</em>, <em>formats=&lt;factory&gt;</em>, <em>primary_classification=&lt;factory&gt;</em>, <em>secondary_classification=&lt;factory&gt;</em>, <em>score=1.0</em>, <em>highlight=&lt;factory&gt;</em>, <em>preview=&lt;factory&gt;</em>, <em>match=&lt;factory&gt;</em>, <em>truncated=&lt;factory&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#Document"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.Document" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A search document, representing an arXiv paper.</p>
 <dl class="attribute">
 <dt id="search.domain.base.Document.announced_date_first">
@@ -167,7 +208,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
 </tr>
 </tbody>
 </table>
@@ -257,21 +298,21 @@
 <dl class="class">
 <dt id="search.domain.base.DocumentSet">
 <em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">DocumentSet</code><span class="sig-paren">(</span><em>metadata</em>, <em>results</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#DocumentSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.DocumentSet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A set of search results retrieved from the search index.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="search.domain.base.Fulltext">
 <em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">Fulltext</code><span class="sig-paren">(</span><em>content</em>, <em>version</em>, <em>created</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#Fulltext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.Fulltext" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Fulltext content for an arXiv paper, including extraction metadata.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="search.domain.base.Person">
 <em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">Person</code><span class="sig-paren">(</span><em>full_name</em>, <em>last_name=&lt;factory&gt;</em>, <em>first_name=&lt;factory&gt;</em>, <em>suffix=&lt;factory&gt;</em>, <em>affiliation=&lt;factory&gt;</em>, <em>orcid=None</em>, <em>author_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#Person"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.Person" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Represents an author, owner, or other person in metadata.</p>
 <dl class="attribute">
 <dt id="search.domain.base.Person.affiliation">
@@ -293,7 +334,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
 </tr>
 </tbody>
 </table>
@@ -310,7 +351,7 @@
 <dl class="class">
 <dt id="search.domain.base.Query">
 <em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">Query</code><span class="sig-paren">(</span><em>order=None</em>, <em>size=50</em>, <em>page_start=0</em>, <em>include_older_versions=False</em>, <em>hide_abstracts=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#Query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.Query" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Represents a search query originating from the UI or API.</p>
 <dl class="attribute">
 <dt id="search.domain.base.Query.MAXIMUM_size">
@@ -320,7 +361,7 @@
 
 <dl class="attribute">
 <dt id="search.domain.base.Query.SUPPORTED_FIELDS">
-<code class="descname">SUPPORTED_FIELDS</code><em class="property"> = [('all', 'All fields'), ('title', 'Title'), ('author', 'Author(s)'), ('abstract', 'Abstract'), ('comments', 'Comments'), ('journal_ref', 'Journal reference'), ('acm_class', 'ACM classification'), ('msc_class', 'MSC classification'), ('report_num', 'Report number'), ('paper_id', 'arXiv identifier'), ('doi', 'DOI'), ('orcid', 'ORCID'), ('author_id', 'arXiv author ID'), ('help', 'Help pages'), ('full_text', 'Full text')]</em><a class="headerlink" href="#search.domain.base.Query.SUPPORTED_FIELDS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">SUPPORTED_FIELDS</code><em class="property"> = [('all', 'All fields'), ('title', 'Title'), ('author', 'Author(s)'), ('abstract', 'Abstract'), ('comments', 'Comments'), ('journal_ref', 'Journal reference'), ('acm_class', 'ACM classification'), ('msc_class', 'MSC classification'), ('report_num', 'Report number'), ('paper_id', 'arXiv identifier'), ('doi', 'DOI'), ('orcid', 'ORCID'), ('license', 'License (URI)'), ('author_id', 'arXiv author ID'), ('help', 'Help pages'), ('full_text', 'Full text')]</em><a class="headerlink" href="#search.domain.base.Query.SUPPORTED_FIELDS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -346,7 +387,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -360,7 +401,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -380,9 +421,21 @@
 
 <dl class="class">
 <dt id="search.domain.base.SimpleQuery">
-<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">SimpleQuery</code><span class="sig-paren">(</span><em>order=None</em>, <em>size=50</em>, <em>page_start=0</em>, <em>include_older_versions=False</em>, <em>hide_abstracts=False</em>, <em>search_field=&lt;factory&gt;</em>, <em>value=&lt;factory&gt;</em>, <em>primary_classification=&lt;factory&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#SimpleQuery"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.SimpleQuery" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">search.domain.base.</code><code class="descname">SimpleQuery</code><span class="sig-paren">(</span><em>order=None</em>, <em>size=50</em>, <em>page_start=0</em>, <em>include_older_versions=False</em>, <em>hide_abstracts=False</em>, <em>search_field=&lt;factory&gt;</em>, <em>value=&lt;factory&gt;</em>, <em>classification=&lt;factory&gt;</em>, <em>include_cross_list=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/search/domain/base.html#SimpleQuery"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#search.domain.base.SimpleQuery" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#search.domain.base.Query" title="search.domain.base.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">search.domain.base.Query</span></code></a></p>
 <p>Represents a simple search query.</p>
+<dl class="attribute">
+<dt id="search.domain.base.SimpleQuery.classification">
+<code class="descname">classification</code><em class="property"> = None</em><a class="headerlink" href="#search.domain.base.SimpleQuery.classification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Classification(s) by which to limit results.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="search.domain.base.SimpleQuery.include_cross_list">
+<code class="descname">include_cross_list</code><em class="property"> = True</em><a class="headerlink" href="#search.domain.base.SimpleQuery.include_cross_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, secondaries are considered when limiting by classification.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="function">
@@ -393,7 +446,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -464,8 +517,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/api/search.domain.base.rst.txt"

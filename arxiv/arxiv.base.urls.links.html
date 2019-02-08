@@ -1,0 +1,347 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.base.urls.links module &#8212; arXiv base 0.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arxiv.base.alerts module" href="arxiv.base.alerts.html" />
+    <link rel="prev" title="arxiv.base.urls.clickthrough module" href="arxiv.base.urls.clickthrough.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-arxiv.base.urls.links">
+<span id="arxiv-base-urls-links-module"></span><h1>arxiv.base.urls.links module<a class="headerlink" href="#module-arxiv.base.urls.links" title="Permalink to this headline">¶</a></h1>
+<p>Patterns and functions to detect arXiv ids and Urls in text.</p>
+<p>Functions to detech arXiv ids, URLs and DOI in text.
+Functions to transform them to &lt;a&gt; tags.</p>
+<p>These were originally jinja filters but became a little too big
+for that so they were split out and made more general so they didn’t
+rely on the Flask context.</p>
+<p>These all use expect input of Markup or non-markup text and return
+Markup objects. This is because the &lt;a&gt; that get added need to avoid
+double escaping.</p>
+<p>There are several classes of patterns we want to match but there is
+some overlap in these patterns. To avoid looking for and parsing HTML in each
+jinja filter, detecting these patterns is combined.</p>
+<p>So far we are looking for:
+DOIs            DOI: 10.1145/0001234.1234567
+arXiv IDS:      1234.12345 1234.12345v1 hep-ph1307.1843
+HTTP URLs:      <a class="reference external" href="http://something.org/myPaper/1234.12345">http://something.org/myPaper/1234.12345</a>
+FTP URLs:       <a class="reference external" href="ftp://example.com/files/1234.12345">ftp://example.com/files/1234.12345</a></p>
+<p>Just matching for arXiv ids with d{4}.d{4,5} will match several of
+these. To deal with this we are priortizing the matches and
+interupting once one is found.</p>
+<p>We should probably match DOIs first because they are the source of a
+lot of false positives for arxiv matches.</p>
+<dl class="data">
+<dt id="arxiv.base.urls.links.ANCHOR">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">ANCHOR</code><em class="property"> = '(?P&lt;ANCHOR&gt;#(([a-z0-9,_.\\-+~:]|%[a-f0-9]*)|/)*)?'</em><a class="headerlink" href="#arxiv.base.urls.links.ANCHOR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Regex for anchor part of URLs for use in urlize</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.base.urls.links.FTP_PAT">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">FTP_PAT</code><em class="property"> = re.compile('(?P&lt;url&gt;(?:ftp://)(([a-z0-9,_.\\-+~:]|%[a-f0-9]*)|(&#64;))*(?P&lt;PATH&gt;(/([a-z0-9,_.\\-+~:]|%[a-f0-9]*)*)+)?)', re.IGNORECASE)</em><a class="headerlink" href="#arxiv.base.urls.links.FTP_PAT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Regex to match FTP URLs in text.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.base.urls.links.HOST_NAME">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">HOST_NAME</code><em class="property"> = '(?:[a-z0-9][a-z0-9\\-.:]+[a-z0-9])'</em><a class="headerlink" href="#arxiv.base.urls.links.HOST_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Regex used to match host names in arXiv urlize.</p>
+<p>This is not a perfect regex for a host name, It accepts only a sub-set
+of hostnames to meet the needs of arxiv.</p>
+<p>HOST_NAME must end with a simplified character to avoid capturing a
+period.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.base.urls.links.Matchable">
+<em class="property">class </em><code class="descclassname">arxiv.base.urls.links.</code><code class="descname">Matchable</code><a class="reference internal" href="../_modules/arxiv/base/urls/links.html#Matchable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.urls.links.Matchable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<p>Class for paterns.</p>
+<dl class="attribute">
+<dt id="arxiv.base.urls.links.Matchable.examples">
+<code class="descname">examples</code><a class="headerlink" href="#arxiv.base.urls.links.Matchable.examples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.base.urls.links.Matchable.pattern">
+<code class="descname">pattern</code><a class="headerlink" href="#arxiv.base.urls.links.Matchable.pattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.base.urls.links.OKCHARS">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">OKCHARS</code><em class="property"> = '([a-z0-9,_.\\-+~:]|%[a-f0-9]*)'</em><a class="headerlink" href="#arxiv.base.urls.links.OKCHARS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Chacters that are acceptable during PATH, QUERY and ANCHOR parts</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.base.urls.links.PATH">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">PATH</code><em class="property"> = '(?P&lt;PATH&gt;(/([a-z0-9,_.\\-+~:]|%[a-f0-9]*)*)+)?'</em><a class="headerlink" href="#arxiv.base.urls.links.PATH" title="Permalink to this definition">¶</a></dt>
+<dd><p>Regex for path part of URLs for use in urlize</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.base.urls.links.QUERY">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">QUERY</code><em class="property"> = '(?P&lt;QUERY&gt;\\?(&amp;?(([a-z0-9,_.\\-+~:]|%[a-f0-9]*)*(=([a-z0-9,_.\\-+~:]|%[a-f0-9]*)*)?))*)?'</em><a class="headerlink" href="#arxiv.base.urls.links.QUERY" title="Permalink to this definition">¶</a></dt>
+<dd><p>Regex for query part of URLs for use in urlize</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.base.urls.links.URLINTEXT_PAT">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">URLINTEXT_PAT</code><em class="property"> = re.compile('(?P&lt;url&gt;(?:https?://)(?:[a-z0-9][a-z0-9\\-.:]+[a-z0-9])(?P&lt;PATH&gt;(/([a-z0-9,_.\\-+~:]|%[a-f0-9]*)*)+)?(?P&lt;QUERY&gt;\\?(&amp;?(([a-z0-9,_.\\-+~:]|%[a-f0-9]*)*(=([a-z0-9,_.\\-+~:]|%[a-f0-9]*)*)?))*)?(?P&lt;ANCHOR, re.IGNORECASE)</em><a class="headerlink" href="#arxiv.base.urls.links.URLINTEXT_PAT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Regex to match URLs in text.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.urls.links.arxiv_id_to_url">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">arxiv_id_to_url</code><span class="sig-paren">(</span><em>arxiv_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/urls/links.html#arxiv_id_to_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.urls.links.arxiv_id_to_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate an URL for an arXiv ID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.base.urls.links.bad_arxiv_id_patterns">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">bad_arxiv_id_patterns</code><em class="property"> = [re.compile('vixra', re.IGNORECASE)]</em><a class="headerlink" href="#arxiv.base.urls.links.bad_arxiv_id_patterns" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of Regex patterns that will cause matching to be skipped for
+the token.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.base.urls.links.basic_url_patterns">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">basic_url_patterns</code><em class="property"> = [Matchable(examples=['http://something.com/bla'], pattern=re.compile('(?P&lt;url&gt;(?:https?://)(?:[a-z0-9][a-z0-9\\-.:]+[a-z0-9])(?P&lt;PATH&gt;(/([a-z0-9,_.\\-+~:]|%[a-f0-9]*)*)+)?(?P&lt;QUERY&gt;\\?(&amp;?(([a-z0-9,_.\\-+~:]|%[a-f0-9]*)*(=([a-z0-9,_.\\-+~:]|%[a-f0-9]*)*)?))*)?(?P&lt;ANCHOR, re.IGNORECASE)), Matchable(examples=['ftp://something.com/bla'], pattern=re.compile('(?P&lt;url&gt;(?:ftp://)(([a-z0-9,_.\\-+~:]|%[a-f0-9]*)|(&#64;))*(?P&lt;PATH&gt;(/([a-z0-9,_.\\-+~:]|%[a-f0-9]*)*)+)?)', re.IGNORECASE))]</em><a class="headerlink" href="#arxiv.base.urls.links.basic_url_patterns" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of Matchable to use when finding URLs in text</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.urls.links.clickthrough_url_for_doi">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">clickthrough_url_for_doi</code><span class="sig-paren">(</span><em>doi</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/urls/links.html#clickthrough_url_for_doi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.urls.links.clickthrough_url_for_doi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a clickthrough URL for a DOI.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.base.urls.links.doi_patterns">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">doi_patterns</code><em class="property"> = [Matchable(examples=['10.1145/0001234.1234567'], pattern=re.compile('(?P&lt;doi&gt;10.\\d{4,9}/[-._;()/:A-Z0-9]+)', re.IGNORECASE))]</em><a class="headerlink" href="#arxiv.base.urls.links.doi_patterns" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of Matchable for DOIs in text.</p>
+<p>We should probably match DOIs first because they are the source of a
+lot of false positives for arxiv matches.</p>
+<p>Only using the most general express from
+<a class="reference external" href="https://www.crossref.org/blog/dois-and-matching-regular-expressions/">https://www.crossref.org/blog/dois-and-matching-regular-expressions/</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.urls.links.doi_substituter">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">doi_substituter</code><span class="sig-paren">(</span><em>match</em>, <em>url_for_doi</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/urls/links.html#doi_substituter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.urls.links.doi_substituter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return match.string transformed for a DOI match.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Markup</span></code>, <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.base.urls.links.dois_ids_and_urls">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">dois_ids_and_urls</code><em class="property"> = [Matchable(examples=['http://something.com/bla'], pattern=re.compile('(?P&lt;url&gt;(?:https?://)(?:[a-z0-9][a-z0-9\\-.:]+[a-z0-9])(?P&lt;PATH&gt;(/([a-z0-9,_.\\-+~:]|%[a-f0-9]*)*)+)?(?P&lt;QUERY&gt;\\?(&amp;?(([a-z0-9,_.\\-+~:]|%[a-f0-9]*)*(=([a-z0-9,_.\\-+~:]|%[a-f0-9]*)*)?))*)?(?P&lt;ANCHOR, re.IGNORECASE)), Matchable(examples=['ftp://something.com/bla'], pattern=re.compile('(?P&lt;url&gt;(?:ftp://)(([a-z0-9,_.\\-+~:]|%[a-f0-9]*)|(&#64;))*(?P&lt;PATH&gt;(/([a-z0-9,_.\\-+~:]|%[a-f0-9]*)*)+)?)', re.IGNORECASE)), Matchable(examples=['10.1145/0001234.1234567'], pattern=re.compile('(?P&lt;doi&gt;10.\\d{4,9}/[-._;()/:A-Z0-9]+)', re.IGNORECASE)), Matchable(examples=['math/0501233', 'hep-ph/0611734', 'gr-qc/0112123'], pattern=re.compile('(?P&lt;arxiv_prefix&gt;ar[xX]iv:)?(?P&lt;arxiv_id&gt;(acc\\-phys|adap\\-org|alg\\-geom|ao\\-sci|astro\\-ph|atom\\-ph|bayes\\-an|chao\\-dyn|chem\\-ph|cmp\\-lg|comp\\-gas|cond\\-mat|cs|dg\\-ga|econ|eess|funct\\-an, re.IGNORECASE)), Matchable(examples=['math.GR/0601136v3', 'math.GR/0601136'], pattern=re.compile('(?P&lt;arxiv_prefix&gt;ar[xX]iv:)?(?P&lt;arxiv_id&gt;(acc\\-phys|adap\\-org|alg\\-geom|ao\\-sci|astro\\-ph|astro\\-ph\\.CO|astro\\-ph\\.EP|astro\\-ph\\.GA|astro\\-ph\\.HE|astro\\-ph\\.IM|astro\\-ph\\.SR|atom\\-p, re.IGNORECASE)), Matchable(examples=['1609.05068', '1207.1234v1', '1207.1234', '1807.12345', '1807.12345v1', '1807.12345v12'], pattern=re.compile('(?&lt;![\\d=])(?P&lt;arxiv_prefix&gt;ar[xX]iv:)?(?P&lt;arxiv_id&gt;\\d{4}\\.\\d{4,5}(v\\d*)?)', re.IGNORECASE))]</em><a class="headerlink" href="#arxiv.base.urls.links.dois_ids_and_urls" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of Matchable to use when finding DOIs, arXiv IDs, and URLs.</p>
+<p>URLs are first because some URLs contain DOIs or arXiv IDS.</p>
+<p>DOI are before arXiv ids because many DOIs are falsely matched by the
+arxiv_id patterns.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.urls.links.id_substituter">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">id_substituter</code><span class="sig-paren">(</span><em>match</em>, <em>id_to_url</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/urls/links.html#id_substituter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.urls.links.id_substituter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return match.string transformed for a arxiv id match.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Markup</span></code>, <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.urls.links.url_for_doi">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">url_for_doi</code><span class="sig-paren">(</span><em>doi</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/urls/links.html#url_for_doi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.urls.links.url_for_doi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate an URL for a DOI.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.urls.links.url_substituter">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">url_substituter</code><span class="sig-paren">(</span><em>match</em>, <em>url_to_url</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/urls/links.html#url_substituter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.urls.links.url_substituter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return match.string transformed for a URL match.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Markup</span></code>, <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.urls.links.urlize">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">urlize</code><span class="sig-paren">(</span><em>text, kinds=['url', 'arxiv_id', 'doi']</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/urls/links.html#urlize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.urls.links.urlize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert URLs and certain identifiers to links.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.base.urls.links.urlizer">
+<code class="descclassname">arxiv.base.urls.links.</code><code class="descname">urlizer</code><span class="sig-paren">(</span><em>kinds=['url', 'arxiv_id', 'doi'], extra_types={}</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/base/urls/links.html#urlizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.base.urls.links.urlizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a new urlize function for a specific set of tokens.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.Callable" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv base</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">arxiv</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.html">arxiv package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="metadocs.html">Meta-documentation: How to create documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">arxiv</a><ul>
+  <li><a href="arxiv.html">arxiv package</a><ul>
+  <li><a href="arxiv.base.html">arxiv.base package</a><ul>
+  <li><a href="arxiv.base.urls.html">arxiv.base.urls package</a><ul>
+      <li>Previous: <a href="arxiv.base.urls.clickthrough.html" title="previous chapter">arxiv.base.urls.clickthrough module</a></li>
+      <li>Next: <a href="arxiv.base.alerts.html" title="next chapter">arxiv.base.alerts module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, arXiv Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/arxiv/arxiv.base.urls.links.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

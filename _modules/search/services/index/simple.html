@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
    
@@ -64,8 +63,12 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">search</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">&quot;term&quot;</span><span class="p">,</span> <span class="n">is_current</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">q</span> <span class="o">=</span> <span class="n">SEARCH_FIELDS</span><span class="p">[</span><span class="n">query</span><span class="o">.</span><span class="n">search_field</span><span class="p">](</span><span class="n">query</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">query</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">:</span>
-        <span class="n">q</span> <span class="o">&amp;=</span> <span class="n">limit_by_classification</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">query</span><span class="o">.</span><span class="n">classification</span><span class="p">:</span>
+        <span class="n">_q</span> <span class="o">=</span> <span class="n">limit_by_classification</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">classification</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">query</span><span class="o">.</span><span class="n">include_cross_list</span><span class="p">:</span>
+            <span class="n">_q</span> <span class="o">|=</span> <span class="n">limit_by_classification</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">classification</span><span class="p">,</span>
+                                          <span class="s2">&quot;secondary_classification&quot;</span><span class="p">)</span>
+        <span class="n">q</span> <span class="o">&amp;=</span> <span class="n">_q</span>
     <span class="n">search</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
     <span class="n">search</span> <span class="o">=</span> <span class="n">sort</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">search</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">search</span></div>
@@ -126,8 +129,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

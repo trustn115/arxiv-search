@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="search.controllers.advanced.tests module" href="search.controllers.advanced.tests.html" />
@@ -107,6 +106,16 @@
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="search.controllers.advanced.forms.ClassificationForm.EXCLUDE_CROSS_LIST">
+<code class="descname">EXCLUDE_CROSS_LIST</code><em class="property"> = 'exclude'</em><a class="headerlink" href="#search.controllers.advanced.forms.ClassificationForm.EXCLUDE_CROSS_LIST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.ClassificationForm.INCLUDE_CROSS_LIST">
+<code class="descname">INCLUDE_CROSS_LIST</code><em class="property"> = 'include'</em><a class="headerlink" href="#search.controllers.advanced.forms.ClassificationForm.INCLUDE_CROSS_LIST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="search.controllers.advanced.forms.ClassificationForm.PHYSICS_ARCHIVES">
 <code class="descname">PHYSICS_ARCHIVES</code><em class="property"> = [('all', 'all'), ('astro-ph', 'astro-ph'), ('cond-mat', 'cond-mat'), ('gr-qc', 'gr-qc'), ('hep-ex', 'hep-ex'), ('hep-lat', 'hep-lat'), ('hep-ph', 'hep-ph'), ('hep-th', 'hep-th'), ('math-ph', 'math-ph'), ('nlin', 'nlin'), ('nucl-ex', 'nucl-ex'), ('nucl-th', 'nucl-th'), ('physics', 'physics'), ('quant-ph', 'quant-ph')]</em><a class="headerlink" href="#search.controllers.advanced.forms.ClassificationForm.PHYSICS_ARCHIVES" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -124,6 +133,11 @@
 <dl class="attribute">
 <dt id="search.controllers.advanced.forms.ClassificationForm.eess">
 <code class="descname">eess</code><em class="property"> = &lt;UnboundField(BooleanField, ('Electrical Engineering and Systems Science (eess)',), {})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.ClassificationForm.eess" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="search.controllers.advanced.forms.ClassificationForm.include_cross_list">
+<code class="descname">include_cross_list</code><em class="property"> = &lt;UnboundField(RadioField, ('Include cross-list',), {'choices': [('include', 'Include cross-listed papers'), ('exclude', 'Exclude cross-listed papers')], 'default': 'include'})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.ClassificationForm.include_cross_list" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -231,7 +245,7 @@
 <p>Subform for query parts on specific fields.</p>
 <dl class="attribute">
 <dt id="search.controllers.advanced.forms.FieldForm.field">
-<code class="descname">field</code><em class="property"> = &lt;UnboundField(SelectField, ('Field',), {'choices': [('title', 'Title'), ('author', 'Author(s)'), ('abstract', 'Abstract'), ('comments', 'Comments'), ('journal_ref', 'Journal reference'), ('acm_class', 'ACM classification'), ('msc_class', 'MSC classification'), ('report_num', 'Report number'), ('paper_id', 'arXiv identifier'), ('doi', 'DOI'), ('orcid', 'ORCID'), ('author_id', 'arXiv author ID'), ('all', 'All fields')]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.FieldForm.field" title="Permalink to this definition">¶</a></dt>
+<code class="descname">field</code><em class="property"> = &lt;UnboundField(SelectField, ('Field',), {'choices': [('title', 'Title'), ('author', 'Author(s)'), ('abstract', 'Abstract'), ('comments', 'Comments'), ('journal_ref', 'Journal reference'), ('acm_class', 'ACM classification'), ('msc_class', 'MSC classification'), ('report_num', 'Report number'), ('paper_id', 'arXiv identifier'), ('cross_list_category', 'Cross-list category'), ('doi', 'DOI'), ('orcid', 'ORCID'), ('author_id', 'arXiv author ID'), ('all', 'All fields')]})&gt;</em><a class="headerlink" href="#search.controllers.advanced.forms.FieldForm.field" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -348,8 +362,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/api/search.controllers.advanced.forms.rst.txt"

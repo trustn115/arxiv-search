@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
    
@@ -36,12 +35,13 @@
   <h1>Source code for search.routes.api.serialize</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Serializers for API responses.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">lxml</span> <span class="k">import</span> <span class="n">etree</span>
 <span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">url_for</span>
 
 <span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">status</span>
-<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">DocumentSet</span><span class="p">,</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Classification</span><span class="p">,</span> <span class="n">Person</span>
+<span class="kn">from</span> <span class="nn">search.domain</span> <span class="k">import</span> <span class="n">DocumentSet</span><span class="p">,</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Classification</span><span class="p">,</span> <span class="n">Person</span><span class="p">,</span> \
+    <span class="n">APIQuery</span>
 
 
 <div class="viewcode-block" id="BaseSerializer"><a class="viewcode-back" href="../../../../api/search.routes.api.serialize.html#search.routes.api.serialize.BaseSerializer">[docs]</a><span class="k">class</span> <span class="nc">BaseSerializer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -64,7 +64,9 @@
         <span class="p">}</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_transform_classification</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">clsn</span><span class="p">:</span> <span class="n">Classification</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_transform_classification</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">clsn</span><span class="p">:</span> <span class="n">Classification</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">clsn</span><span class="o">.</span><span class="n">category</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="n">clsn</span><span class="o">.</span><span class="n">group</span><span class="p">,</span>
             <span class="s1">&#39;archive&#39;</span><span class="p">:</span> <span class="n">clsn</span><span class="o">.</span><span class="n">archive</span><span class="p">,</span>
@@ -79,12 +81,16 @@
         <span class="p">}</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_transform_latest</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_transform_latest</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">document</span><span class="o">.</span><span class="n">latest</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;paper_id&quot;</span><span class="p">:</span> <span class="n">document</span><span class="o">.</span><span class="n">latest</span><span class="p">,</span>
             <span class="s2">&quot;href&quot;</span><span class="p">:</span> <span class="n">url_for</span><span class="p">(</span><span class="s2">&quot;api.paper&quot;</span><span class="p">,</span> <span class="n">paper_id</span><span class="o">=</span><span class="n">document</span><span class="o">.</span><span class="n">paper_id</span><span class="p">,</span>
                             <span class="n">version</span><span class="o">=</span><span class="n">document</span><span class="o">.</span><span class="n">latest_version</span><span class="p">,</span>
                             <span class="n">_external</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="s2">&quot;canonical&quot;</span><span class="p">:</span> <span class="n">url_for</span><span class="p">(</span><span class="s2">&quot;abs&quot;</span><span class="p">,</span> <span class="n">paper_id</span><span class="o">=</span><span class="n">document</span><span class="o">.</span><span class="n">paper_id</span><span class="p">,</span>
+                                 <span class="n">version</span><span class="o">=</span><span class="n">document</span><span class="o">.</span><span class="n">latest_version</span><span class="p">),</span>
             <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="n">document</span><span class="o">.</span><span class="n">latest_version</span>
         <span class="p">}</span>
 
@@ -96,63 +102,80 @@
         <span class="p">}</span>
 
 <div class="viewcode-block" id="JSONSerializer.transform_document"><a class="viewcode-back" href="../../../../api/search.routes.api.serialize.html#search.routes.api.serialize.JSONSerializer.transform_document">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">transform_document</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">doc</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">transform_document</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">doc</span><span class="p">:</span> <span class="n">Document</span><span class="p">,</span>
+                           <span class="n">query</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">APIQuery</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Select a subset of :class:`Document` properties for public API.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s1">&#39;abs_categories&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">abs_categories</span><span class="p">,</span>
-            <span class="s1">&#39;abstract&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">abstract</span><span class="p">,</span>
-            <span class="s1">&#39;acm_class&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">acm_class</span><span class="p">,</span>
-            <span class="s1">&#39;owners&#39;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s1">&#39;abs_categories&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">abs_categories</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;abstract&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">abstract</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;acm_class&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">acm_class</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;owners&#39;</span><span class="p">,</span> <span class="p">[</span>
                 <span class="bp">cls</span><span class="o">.</span><span class="n">_transform_person</span><span class="p">(</span><span class="n">owner</span><span class="p">)</span> <span class="k">for</span> <span class="n">owner</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">owners</span>
                 <span class="k">if</span> <span class="n">owner</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="p">],</span>
-            <span class="s1">&#39;authors&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">]),</span>
+            <span class="p">(</span><span class="s1">&#39;authors&#39;</span><span class="p">,</span> <span class="p">[</span>
                 <span class="bp">cls</span><span class="o">.</span><span class="n">_transform_person</span><span class="p">(</span><span class="n">author</span><span class="p">)</span> <span class="k">for</span> <span class="n">author</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">authors</span>
                 <span class="k">if</span> <span class="n">author</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="p">],</span>
-            <span class="s1">&#39;comments&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">comments</span><span class="p">,</span>
-            <span class="s1">&#39;submitted_date&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">submitted_date</span><span class="p">,</span>
-            <span class="s1">&#39;submitted_date_first&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">submitted_date_first</span><span class="p">,</span>
-            <span class="s1">&#39;announced_date_first&#39;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="p">]),</span>
+            <span class="p">(</span><span class="s1">&#39;comments&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">comments</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;authors_freeform&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">authors_freeform</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;submitted_date&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">submitted_date</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;submitted_date_first&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">submitted_date_first</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;announced_date_first&#39;</span><span class="p">,</span> <span class="p">(</span>
                 <span class="n">doc</span><span class="o">.</span><span class="n">announced_date_first</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m&#39;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">doc</span><span class="o">.</span><span class="n">announced_date_first</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
                 <span class="k">else</span> <span class="kc">None</span>
-            <span class="p">),</span>
-            <span class="s1">&#39;paper_id&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">paper_id_v</span><span class="p">,</span>
-            <span class="s1">&#39;doi&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">doi</span><span class="p">,</span>
-            <span class="s1">&#39;formats&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">)),</span>
+            <span class="p">(</span><span class="s1">&#39;paper_id&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">paper_id</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;paper_id_v&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">paper_id_v</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;doi&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">doi</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;formats&#39;</span><span class="p">,</span> <span class="p">[</span>
                 <span class="bp">cls</span><span class="o">.</span><span class="n">_transform_format</span><span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">paper_id</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">formats</span>
-            <span class="p">],</span>
-            <span class="s1">&#39;is_current&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">is_current</span><span class="p">,</span>
-            <span class="s1">&#39;is_withdrawn&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">is_withdrawn</span><span class="p">,</span>
-            <span class="s1">&#39;journal_ref&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">journal_ref</span><span class="p">,</span>
-            <span class="s1">&#39;license&#39;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_transform_license</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">license</span><span class="p">),</span>
-            <span class="s1">&#39;msc_class&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">msc_class</span><span class="p">,</span>
-            <span class="s1">&#39;primary_classification&#39;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_transform_classification</span><span class="p">(</span>
-                <span class="n">doc</span><span class="o">.</span><span class="n">primary_classification</span>
-            <span class="p">),</span>
-            <span class="s1">&#39;secondary_classification&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">]),</span>
+            <span class="p">(</span><span class="s1">&#39;is_current&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">is_current</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;is_withdrawn&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">is_withdrawn</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;journal_ref&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">journal_ref</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;license&#39;</span><span class="p">,</span>
+             <span class="bp">cls</span><span class="o">.</span><span class="n">_transform_license</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">license</span><span class="p">)</span> <span class="k">if</span> <span class="n">doc</span><span class="o">.</span><span class="n">license</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;msc_class&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">msc_class</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;primary_classification&#39;</span><span class="p">,</span>
+             <span class="bp">cls</span><span class="o">.</span><span class="n">_transform_classification</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">primary_classification</span><span class="p">)</span>
+             <span class="k">if</span> <span class="n">doc</span><span class="o">.</span><span class="n">primary_classification</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;secondary_classification&#39;</span><span class="p">,</span> <span class="p">[</span>
                 <span class="bp">cls</span><span class="o">.</span><span class="n">_transform_classification</span><span class="p">(</span><span class="n">clsn</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">clsn</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">secondary_classification</span>
-            <span class="p">],</span>
-            <span class="s1">&#39;report_num&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">report_num</span><span class="p">,</span>
-            <span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>  <span class="c1"># TODO: link?</span>
-            <span class="s1">&#39;submitter&#39;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="p">]),</span>
+            <span class="p">(</span><span class="s1">&#39;report_num&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">report_num</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">source</span><span class="p">),</span>  <span class="c1"># TODO, link?</span>
+            <span class="p">(</span><span class="s1">&#39;submitter&#39;</span><span class="p">,</span> <span class="p">(</span>
                 <span class="bp">cls</span><span class="o">.</span><span class="n">_transform_person</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">submitter</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">doc</span><span class="o">.</span><span class="n">submitter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
-            <span class="p">),</span>
-            <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>
-            <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
-            <span class="s1">&#39;latest&#39;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_transform_latest</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span>
-        <span class="p">}</span></div>
+            <span class="p">)),</span>
+            <span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">title</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">version</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;latest&#39;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_transform_latest</span><span class="p">(</span><span class="n">doc</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">,</span> <span class="n">url_for</span><span class="p">(</span><span class="s2">&quot;api.paper&quot;</span><span class="p">,</span> <span class="n">paper_id</span><span class="o">=</span><span class="n">doc</span><span class="o">.</span><span class="n">paper_id</span><span class="p">,</span>
+                             <span class="n">version</span><span class="o">=</span><span class="n">doc</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">_external</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s1">&#39;canonical&#39;</span><span class="p">,</span> <span class="n">url_for</span><span class="p">(</span><span class="s2">&quot;abs&quot;</span><span class="p">,</span> <span class="n">paper_id</span><span class="o">=</span><span class="n">doc</span><span class="o">.</span><span class="n">paper_id</span><span class="p">,</span>
+                                  <span class="n">version</span><span class="o">=</span><span class="n">doc</span><span class="o">.</span><span class="n">version</span><span class="p">))</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Only return fields that have been explicitly requested.</span>
+        <span class="k">if</span> <span class="n">query</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">fields</span>
+                     <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">query</span><span class="o">.</span><span class="n">include_fields</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">_data</span></div>
 
 <div class="viewcode-block" id="JSONSerializer.serialize"><a class="viewcode-back" href="../../../../api/search.routes.api.serialize.html#search.routes.api.serialize.JSONSerializer.serialize">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">document_set</span><span class="p">:</span> <span class="n">DocumentSet</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">document_set</span><span class="p">:</span> <span class="n">DocumentSet</span><span class="p">,</span>
+                  <span class="n">query</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">APIQuery</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Generate JSON for a :class:`DocumentSet`.&quot;&quot;&quot;</span>
         <span class="n">serialized</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">jsonify</span><span class="p">({</span>
             <span class="s1">&#39;results&#39;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="bp">cls</span><span class="o">.</span><span class="n">transform_document</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">transform_document</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">document_set</span><span class="o">.</span><span class="n">results</span>
             <span class="p">],</span>
             <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="p">{</span>
@@ -160,22 +183,27 @@
                 <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="n">document_set</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">),</span>
                 <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="n">document_set</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;size&#39;</span><span class="p">),</span>
                 <span class="s1">&#39;total&#39;</span><span class="p">:</span> <span class="n">document_set</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;total&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="n">document_set</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;query&#39;</span><span class="p">,</span> <span class="p">[])</span>
             <span class="p">},</span>
         <span class="p">})</span>
         <span class="k">return</span> <span class="n">serialized</span></div>
 
 <div class="viewcode-block" id="JSONSerializer.serialize_document"><a class="viewcode-back" href="../../../../api/search.routes.api.serialize.html#search.routes.api.serialize.JSONSerializer.serialize_document">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">serialize_document</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">serialize_document</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">,</span>
+                           <span class="n">query</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">APIQuery</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Generate JSON for a single :class:`Document`.&quot;&quot;&quot;</span>
-        <span class="n">serialized</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">jsonify</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">transform_document</span><span class="p">(</span><span class="n">document</span><span class="p">))</span>
+        <span class="n">serialized</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">jsonify</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">transform_document</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">serialized</span></div></div>
 
 
-<div class="viewcode-block" id="as_json"><a class="viewcode-back" href="../../../../api/search.routes.api.serialize.html#search.routes.api.serialize.as_json">[docs]</a><span class="k">def</span> <span class="nf">as_json</span><span class="p">(</span><span class="n">document_or_set</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">DocumentSet</span><span class="p">,</span> <span class="n">Document</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="as_json"><a class="viewcode-back" href="../../../../api/search.routes.api.serialize.html#search.routes.api.serialize.as_json">[docs]</a><span class="k">def</span> <span class="nf">as_json</span><span class="p">(</span><span class="n">document_or_set</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">DocumentSet</span><span class="p">,</span> <span class="n">Document</span><span class="p">],</span>
+            <span class="n">query</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">APIQuery</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Serialize a :class:`DocumentSet` as JSON.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">document_or_set</span><span class="p">)</span> <span class="ow">is</span> <span class="n">DocumentSet</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">JSONSerializer</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">document_or_set</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-    <span class="k">return</span> <span class="n">JSONSerializer</span><span class="o">.</span><span class="n">serialize_document</span><span class="p">(</span><span class="n">document_or_set</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
+        <span class="k">return</span> <span class="n">JSONSerializer</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">document_or_set</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="k">return</span> <span class="n">JSONSerializer</span><span class="o">.</span><span class="n">serialize_document</span><span class="p">(</span><span class="n">document_or_set</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
 
 <span class="c1"># TODO: implement me!</span>
@@ -267,8 +295,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

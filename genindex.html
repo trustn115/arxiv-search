@@ -15,7 +15,6 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
    
@@ -113,6 +112,8 @@
 </li>
       <li><a href="api/search.domain.base.html#search.domain.base.Classification.archive">archive (search.domain.base.Classification attribute)</a>
 </li>
+      <li><a href="api/search.domain.base.html#search.domain.base.Classification.archive_display">archive_display (search.domain.base.Classification attribute)</a>
+</li>
       <li><a href="api/search.converters.html#search.converters.ArchiveConverter">ArchiveConverter (class in search.converters)</a>
 </li>
       <li><a href="api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.ClassificationForm.ARCHIVES">ARCHIVES (search.controllers.advanced.forms.ClassificationForm attribute)</a>
@@ -167,10 +168,18 @@
 </li>
       <li><a href="api/search.domain.base.html#search.domain.base.Classification.category">category (search.domain.base.Classification attribute)</a>
 </li>
+      <li><a href="api/search.domain.base.html#search.domain.base.Classification.category_display">category_display (search.domain.base.Classification attribute)</a>
+</li>
       <li><a href="api/search.domain.base.html#search.domain.base.Classification">Classification (class in search.domain.base)</a>
 </li>
       <li><a href="api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.AdvancedSearchForm.classification">classification (search.controllers.advanced.forms.AdvancedSearchForm attribute)</a>
+
+      <ul>
+        <li><a href="api/search.domain.advanced.html#search.domain.advanced.AdvancedQuery.classification">(search.domain.advanced.AdvancedQuery attribute)</a>
 </li>
+        <li><a href="api/search.domain.base.html#search.domain.base.SimpleQuery.classification">(search.domain.base.SimpleQuery attribute)</a>
+</li>
+      </ul></li>
       <li><a href="api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.ClassificationForm">ClassificationForm (class in search.controllers.advanced.forms)</a>
 </li>
       <li><a href="api/search.domain.base.html#search.domain.base.ClassificationList">ClassificationList (class in search.domain.base)</a>
@@ -181,10 +190,10 @@
         <li><a href="api/search.services.index.html#search.services.index.SearchSession.cluster_available">(search.services.index.SearchSession method)</a>
 </li>
       </ul></li>
-      <li><a href="api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.ClassificationForm.computer_science">computer_science (search.controllers.advanced.forms.ClassificationForm attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.ClassificationForm.computer_science">computer_science (search.controllers.advanced.forms.ClassificationForm attribute)</a>
+</li>
       <li><a href="api/search.services.metadata.html#search.services.metadata.ConnectionFailed">ConnectionFailed</a>
 </li>
       <li><a href="api/search.factory.html#search.factory.create_api_web_app">create_api_web_app() (in module search.factory)</a>
@@ -279,6 +288,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/search.services.index.util.html#search.services.index.util.escape">escape() (in module search.services.index.util)</a>
 </li>
+      <li><a href="api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.ClassificationForm.EXCLUDE_CROSS_LIST">EXCLUDE_CROSS_LIST (search.controllers.advanced.forms.ClassificationForm attribute)</a>
+</li>
       <li><a href="api/search.services.index.html#search.services.index.exists">exists() (in module search.services.index)</a>
 
       <ul>
@@ -329,6 +340,8 @@
 </li>
       <li><a href="api/search.context.html#search.context.get_application_global">get_application_global() (in module search.context)</a>
 </li>
+      <li><a href="api/search.domain.api.html#search.domain.api.get_default_extra_fields">get_default_extra_fields() (in module search.domain.api)</a>
+</li>
       <li><a href="api/search.services.index.html#search.services.index.get_document">get_document() (in module search.services.index)</a>
 
       <ul>
@@ -339,6 +352,10 @@
 </li>
       <li><a href="api/search.routes.ui.html#search.routes.ui.get_parameters_from_cookie">get_parameters_from_cookie() (in module search.routes.ui)</a>
 </li>
+      <li><a href="api/search.domain.api.html#search.domain.api.get_required_fields">get_required_fields() (in module search.domain.api)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/search.services.fulltext.html#search.services.fulltext.get_session">get_session() (in module search.services.fulltext)</a>
 
       <ul>
@@ -347,8 +364,6 @@
         <li><a href="api/search.services.metadata.html#search.services.metadata.get_session">(in module search.services.metadata)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/search.services.index.html#search.services.index.get_task_status">get_task_status() (in module search.services.index)</a>
 
       <ul>
@@ -356,6 +371,8 @@
 </li>
       </ul></li>
       <li><a href="api/search.domain.base.html#search.domain.base.Classification.group">group (search.domain.base.Classification attribute)</a>
+</li>
+      <li><a href="api/search.domain.base.html#search.domain.base.Classification.group_display">group_display (search.domain.base.Classification attribute)</a>
 </li>
       <li><a href="api/search.controllers.advanced.html#search.controllers.advanced.group_search">group_search() (in module search.controllers.advanced)</a>
 
@@ -413,6 +430,16 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.ClassificationForm.INCLUDE_CROSS_LIST">INCLUDE_CROSS_LIST (search.controllers.advanced.forms.ClassificationForm attribute)</a>
+</li>
+      <li><a href="api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.ClassificationForm.include_cross_list">include_cross_list (search.controllers.advanced.forms.ClassificationForm attribute)</a>
+
+      <ul>
+        <li><a href="api/search.domain.advanced.html#search.domain.advanced.AdvancedQuery.include_cross_list">(search.domain.advanced.AdvancedQuery attribute)</a>
+</li>
+        <li><a href="api/search.domain.base.html#search.domain.base.SimpleQuery.include_cross_list">(search.domain.base.SimpleQuery attribute)</a>
+</li>
+      </ul></li>
       <li><a href="api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.AdvancedSearchForm.include_older_versions">include_older_versions (search.controllers.advanced.forms.AdvancedSearchForm attribute)</a>
 
       <ul>
@@ -433,6 +460,8 @@
 </li>
       <li><a href="api/search.services.index.exceptions.html#search.services.index.exceptions.IndexingError">IndexingError</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/search.agent.consumer.html#search.agent.consumer.IndexingFailed">IndexingFailed</a>
 </li>
       <li><a href="api/search.services.fulltext.html#search.services.fulltext.init_app">init_app() (in module search.services.fulltext)</a>
@@ -443,8 +472,6 @@
         <li><a href="api/search.services.metadata.html#search.services.metadata.init_app">(in module search.services.metadata)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/search.domain.base.html#search.domain.base.DocMeta.is_current">is_current (search.domain.base.DocMeta attribute)</a>
 
       <ul>
@@ -633,10 +660,10 @@
 </li>
       <li><a href="api/search.domain.base.html#search.domain.base.Person">Person (class in search.domain.base)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.ClassificationForm.physics">physics (search.controllers.advanced.forms.ClassificationForm attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.ClassificationForm.PHYSICS_ARCHIVES">PHYSICS_ARCHIVES (search.controllers.advanced.forms.ClassificationForm attribute)</a>
 </li>
       <li><a href="api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.ClassificationForm.physics_archives">physics_archives (search.controllers.advanced.forms.ClassificationForm attribute)</a>
@@ -648,6 +675,8 @@
       <li><a href="api/search.domain.base.html#search.domain.base.Document.preview">preview (search.domain.base.Document attribute)</a>
 </li>
       <li><a href="api/search.services.index.highlighting.html#search.services.index.highlighting.preview">preview() (in module search.services.index.highlighting)</a>
+</li>
+      <li><a href="api/search.domain.api.html#search.domain.api.APIQuery.primary_classification">primary_classification (search.domain.api.APIQuery attribute)</a>
 </li>
       <li><a href="api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.MultiFormatDateField.process_formdata">process_formdata() (search.controllers.advanced.forms.MultiFormatDateField method)</a>
 </li>
@@ -677,13 +706,17 @@
       </ul></li>
       <li><a href="api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.ClassificationForm.q_biology">q_biology (search.controllers.advanced.forms.ClassificationForm attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/search.controllers.advanced.forms.html#search.controllers.advanced.forms.ClassificationForm.q_finance">q_finance (search.controllers.advanced.forms.ClassificationForm attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/search.domain.base.html#search.domain.base.Query">Query (class in search.domain.base)</a>
 </li>
       <li><a href="api/search.controllers.simple.forms.html#search.controllers.simple.forms.SimpleSearchForm.query">query (search.controllers.simple.forms.SimpleSearchForm attribute)</a>
+</li>
+      <li><a href="api/search.services.index.prepare.html#search.services.index.prepare.query_primary_exact">query_primary_exact() (in module search.services.index.prepare)</a>
+</li>
+      <li><a href="api/search.services.index.prepare.html#search.services.index.prepare.query_secondary_exact">query_secondary_exact() (in module search.services.index.prepare)</a>
 </li>
       <li><a href="api/search.services.index.exceptions.html#search.services.index.exceptions.QueryError">QueryError</a>
 </li>
@@ -845,10 +878,10 @@
 </li>
       <li><a href="api/search.services.index.tests.html#module-search.services.index.tests">search.services.index.tests (module)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/search.services.index.tests.test_reindex.html#module-search.services.index.tests.test_reindex">search.services.index.tests.test_reindex (module)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/search.services.index.tests.test_results.html#module-search.services.index.tests.test_results">search.services.index.tests.test_results (module)</a>
 </li>
       <li><a href="api/search.services.index.tests.test_util.html#module-search.services.index.tests.test_util">search.services.index.tests.test_util (module)</a>
@@ -874,6 +907,8 @@
       <li><a href="api/search.services.index.html#search.services.index.SearchSession">SearchSession (class in search.services.index)</a>
 </li>
       <li><a href="api/search.controllers.simple.forms.html#search.controllers.simple.forms.SimpleSearchForm.searchtype">searchtype (search.controllers.simple.forms.SimpleSearchForm attribute)</a>
+</li>
+      <li><a href="api/search.domain.api.html#search.domain.api.APIQuery.secondary_classification">secondary_classification (search.domain.api.APIQuery attribute)</a>
 </li>
       <li><a href="api/search.services.metadata.html#search.services.metadata.SecurityException">SecurityException</a>
 </li>
@@ -973,8 +1008,12 @@
       </ul></li>
       <li><a href="api/search.domain.base.html#search.domain.base.Document.submitter">submitter (search.domain.base.Document attribute)</a>
 </li>
-      <li><a href="api/search.domain.base.html#search.domain.base.Query.SUPPORTED_FIELDS">SUPPORTED_FIELDS (search.domain.base.Query attribute)</a>
+      <li><a href="api/search.domain.advanced.html#search.domain.advanced.AdvancedQuery.SUPPORTED_FIELDS">SUPPORTED_FIELDS (search.domain.advanced.AdvancedQuery attribute)</a>
+
+      <ul>
+        <li><a href="api/search.domain.base.html#search.domain.base.Query.SUPPORTED_FIELDS">(search.domain.base.Query attribute)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -1339,6 +1378,8 @@
 </li>
       <li><a href="api/search.routes.api.tests.test_api.html#search.routes.api.tests.test_api.TestAPISearchRequests.test_with_valid_token">test_with_valid_token() (search.routes.api.tests.test_api.TestAPISearchRequests method)</a>
 </li>
+      <li><a href="api/search.routes.api.tests.test_api.html#search.routes.api.tests.test_api.TestAPISearchRequests.test_with_valid_token_limit_fields">test_with_valid_token_limit_fields() (search.routes.api.tests.test_api.TestAPISearchRequests method)</a>
+</li>
       <li><a href="api/search.controllers.advanced.tests.html#search.controllers.advanced.tests.TestAdvancedSearchForm.test_year_must_be_after_1990">test_year_must_be_after_1990() (search.controllers.advanced.tests.TestAdvancedSearchForm method)</a>
 </li>
       <li><a href="api/search.agent.tests.test_record_processor.html#search.agent.tests.test_record_processor.TestAddToIndex">TestAddToIndex (class in search.agent.tests.test_record_processor)</a>
@@ -1571,8 +1612,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

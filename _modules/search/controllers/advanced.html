@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -166,6 +165,11 @@
                     <span class="s2">&quot;your search again.  If this problem persists, please &quot;</span>
                     <span class="s2">&quot;report it to help@arxiv.org.&quot;</span>
                 <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+            <span class="k">except</span> <span class="n">index</span><span class="o">.</span><span class="n">OutsideAllowedRange</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">BadRequest</span><span class="p">(</span>
+                    <span class="s2">&quot;Hello clever friend. You can&#39;t get results in that range&quot;</span>
+                    <span class="s2">&quot; right now.&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
             <span class="n">response_data</span><span class="p">[</span><span class="s1">&#39;query&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">q</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;form is invalid: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">errors</span><span class="p">))</span>
@@ -209,6 +213,8 @@
     <span class="n">q</span> <span class="o">=</span> <span class="n">_update_query_with_dates</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">form</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
     <span class="n">q</span> <span class="o">=</span> <span class="n">_update_query_with_terms</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">form</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
     <span class="n">q</span> <span class="o">=</span> <span class="n">_update_query_with_classification</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">form</span><span class="o">.</span><span class="n">classification</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">q</span><span class="o">.</span><span class="n">include_cross_list</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">classification</span><span class="o">.</span><span class="n">include_cross_list</span><span class="o">.</span><span class="n">data</span> \
+        <span class="o">==</span> <span class="n">form</span><span class="o">.</span><span class="n">classification</span><span class="o">.</span><span class="n">INCLUDE_CROSS_LIST</span>
     <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">include_older_versions</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
         <span class="n">q</span><span class="o">.</span><span class="n">include_older_versions</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">order</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">data</span>
@@ -220,7 +226,7 @@
 
 <span class="k">def</span> <span class="nf">_update_query_with_classification</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n">AdvancedQuery</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">MultiDict</span><span class="p">)</span> \
         <span class="o">-&gt;</span> <span class="n">AdvancedQuery</span><span class="p">:</span>
-    <span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span> <span class="o">=</span> <span class="n">ClassificationList</span><span class="p">()</span>
+    <span class="n">q</span><span class="o">.</span><span class="n">classification</span> <span class="o">=</span> <span class="n">ClassificationList</span><span class="p">()</span>
     <span class="n">archives</span> <span class="o">=</span> <span class="p">[</span>
         <span class="p">(</span><span class="s1">&#39;computer_science&#39;</span><span class="p">,</span> <span class="s1">&#39;cs&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;economics&#39;</span><span class="p">,</span> <span class="s1">&#39;econ&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;eess&#39;</span><span class="p">,</span> <span class="s1">&#39;eess&#39;</span><span class="p">),</span>
         <span class="p">(</span><span class="s1">&#39;mathematics&#39;</span><span class="p">,</span> <span class="s1">&#39;math&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;q_biology&#39;</span><span class="p">,</span> <span class="s1">&#39;q-bio&#39;</span><span class="p">),</span>
@@ -230,19 +236,19 @@
         <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">):</span>
             <span class="c1"># Fix for these typing issues is coming soon!</span>
             <span class="c1">#  See: https://github.com/python/mypy/pull/4397</span>
-            <span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">Classification</span><span class="p">(</span><span class="n">archive</span><span class="o">=</span><span class="n">archive</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="n">q</span><span class="o">.</span><span class="n">classification</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">Classification</span><span class="p">(</span><span class="n">archive</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">archive</span><span class="p">})</span>  <span class="c1"># type: ignore</span>
             <span class="p">)</span>
     <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;physics&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;physics_archives&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
         <span class="k">if</span> <span class="s1">&#39;all&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;physics_archives&#39;</span><span class="p">]:</span>
-            <span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">Classification</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s1">&#39;grp_physics&#39;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="n">q</span><span class="o">.</span><span class="n">classification</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">Classification</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;grp_physics&#39;</span><span class="p">})</span>  <span class="c1"># type: ignore</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">q</span><span class="o">.</span><span class="n">primary_classification</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">q</span><span class="o">.</span><span class="n">classification</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="n">Classification</span><span class="p">(</span>     <span class="c1"># type: ignore</span>
-                    <span class="n">group</span><span class="o">=</span><span class="s1">&#39;grp_physics&#39;</span><span class="p">,</span>
-                    <span class="n">archive</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;physics_archives&#39;</span><span class="p">]</span>
+                    <span class="n">group</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;grp_physics&#39;</span><span class="p">},</span>
+                    <span class="n">archive</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;physics_archives&#39;</span><span class="p">]}</span>
                 <span class="p">)</span>
             <span class="p">)</span>
     <span class="k">return</span> <span class="n">q</span>
@@ -400,8 +406,8 @@
       &copy;2017, arXiv Team.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 
