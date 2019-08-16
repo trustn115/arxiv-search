@@ -14,7 +14,7 @@ from . import serialize, exceptions
 
 logger = logging.getLogger(__name__)
 
-blueprint = Blueprint('classic', __name__, url_prefix='/classic')
+blueprint = Blueprint('classic', __name__, url_prefix='/')
 
 ATOM_XML = "application/atom+xml; charset=utf-8"
 JSON = "application/json; charset=utf-8"
