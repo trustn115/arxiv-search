@@ -78,6 +78,7 @@ def search(
     response_data = {}  # type: Dict[str, Any]
 
     logger.debug("simple search request")
+    raise InternalServerError("🐨🌿")
     if "query" in request_params:
         try:
             # first check if the URL includes an arXiv ID
