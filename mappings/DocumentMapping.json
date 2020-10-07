@@ -156,7 +156,7 @@
           "first_name": {
             "type": "text",
             "analyzer": "author_folding",
-            "similarity": "classic",
+            "similarity": "boolean",
             "copy_to": ["combined"],
             "fields": {
               "exact": {
@@ -168,7 +168,7 @@
           "last_name": {
             "type": "text",
             "analyzer": "author_folding",
-            "similarity": "classic",
+            "similarity": "boolean",
             "copy_to": ["combined"],
             "fields": {
               "folded": {
@@ -190,7 +190,7 @@
           "full_name": {
             "type": "text",
             "analyzer": "author_folding",
-            "similarity": "classic",
+            "similarity": "boolean",
             "copy_to": ["combined", "authors_combined"],
             "fields": {
               "exact": {
@@ -202,7 +202,7 @@
           "full_name_initialized": {
             "type": "text",
             "analyzer": "author_folding",
-            "similarity": "classic",
+            "similarity": "boolean",
             "copy_to": ["combined", "authors_combined"],
             "fields": {
               "exact": {
@@ -225,7 +225,7 @@
           "affiliation": {
             "type": "text",
             "analyzer": "author_folding",
-            "similarity": "classic",
+            "similarity": "boolean",
             "copy_to": ["combined"],
             "fields": {
               "exact": {
@@ -242,7 +242,7 @@
           "first_name": {
             "type": "text",
             "analyzer": "author_folding",
-            "similarity": "classic",
+            "similarity": "boolean",
             "copy_to": ["combined"],
             "fields": {
               "folded": {
@@ -254,7 +254,7 @@
           "last_name": {
             "type": "text",
             "analyzer": "author_folding",
-            "similarity": "classic",
+            "similarity": "boolean",
             "copy_to": ["combined"],
             "fields": {
               "folded": {
@@ -266,13 +266,13 @@
           "full_name": {
             "type": "text",
             "analyzer": "author_folding",
-            "similarity": "classic",
+            "similarity": "boolean",
             "copy_to": ["combined", "authors_combined"]
           },
           "full_name_initialized": {
             "type": "text",
             "analyzer": "author_folding",
-            "similarity": "classic",
+            "similarity": "boolean",
             "copy_to": ["combined", "authors_combined"]
           },
           "suffix": {
