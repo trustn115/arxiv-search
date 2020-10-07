@@ -125,7 +125,6 @@
     }
   },
   "mappings": {
-    "document": {
       "dynamic": "false",
       "properties": {
         "abs_categories": {
@@ -566,6 +565,5 @@
           "analyzer": "author_folding"
         }
       }
-    }
   }
 }
