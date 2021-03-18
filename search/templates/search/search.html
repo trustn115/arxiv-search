@@ -1,82 +1,84 @@
 {%- extends "search/base.html" %}
-
 {% import "search/search-macros.html" as search_macros %}
-
-{% block title %}
-    {% if results %}
-        Showing {{ metadata.start + 1 }}&ndash;{{ metadata.end }} of {{ '{0:,}'.format(metadata.total_results) }} results for {{ query.search_field }}: <span class="mathjax">{{ query.value }}</span>
-    {% else %}
-        Search
-    {% endif %}
-{% endblock title %}
+{% set pagetitle %}Search all of arXiv for free{% endset %}
 
 {% block within_content %}
-  <form method="GET" action="{{ url_for('ui.search', archives=archives) }}" {% if not query and not results %} class="breathe-vertical" {% endif %} aria-role="search">
-    {% if archives %}
-      Searching in archive{% if archives|length > 1 %}s{% endif %} <strong>{{ archives|join(", ") }}</strong>. <a href="{{ url_for('ui.search') }}?{{ current_url_params() }}">Search in all archives.</a>
-    {% endif %}
-
-    {% if has_classic_format %}
-      {{ search_macros.show_classic_author_search() }}
-    {% endif %}
-    <div class="field has-addons-tablet">
-      <div class="control is-expanded">
-        <label for="query" class="hidden-label">Search term or terms</label>
-        {% if form.query.errors %}
-          {{ form.query(class="input is-medium is-warning", placeholder="Search term...")|safe }}
-        {% else %}
-          {{ form.query(class="input is-medium", placeholder="Search term...")|safe }}
-        {% endif %}
-        {% if form.query.errors %}
-          <div class="help is-warning">
-            {% for error in form.query.errors %}
-                {{ error }}
-            {% endfor %}
-          </div>
-        {% endif %}
-      </div>
-      <div class="select control is-medium">
-        {{ form.searchtype.label(class="is-hidden") }}
-        {{ form.searchtype(class="is-medium")|safe }}
-      </div>
-      <div class="control">
-          <button class="button is-link is-medium">Search</button>
-      </div>
-    </div>
-    <div class="field">
-      <div class="control is-size-7">
-        {% for subfield in form.abstracts %}
-        <label class="radio">
-          {{ subfield }} {{ subfield.label.text }}
-        </label>
+<h1>arXiv Search</h1>
+<p class="d-none d-sm-block">Our mission is to provide rapid dissemination of scientific results at no cost to authors or readers. Search all of arXiv for free here by author, title, or keyword.
+<strong>API users:</strong> arXiv prioritizes searches by individual researchers. See our <a href="">API documentation</a> for more details on rate limits.
+<strong>Third party developers:</strong> Have you built a new way to search arXiv? Consider <a href="">proposing it for arXivLabs</a>.</p>
+<div class="d-flex justify-content-center">
+  <form class="arxiv-search-form" method="GET" action="{{ url_for('ui.search', archives=archives) }}" {% if not query and not results %} class="breathe-vertical" {% endif %} aria-role="search">
+    <div class="row p-0 g-1">
+      {% if archives %}
+        Searching in archive{% if archives|length > 1 %}s{% endif %} <strong>{{ archives|join(", ") }}</strong>. <a href="{{ url_for('ui.search') }}?{{ current_url_params() }}">Search in all archives.</a>
+      {% endif %}
+      {% if has_classic_format %}
+        {{ search_macros.show_classic_author_search() }}
+      {% endif %}
+      <h3 class="w-100 d-flex justify-content-center"><label for="query" class="form-label">Search arXiv:</label></h3>
+      {% if form.query.errors %}
+      <div class="alert is-warning">
+        {% for error in form.query.errors %}
+            {{ error }}
         {% endfor %}
       </div>
-    </div>
-    <div class="is-clearfix" style="height: 2.5em"> {# TODO - adjust this layout so that it matches across all forms less awkwardly #}
-      <div class="is-pulled-right">
-        {% if query %}
-        <a href="{{ url_with_params("ui.advanced_search", {}, {"terms-0-term": query.value, "terms-0-field": query.search_field, "size": query.size, "order": query.order}) }}">Advanced Search</a>
+      {% endif %}
+      <div class="input-group">
+        {% if form.query.errors %}
+          {{ form.query(class="form-control alert-warning arxiv-search-field", placeholder="Search term...")|safe }}
         {% else %}
-        <a href="{{ url_for('ui.advanced_search') }}">Advanced Search</a>
+          {{ form.query(class="form-control arxiv-search-field", placeholder="Search term...")|safe }}
         {% endif %}
+        {{ form.searchtype.label(class="visually-hidden") }}
+        {{ form.searchtype(class="form-select")|safe }}
+        <input type="submit" name="search" value="Search" class="btn btn-primary">
+      </div>
+    </div>
+    <div class="row p-1 g-3">
+      {% for subfield in form.abstracts %}
+      <div class="col-auto">
+        <label class="radio">
+        {{ subfield }} {{ subfield.label.text }}
+        </label>
+      </div>
+      {% endfor %}
+      <div class="col-auto ms-auto">
+      {% if query %}
+        <a href="{{ url_with_params("ui.advanced_search", {}, {"terms-0-term": query.value, "terms-0-field": query.search_field, "size": query.size, "order": query.order}) }}">Advanced Search</a>
+      {% else %}
+        <a href="{{ url_for('ui.advanced_search') }}">Advanced Search</a>
+      {% endif %}
       </div>
     </div>
     <input type="hidden" name="order" value="{{ form.order.data }}">
     <input type="hidden" name="size" value="{{ form.size.data }}">
   </form>
+</div>
 
+{% if not results %}
+  {% if query %}
+  <div class="alert alert-warning">
+    Sorry, your query for <span class="is-warning">{{ query.search_field }}: {{ query.value }}</span> produced no results.
+  </div>
+  {% endif %}
+{% endif %}
+
+{% if results %}
+  {{ search_macros.size_and_order(form, url_for('ui.search')) }}
+  {{ search_macros.search_results(form, results, metadata, url_for_page, url_for_author_search, is_current, query.hide_abstracts) }}
+{% endif %}
+
+{% endblock within_content %}
+
+
+{% block content_extra %}
+<div class="arxiv-search-tips pt-5 pb-3">
+  <div class="container">
   {% if not results %}
-    {% if query %}
-      <p class="is-size-4 has-text-warning">
-        Sorry, your query for <span class="is-warning">{{ query.search_field }}: {{ query.value }}</span> produced no results.
-      </p>
-    {% endif %}
     {{ search_macros.help_tips() }}
   {% endif %}
-
-  {% if results %}
-      {{ search_macros.size_and_order(form, url_for('ui.search')) }}
-      {{ search_macros.search_results(form, results, metadata, url_for_page, url_for_author_search, is_current, query.hide_abstracts) }}
-  {% endif %}
-
-{% endblock %}
+  </div>
+  {{ search_macros.version_and_feedback() }}
+</div>
+{% endblock content_extra %}
