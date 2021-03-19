@@ -2,13 +2,13 @@
 {% import "search/search-macros.html" as search_macros %}
 {% set pagetitle %}Search all of arXiv for free{% endset %}
 
-{% block within_content %}
+{% block content %}
 <h1>arXiv Search</h1>
 <p class="d-none d-sm-block">Our mission is to provide rapid dissemination of scientific results at no cost to authors or readers. Search all of arXiv for free here by author, title, or keyword.
 <strong>API users:</strong> arXiv prioritizes searches by individual researchers. See our <a href="">API documentation</a> for more details on rate limits.
 <strong>Third party developers:</strong> Have you built a new way to search arXiv? Consider <a href="">proposing it for arXivLabs</a>.</p>
 <div class="d-flex justify-content-center">
-  <form class="arxiv-search-form" method="GET" action="{{ url_for('ui.search', archives=archives) }}" {% if not query and not results %} class="breathe-vertical" {% endif %} aria-role="search">
+  <form class="arxiv-search-form" method="GET" action="{{ url_for('ui.search', archives=archives) }}" aria-role="search">
     <div class="row p-0 g-1">
       {% if archives %}
         Searching in archive{% if archives|length > 1 %}s{% endif %} <strong>{{ archives|join(", ") }}</strong>. <a href="{{ url_for('ui.search') }}?{{ current_url_params() }}">Search in all archives.</a>
@@ -38,8 +38,9 @@
     <div class="row p-1 g-3">
       {% for subfield in form.abstracts %}
       <div class="col-auto">
-        <label class="radio">
-        {{ subfield }} {{ subfield.label.text }}
+        <label class="form-check">
+          {{ subfield }}
+          {{ subfield.label.text }}
         </label>
       </div>
       {% endfor %}
@@ -69,16 +70,4 @@
   {{ search_macros.search_results(form, results, metadata, url_for_page, url_for_author_search, is_current, query.hide_abstracts) }}
 {% endif %}
 
-{% endblock within_content %}
-
-
-{% block content_extra %}
-<div class="{% if not results %}arxiv-search-tips{% endif %} pt-5 pb-1">
-  <div class="container">
-  {% if not results %}
-    {{ search_macros.help_tips() }}
-  {% endif %}
-  </div>
-  {{ search_macros.version_and_feedback() }}
-</div>
-{% endblock content_extra %}
+{% endblock content %}

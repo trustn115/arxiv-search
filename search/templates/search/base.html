@@ -1,5 +1,6 @@
 {%- extends "base/base.html" %}
 {% import 'search/search-macros.html' as base_macros %}
+
 {#- build breadcrumb items as link : label pairs, excluding home and current page -#}
 {% set breadcrumb = {
   url_for('ui.search') : 'Search home',
@@ -36,10 +37,13 @@
   </script>
 {% endblock addl_head %}
 
-{%- block content %}
-
-{% block within_content %}
-  Specific results here
-{% endblock within_content %}
-
-{% endblock content %}
+{% block content_extra %}
+<div class="{% if not results %}arxiv-search-tips{% endif %} pt-5 pb-1">
+  <div class="container">
+  {% if not results %}
+    {{ search_macros.help_tips() }}
+  {% endif %}
+  </div>
+  {{ search_macros.version_and_feedback() }}
+</div>
+{% endblock content_extra %}
