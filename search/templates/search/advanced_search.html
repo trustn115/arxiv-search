@@ -29,53 +29,55 @@
     <hr>
     {{ form.advanced|safe }}
     {# Field-specific search term fieldset. #}
-    <fieldset class="" data-toggle="fieldset" id="terms-fieldset">
+    <fieldset>
       <legend class="legend">Search Terms</legend>
-      {% for entry in form.terms.entries %}
-      <div class="input-group search-terms-row" data-toggle="fieldset-entry">
+      <div data-toggle="fieldset" id="terms-fieldset">
+        {% for entry in form.terms.entries %}
+        <div class="input-group search-terms-row" data-toggle="fieldset-entry">
 
-        <label for="terms-{{loop.index0}}-operator" class="visually-hidden">Boolean operator</label>
-        {{ entry.operator(default='AND', class="form-select boolean-select")|safe }}
+          <label for="terms-{{loop.index0}}-operator" class="visually-hidden">Boolean operator</label>
+          {{ entry.operator(default='AND', class="form-select boolean-select")|safe }}
 
-        <label for="terms-{{loop.index0}}-term" class="visually-hidden">Search term</label>
-        {% if entry.term.errors %}
-          {{ entry.term(class='form-control alert-danger', placeholder="Search term...")|safe }}
-        {% else %}
-          {{ entry.term(class='form-control', placeholder="Search term...")|safe }}
-        {% endif %}
+          <label for="terms-{{loop.index0}}-term" class="visually-hidden">Search term</label>
+          {% if entry.term.errors %}
+            {{ entry.term(class='form-control alert-danger', placeholder="Search term...")|safe }}
+          {% else %}
+            {{ entry.term(class='form-control', placeholder="Search term...")|safe }}
+          {% endif %}
 
-        {% if entry.term.errors %}
-          <div class="alert alert-danger">
-            {% for error in entry.term.errors %}
-                {{ error }}
-            {% endfor %}
-          </div>
-        {% endif %}
+          {% if entry.term.errors %}
+            <div class="alert alert-danger">
+              {% for error in entry.term.errors %}
+                  {{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
 
-        <label for="terms-{{loop.index0}}-field" class="visually-hidden">Field to search</label>
-        {{ entry.field(default='title', class='form-select')|safe }}
+          <label for="terms-{{loop.index0}}-field" class="visually-hidden">Field to search</label>
+          {{ entry.field(default='title', class='form-select')|safe }}
 
-        <button type="button"
-          data-toggle="fieldset-remove-row"
-          id="term-{{loop.index0}}-remove"
-          class="btn btn-outline-secondary"
-          aria-label="Remove this search term">
-          <svg width="20" height="20" fill="currentColor" role="presentation">
-            <use xlink:href="{{ url_for('base.static', filename='bootstrap/bootstrap-icons.svg') }}#x"/>
-          </svg>
-        </button>
-      </div><!-- end input group -->
-      {% endfor %}
-
-      <div class="row justify-content-end g-1 mr-5 align-items-center">
-        <div class="col-auto">
-          <button type="button" class="btn btn-outline-primary"
-            data-toggle="fieldset-add-row"
-            data-target="#terms-fieldset">Add another term +
+          <button type="button"
+            data-toggle="fieldset-remove-row"
+            id="term-{{loop.index0}}-remove"
+            class="btn btn-outline-secondary"
+            aria-label="Remove this search term">
+            <svg width="20" height="20" fill="currentColor" role="presentation">
+              <use xlink:href="{{ url_for('base.static', filename='bootstrap/bootstrap-icons.svg') }}#x"/>
+            </svg>
           </button>
-        </div>
-        <div class="col-auto">
-          <button class="btn btn-primary btn-lg">Search</button>
+        </div><!-- end input group -->
+        {% endfor %}
+
+        <div class="row justify-content-end g-1 mr-5 align-items-center">
+          <div class="col-auto">
+            <button type="button" class="btn btn-outline-primary"
+              data-toggle="fieldset-add-row"
+              data-target="#terms-fieldset">Add another term +
+            </button>
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-primary btn-lg">Search</button>
+          </div>
         </div>
       </div>
     </fieldset>
