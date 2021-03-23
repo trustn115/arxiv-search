@@ -8,98 +8,98 @@
     {% endfor %}
   </div>
 
-  {{ form.size|safe }}
-  {{ form.size.label }}.
+  <!-- {{ form.size|safe }}
+  {{ form.size.label }} -->
 
-  {{ form.order.label }}
-  {{ form.order|safe }}
-
-  <button class="button is-small is-link">Go</button>
+  <div class="input-group">
+    <label class="input-group-text" for="order">Sort by</label>
+    {{ form.order(class="form-select")|safe }}
+    <button class="btn btn-primary">Go</button>
+  </div>
+  <!-- {{ form.order.label }} -->
 </form>
 {%- endmacro -%}
 
 {% macro pagination(metadata, url_for_page) -%}
-  <nav class="pagination is-small is-centered breathe-horizontal" role="navigation" aria-label="pagination">
+<nav aria-label="Search results pagination">
+  <ul class="pagination justify-content-center">
     {% if metadata.current_page > 1 %}
-    <a href="{{ url_for_page(metadata.current_page - 1, metadata.size) }}"
-      class="pagination-previous">Previous
-    </a>
-    {% else %}
-    <a href=""
-      class="pagination-previous is-invisible">Previous
-    </a>
-    {% endif %}
-    {% if metadata.current_page < metadata.total_pages %}
-      <a href="{% if metadata.current_page + 1 <= metadata.max_pages %}{{ url_for_page(metadata.current_page + 1, metadata.size) }}{% endif %}"
-        class="pagination-next" {% if metadata.current_page + 1 > metadata.max_pages %}disabled="true"{% endif %}>Next
+    <li class="page-item prev">
+      <a class="page-link" href="{{ url_for_page(metadata.current_page - 1, metadata.size) }}" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
       </a>
+    </li>
     {% else %}
-    <a href=""
-      class="pagination-next is-invisible">Next
-    </a>
+    <li class="page-item prev disabled"><span class="page-link" tabindex="-1" aria-disabled="true">&laquo;</span></li>
     {% endif %}
-    <ul class="pagination-list">
 
-      <li>
-        <a href="{{ url_for_page(1, metadata.size) }}"
-          class="pagination-link {% if metadata.current_page == 1 %}is-current{% endif %}"
-          aria-label="Goto page 1">1
+    <li class="page-item">
+      <a href="{{ url_for_page(1, metadata.size) }}"
+        class="page-link {% if metadata.current_page == 1 %}active{% endif %} hovicon effect-8"
+        aria-label="Goto page 1">1
+      </a>
+    </li>
+
+    {% if metadata.total_pages < 8 %}
+      {% for p in range(2, metadata.total_pages + 1) %}
+      <li class="page-item">
+        <a href="{{ url_for_page(p, metadata.size) }}"
+          class="page-link {% if metadata.current_page == p %}active{% endif %} hovicon effect-8"
+          aria-label="Page {{ p }}"
+          aria-current="page">{{ p }}
         </a>
       </li>
-
-      {% if metadata.total_pages < 8 %}
-        {% for p in range(2, metadata.total_pages + 1) %}
-        <li>
+      {% endfor %}
+    {% else %}
+      {% if metadata.current_page <= 3 %}
+        {% for p in range(2, 6) %}
+        <li class="page-item">
           <a href="{{ url_for_page(p, metadata.size) }}"
-            class="pagination-link {% if metadata.current_page == p %}is-current{% endif %}"
+            class="page-link {% if metadata.current_page == p %}active{% endif %} hovicon effect-8"
+            aria-label="Page {{ p }}"
+            aria-current="page">{{ p }}
+          </a>
+        </li>
+        {% endfor %}
+      {% elif (metadata.total_pages + 1 - metadata.current_page) <= 3 %}  {# Close to the end page #}
+        {% for p in range(metadata.total_pages - 4, metadata.total_pages + 1) %}
+        <li class="page-item">
+          <a href="{{ url_for_page(p, metadata.size) }}"
+            class="page-link {% if metadata.current_page == p %}active{% endif %} hovicon effect-8"
             aria-label="Page {{ p }}"
             aria-current="page">{{ p }}
           </a>
         </li>
         {% endfor %}
       {% else %}
-        {% if metadata.current_page <= 3 %}                             {# Close to the start page #}
-          {% for p in range(2, 6) %}
-          <li>
-            <a href="{{ url_for_page(p, metadata.size) }}"
-              class="pagination-link {% if metadata.current_page == p %}is-current{% endif %}"
-              aria-label="Page {{ p }}"
-              aria-current="page">{{ p }}
-            </a>
-          </li>
-          {% endfor %}
-          <li><span class="pagination-ellipsis">&hellip;</span></li>
-        {% elif (metadata.total_pages + 1 - metadata.current_page) <= 3 %}  {# Close to the end page #}
-          <li><span class="pagination-ellipsis">&hellip;</span></li>
-          {% for p in range(metadata.total_pages - 4, metadata.total_pages + 1) %}
-          <li>
-            <a href="{{ url_for_page(p, metadata.size) }}"
-              class="pagination-link {% if metadata.current_page == p %}is-current{% endif %}"
-              aria-label="Page {{ p }}"
-              aria-current="page">{{ p }}
-            </a>
-          </li>
-          {% endfor %}
-        {% else %}                                                       {# Somewhere in the middle #}
-          <li><span class="pagination-ellipsis">&hellip;</span></li>
-          {% for p in range(metadata.current_page - 1, metadata.current_page + 2) %}
-          {% if p <= metadata.max_pages %}
-          <li>
-            <a href="{{ url_for_page(p, metadata.size) }}"
-              class="pagination-link {% if metadata.current_page == p %}is-current{% endif %}"
-              aria-label="Page {{ p }}"
-              aria-current="page">{{ p }}
-            </a>
-          </li>
-          {% endif %}
-          {% endfor %}
-          <li><span class="pagination-ellipsis">&hellip;</span></li>
+        {% for p in range(metadata.current_page - 1, metadata.current_page + 2) %}
+        {% if p <= metadata.max_pages %}
+        <li class="page-item">
+          <a href="{{ url_for_page(p, metadata.size) }}"
+            class="page-link {% if metadata.current_page == p %}active{% endif %} hovicon effect-8"
+            aria-label="Page {{ p }}"
+            aria-current="page">{{ p }}
+          </a>
+        </li>
         {% endif %}
+        {% endfor %}
       {% endif %}
-    </ul>
-  </nav>
+    {% endif %}
+
+    {% if metadata.current_page < metadata.total_pages %}
+      <li class="page-item next">
+        <a class="page-link" href="{% if metadata.current_page + 1 <= metadata.max_pages %}{{ url_for_page(metadata.current_page + 1, metadata.size) }}{% endif %}" aria-label="Next" {% if metadata.current_page + 1 > metadata.max_pages %}disabled="true"{% endif %}>
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+    {% else %}
+      <li class="page-item next disabled"><span class="page-link" tabindex="-1" aria-disabled="true">&raquo</span></li>
+    {% endif %}
+  </ul>
+</nav>
+
   {% if metadata.current_page + 1 > metadata.max_pages %}
-  <p class="has-text-right has-text-grey is-size-7 breathe-horizontal">
+  <p class="alert alert-warning">
     Only {{ metadata.max_pages }} pages are available. Please refine your search.
   </p>
   {% endif %}
@@ -108,83 +108,116 @@
 
 {% macro search_results(form, results, metadata, url_for_page, url_for_author_search, is_current, hide_abstracts) %}
 
-<div class="arxiv-pagination">
-  {{ size_and_order(form, url_for('ui.search')) }}
-  {% if metadata.total_pages > 1 %}
-    {{ pagination(metadata, url_for_page) }}
-  {% endif %}
+<div class="row align-items-center arxiv-pagination">
+  <div class="col results">
+    Viewing <strong>{{ metadata.start + 1 }}&ndash;{{ metadata.end }}</strong> of {{ '{0:,}'.format(metadata.total_results) }} results
+  </div>
+  <div class="col paginate">
+    {% if metadata.total_pages > 1 %}
+      {{ pagination(metadata, url_for_page) }}
+    {% endif %}
+  </div>
+  <div class="col filter">
+    {{ size_and_order(form, url_for('ui.search')) }}
+  </div>
 </div>
 
-<ol class="breathe-horizontal" start="{{ metadata.start + 1}}"> {# Start index is 0-based. #}
-
+<ol class="arxiv-results-list" start="{{ metadata.start + 1}}"> {# Start index is 0-based. #}
 {% for result in results %}
-  <li class="arxiv-result">
-    <div class="is-marginless">
-      <p class="list-title is-inline-block">
-        {%- set display_paper_id = result.paper_id if is_current(result) else result.paper_id_v -%}
-        <a href="{{ url_for('abs_by_id', paper_id=display_paper_id) }}">arXiv:{{ display_paper_id }}</a>
-        <span>&nbsp;{{ paper_format_links(result, display_paper_id) }}&nbsp;</span>
-      </p>
-      <div class="tags is-inline-block">
-        <span class="tag is-small {% if result.match.primary_classification %}search-hit{% else %}is-link{% endif %} tooltip is-tooltip-top" data-tooltip="{{ result.primary_classification|category_name }}">{{ result.primary_classification.category.id }}</span>
+  {%- set display_paper_id = result.paper_id if is_current(result) else result.paper_id_v -%}
+    <li>
+      <div class="row">
+        <div class="col-auto paper-id">
+          <a href="{{ url_for('abs_by_id', paper_id=display_paper_id) }}">arXiv:{{ display_paper_id }}</a>
+        </div>
+        <div class="col-auto paper-download">
+          {{ paper_format_links(result, display_paper_id) }}
+        </div>
+        <div class="col paper-date">
+          {{ result.announced_date_first.strftime('%B %Y') }}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <h3 class="paper-title mathjax">
+            <a href="{{ url_for('abs_by_id', paper_id=display_paper_id) }}" style="display:block;">
+            {% if result.highlight.title %}
+              {{ result.highlight.title | safe }}
+            {% else %}
+              {{ result.title }}
+            {% endif %}
+            </a>
+          </h3>
+          <p class="paper-authors">
+            {% for author in result.authors[0:25] %}
+              {% if author %}<a href="{{ url_for_author_search(author.first_name, author.last_name) }}">{{ author.first_name }} {{ author.last_name }}{% if author.suffix %} {{ author.suffix }}{%- endif -%}</a>{{ ", " if not loop.last }}{% endif %}
+            {% endfor -%}
+            {% if result.authors | length > 25 %}, et al. ({{ result.authors | length - 25 }} additional authors not shown){% endif %}
+          </p>
+          {% if not hide_abstracts %}
+          <p class="paper-abstract mathjax">
+            <span id="{{result.id}}-abstract-short">
+              {{ result.preview.abstract | safe }}
+              {%if result.truncated.abstract %}
+              <a class="paper-abstract-toggle" style="white-space: nowrap;" onclick="document.getElementById('{{result.id}}-abstract-full').style.display = 'inline'; document.getElementById('{{result.id}}-abstract-short').style.display = 'none';">
+                More
+                <svg width="20" height="20" fill="currentColor" role="presentation">
+                  <use xlink:href="{{ url_for('base.static', filename='bootstrap/bootstrap-icons.svg') }}#caret-down-fill"/>
+                </svg>
+              </a>
+              {% endif %}
+            </span>
+            <span id="{{result.id}}-abstract-full" style="display: none;">
+              {% if result.highlight.abstract %}{{ result.highlight.abstract | safe }}{% else %}{{ result.abstract }}{% endif %}
+              <a class="paper-abstract-toggle" style="white-space: nowrap;" onclick="document.getElementById('{{result.id}}-abstract-full').style.display = 'none'; document.getElementById('{{result.id}}-abstract-short').style.display = 'inline';">
+                Less
+                <svg width="20" height="20" fill="currentColor" role="presentation">
+                  <use xlink:href="{{ url_for('base.static', filename='bootstrap/bootstrap-icons.svg') }}#caret-up-fill"/>
+                </svg>
+              </a>
+            </span>
+          </p>
+          {% endif %}
+        </div>
+        <div class="col col-3 col-lg-2">
+          <ul class="paper-category">
+            <li>{{ result.primary_classification.category.id }}</li>
+            {% if result.secondary_classification %}
+              {% for secondary in result.secondary_classification %}
+                <li>{{ secondary.category.id }}</li>
+              {% endfor %}
+            {% endif -%}
+          </ul>
+        </div>
+      </div>
+
+        <!-- <span class="tag is-small {% if result.match.primary_classification %}search-hit{% else %}is-link{% endif %} tooltip is-tooltip-top" data-tooltip="{{ result.primary_classification|category_name }}">{{ result.primary_classification.category.id }}</span>
         {% if result.secondary_classification %}
           {% for secondary in result.secondary_classification %}
             <span class="tag is-small {% if secondary.category.id in result.match.secondary_classification %}search-hit{% else %}is-grey{% endif %} tooltip is-tooltip-top" data-tooltip="{{secondary|category_name}}">{{ secondary.category.id }}</span>
           {% endfor %}
-        {% endif -%}
-      </div>
-      {% if result.doi %}
+        {% endif -%} -->
+
+      <!-- {% if result.doi %}
         {% for doi in result.doi %}
-          <div class="is-inline-block" style="margin-left: 0.5rem">
-            <div class="tags has-addons">
               <span class="tag is-dark is-size-7">doi</span>
               <span class="tag is-light is-size-7"><a class="" href="https://doi.org/{{ doi }}">{{ doi }} <i class="fa fa-external-link" aria-hidden="true"></i></a></span>
-            </div>
-          </div>
         {% endfor %}
-      {% endif %}
-    </div>
-    {# Note: mathjax class should be applied to any element that requires MathJax processing #}
-    <p class="title is-5 mathjax">
-      {% if result.highlight.title %}
-        {{ result.highlight.title | safe }}
-      {% else %}
-        {{ result.title }}
-      {% endif %}
-    </p>
-    <p class="authors">
-      <span class="{% if result.match.author %}search-hit{% else %}has-text-black-bis has-text-weight-semibold{% endif %}">Authors:</span>
-      {% for author in result.authors[0:25] %}
-      {% if author %}<a href="{{ url_for_author_search(author.first_name, author.last_name) }}">{{ author.first_name }} {{ author.last_name }}{% if author.suffix %} {{ author.suffix }}{%- endif -%}</a>{{ ", " if not loop.last }}{% endif %}
-      {% endfor -%}
-      {% if result.authors | length > 25 %}, et al. ({{ result.authors | length - 25 }} additional authors not shown){% endif %}
-    </p>
-    {% if not hide_abstracts %}
-    <p class="abstract mathjax">
-      <span class="{% if result.match.abstract %}search-hit{% else %}has-text-black-bis has-text-weight-semibold{% endif %}">Abstract</span>:
-      <span class="abstract-short has-text-grey-dark mathjax" id="{{result.id}}-abstract-short" style="display: inline;">
-        {{ result.preview.abstract | safe }}
-        {%if result.truncated.abstract %}<a class="is-size-7" style="white-space: nowrap;" onclick="document.getElementById('{{result.id}}-abstract-full').style.display = 'inline'; document.getElementById('{{result.id}}-abstract-short').style.display = 'none';">&#9661; More</a>{% endif %}
-      </span>
-      <span class="abstract-full has-text-grey-dark mathjax" id="{{result.id}}-abstract-full" style="display: none;">
-        {% if result.highlight.abstract %}{{ result.highlight.abstract | safe }}{% else %}{{ result.abstract }}{% endif %}
-        <a class="is-size-7" style="white-space: nowrap;" onclick="document.getElementById('{{result.id}}-abstract-full').style.display = 'none'; document.getElementById('{{result.id}}-abstract-short').style.display = 'inline';">&#9651; Less</a>
-      </span>
-    </p>
-    {% endif %}
+      {% endif %} -->
 
-    <p class="is-size-7"><span class="has-text-black-bis has-text-weight-semibold">Submitted</span> {{ result.submitted_date.strftime('%-d %B, %Y') }}; {% if result.version > 1 %}<span class="has-text-black-bis has-text-weight-semibold">v1</span> submitted {{ result.submitted_date_first.strftime('%-d %B, %Y') }};{% endif %}
+    <!-- <p class="is-size-7"><span class="has-text-black-bis has-text-weight-semibold">Submitted</span> {{ result.submitted_date.strftime('%-d %B, %Y') }}; {% if result.version > 1 %}<span class="has-text-black-bis has-text-weight-semibold">v1</span> submitted {{ result.submitted_date_first.strftime('%-d %B, %Y') }};{% endif %}
       <span class="{% if result.match.announced_date_first %}search-hit{% else %}has-text-black-bis has-text-weight-semibold{% endif %}">originally announced</span> {{ result.announced_date_first.strftime('%B %Y') }}.
       {% if not is_current(result) %}<span class="has-text-weight-bold">Latest version:</span> <a href="{{ url_for('abstract_by_id', paper_id=result.latest) }}">{{ result.latest }}</a>.{% endif %}
-    </p>
-    {% if result.comments %}
+    </p> -->
+
+    <!-- {% if result.comments %}
     <p class="comments is-size-7">
       <span class="{% if result.match.comments %}search-hit{% else %}has-text-black-bis has-text-weight-semibold{% endif %}">Comments:</span>
       <span class="has-text-grey-dark mathjax">{% if result.highlight.comments %}{{ result.highlight.comments | safe }}{% else %}{{ result.comments }}{% endif %}</span>
     </p>
-    {% endif %}
+    {% endif %} -->
 
-    {% if result.report_num or result.acm_class or result.msc_class %}
+    <!-- {% if result.report_num or result.acm_class or result.msc_class %}
       <p class="comments is-size-7">
         {% if result.report_num %}
           <span class="{% if result.match.report_num %}search-hit{% else %}has-text-black-bis has-text-weight-semibold{% endif %}">Report number:</span>
@@ -201,14 +234,14 @@
           {% if result.highlight.acm_class %}{{ result.highlight.acm_class | safe }} ({{ result.acm_class }}){% else %}{{ result.acm_class }}{% endif %}
         {% endif %}
       </p>
-    {% endif %}
+    {% endif %} -->
 
-    {% if result.journal_ref %}
+    <!-- {% if result.journal_ref %}
       <p class="comments is-size-7">
         <span class="{% if result.match.journal_ref %}search-hit{% else %}has-text-black-bis has-text-weight-semibold{% endif %}">Journal ref:</span>
         {% if result.highlight.journal_ref %}{{ result.highlight.journal_ref | safe }}{% else %}{{ result.journal_ref }}{% endif %}
       </p>
-    {% endif %}
+    {% endif %} -->
   </li>
 {% endfor %}
 </ol>

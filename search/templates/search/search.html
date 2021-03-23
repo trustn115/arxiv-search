@@ -66,8 +66,10 @@
 {% endif %}
 
 {% if results %}
-  <h2>Showing {{ metadata.start + 1 }}&ndash;{{ metadata.end }} of {{ '{0:,}'.format(metadata.total_results) }} results for {{ query.search_field }}: <span class="mathjax">{{ query.value }}</span></h2>
+<div class="arxiv-search-content">
+  <h2>Found {{ '{0:,}'.format(metadata.total_results) }} results for "<span class="mathjax">{{ query.value }}</span>" in field "{{ query.search_field }}"</h2>
   {{ search_macros.search_results(form, results, metadata, url_for_page, url_for_author_search, is_current, query.hide_abstracts) }}
+</div>
 {% endif %}
 
 {% endblock content %}
