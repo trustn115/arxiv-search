@@ -66,7 +66,7 @@
 {% endif %}
 
 {% if results %}
-  {{ search_macros.size_and_order(form, url_for('ui.search')) }}
+  <h2>Showing {{ metadata.start + 1 }}&ndash;{{ metadata.end }} of {{ '{0:,}'.format(metadata.total_results) }} results for {{ query.search_field }}: <span class="mathjax">{{ query.value }}</span></h2>
   {{ search_macros.search_results(form, results, metadata, url_for_page, url_for_author_search, is_current, query.hide_abstracts) }}
 {% endif %}
 
